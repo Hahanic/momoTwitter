@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+
+@theme {
+  /* 自定义断点 */
+  --breakpoint-sm: 700px;
+  --breakpoint-md: 940px;
+  --breakpoint-lg: 1100px;
+  --breakpoint-xl: 1300px;
+  /* 边框颜色 */
+  --color-borderDark: #2f3336;
+  --color-borderWhite: #eff3f4;
+  /* 图标颜色 */
+  --color-icon1: #1eaafe;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+ol,ul,li {
+  text-decoration: none;
+  list-style: none;
+}
+
+html, body {
+  font-size: 16px;
+  color: white;
+  overflow: hidden;
+  overflow-wrap:anywhere;
+}

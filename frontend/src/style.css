@@ -15,9 +15,18 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --color-1: #ff6b6b;
+  --color-2: #4ecdc4;
+  --color-3: #45b7d1;
+  --color-4: #f9ca24;
+}
+
 ol,ul,li {
   text-decoration: none;
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 html, body {

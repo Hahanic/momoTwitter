@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import Layout from '@/views/layout/index.vue'
+import Home from '@/views/layout/home/index.vue'
 import Login from '@/views/login/index.vue'
 import Register from '@/views/register/index.vue'
 
@@ -9,7 +10,18 @@ export const router = createRouter({
   routes: [
     {
       path: '/',
-      component: Layout
+      redirect: '/home',
+      component: Layout,
+      children: [
+        {
+          path: '/home',
+          component: Home
+        },
+        {
+          path: '/compose/post',
+          component: Home
+        },
+      ]
     },
     {
       path: '/login',

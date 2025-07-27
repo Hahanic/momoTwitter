@@ -18,15 +18,15 @@
               { active: activeIndex === index }
             ]"
           >
-            <a
-              :href="item.href || undefined"
-              @click="e => handleClick(e, index)"
+            <RouterLink
+              :to="item.href || '#'"
+              @click="e=> handleClick(e, index)"
               @keydown="e => handleKeyDown(e, index)"
               class="outline-none xl:px-[4.6rem] px-3 h-[3.2rem] flex items-center relative z-10"
             >
               <span class="xl:block hidden relative left-6">{{ item.label }}</span>
               <component :is="item.icon" :size="'1.7rem'" class="xl:absolute left-[4rem]" />
-            </a>
+            </RouterLink>
           </li>
         </ul>
       </nav>
@@ -39,7 +39,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, useTemplateRef, type Component } from 'vue';
-
 interface GooeyNavItem {
     icon: Component,
     label: string,

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router';
-import { NConfigProvider, NScrollbar, NMessageProvider,NLoadingBarProvider, darkTheme, lightTheme } from 'naive-ui';
+import { NConfigProvider, NScrollbar, NMessageProvider, NLoadingBarProvider, darkTheme, lightTheme } from 'naive-ui';
 import usethemeStore from './stores/theme';
 
 const themeStore = usethemeStore()
@@ -17,3 +16,6 @@ const themeStore = usethemeStore()
   </n-config-provider>
 </NMessageProvider>
 </template>
+
+<style>
+</style>

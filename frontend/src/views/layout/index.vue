@@ -1,12 +1,12 @@
 <template>
-  <div class="flex justify-center dark:bg-[#000] dark:text-white bg-white text-amber-950">
+  <div class="w-full h-full flex justify-center dark:bg-[#000] dark:text-white bg-white text-amber-950">
     <div class="transition-all flex">
 
       <header class="xl:w-[17rem] xl:items-start w-[5rem] sm:flex flex-col items-center hidden transition-all h-screen sticky top-0">
         <n-scrollbar style="max-height: 100vh;">
           <!-- <menuList /> -->
           <div class="w-full h-[5.2rem] z-10 flex items-center relative">
-           <img class="w-[3.3rem] h-[3.3rem] absolute xl:left-[51px] left-[28px] hover:cursor-pointer" src="/warp.svg" />
+            <img @click="themeStore.toggleTheme()" class="w-[3.3rem] h-[3.3rem] absolute xl:left-[51px] left-[28px] hover:cursor-pointer" src="/warp.svg" />
           </div>
           <GooeyNav
             :items="menuLists"
@@ -22,66 +22,45 @@
       </header>
 
       <div class="transition-all flex">
-        <main class="sm:w-[38rem] sm:min-h-screen w-[100vw] border-x-1 dark:border-borderDark border-borderWhite">
-
-          <div class="h-[3.2rem] w-full z-10 sticky top-0 dark:bg-[#000]/80 dark:backdrop-blur-sm backdrop-blur-lg bg-[#ffffff]/80 border-b-1 dark:border-borderDark border-borderWhite grid grid-cols-2">
-            <div class="flex justify-center items-center dark:hover:bg-[#181818]/90 hover:bg-[#e7e7e8]/70 transition-all cursor-pointer">为你推荐</div>
-            <div class="flex justify-center items-center dark:hover:bg-[#181818]/80 hover:bg-[#e7e7e8]/70 transition-all cursor-pointer">关注</div>
-          </div>
-          
-          <div class="w-full">
-            <!-- user -->
-            <userSendCard />
-            <!-- posts -->
-            <posts />
-          </div>
-        </main>
-
-        <aside class=" md:block lg:w-[25rem] w-[15rem] ml-7 h-screen hidden transition-all sticky top-0">
-          <!-- 搜索框 -->
-          <div class="h-[3.2rem] flex items-center z-10">
-            <div class="flex w-full items-center relative dark:border-borderDark border-borderWhite border-1 rounded-2xl">
-              <SearchIcon :size="17.6" class="absolute left-3"/>
-              <input type="text" placeholder="搜索" class="w-full h-[2.4rem] rounded-2xl dark:bg-[#181818] bg-[#f5f5f5] dark:text-white text-amber-950 pl-9 pr-4 outline-none focus:ring-1 focus:ring-blue-300">
-            </div>
-          </div>
-          <!-- 推送 -->
-          <n-scrollbar :trigger="'hover'" style="max-height: 90vh">
-            <div class="w-full flex flex-col gap-[1.2rem] mt-[0.8rem]">
-              <div class="h-[9rem] rounded-xl dark:border-borderDark border-borderWhite border-1">
-              </div>
-              <div class="h-[35rem] rounded-xl dark:border-borderDark border-borderWhite border-1">
-              </div>
-            </div>
-          </n-scrollbar>
-
-        </aside>
+        <RouterView />
       </div>
+
     </div>
+    <transition name="fade">
+      <ComposeModal v-if="showModal"></ComposeModal>
+    </transition>
   </div>
+
 </template>
 
 <script lang="ts" setup>
+import { defineAsyncComponent, ref, watch } from 'vue';
 import { NScrollbar } from 'naive-ui'
-import userSendCard from '@/components/userSendCard/index.vue'
-import posts from '@/components/post/index.vue'
 import GooeyNav from "@/components/menuList/index.vue";
+import { useRoute } from 'vue-router';
+import useThemeStore from '@/stores/theme';
 
-import {
-  HomeIcon,
-  Search,
-  Bell,
-  Mail,
-  BotIcon,
-  Rows3,
-  Bookmark,
-  BriefcaseBusiness,
-  Users2,
-  User2,
-  CircleEllipsis,
-  SearchIcon,
-} from 'lucide-vue-next'
+const ComposeModal = defineAsyncComponent(() => 
+  import("@/components/ComposeModal/index.vue")
+);
 
+const themeStore = useThemeStore()
+
+const route = useRoute()
+
+const showModal = ref(true)
+
+watch(() => route.path, (newPath) => {
+  if (newPath === '/compose/post') {
+    showModal.value = true
+  } else {
+    showModal.value = false
+  }
+}, { immediate: true }
+)
+
+
+import { HomeIcon, Search, Bell, Mail, BotIcon, Rows3, Bookmark, BriefcaseBusiness, Users2, User2, CircleEllipsis, Send } from 'lucide-vue-next'
 const menuLists = [
   {
     icon: HomeIcon,
@@ -138,10 +117,22 @@ const menuLists = [
     label: '更多',
     href: '#'
   },
+  {
+    icon: Send,
+    label: '发帖',
+    href: '/compose/post'
+  },
 ];
-
 </script>
 
 <style scoped>
-
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to, .fade-leave-from {
+  opacity: 1;
+}
 </style>

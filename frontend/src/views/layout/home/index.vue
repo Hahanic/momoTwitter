@@ -17,7 +17,7 @@
 <aside class=" md:block lg:w-[25rem] w-[15rem] ml-7 h-screen hidden transition-all sticky top-0">
   <!-- 搜索框 -->
   <div class="h-[3.2rem] flex items-center z-10">
-    <div class="flex w-full items-center relative dark:border-borderDark border-borderWhite border-1 rounded-2xl">
+    <div class="flex w-full items-center relative dark:border-borderDark  rounded-2xl">
       <SearchIcon :size="17.6" class="absolute left-3"/>
       <input type="text" placeholder="搜索" class="w-full h-[2.4rem] rounded-2xl dark:bg-[#181818] bg-[#f5f5f5] dark:text-white text-amber-950 pl-9 pr-4 outline-none focus:ring-1 focus:ring-blue-300">
     </div>

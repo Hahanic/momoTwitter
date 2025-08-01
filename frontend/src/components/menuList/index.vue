@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="relative" ref="containerRef">
-      <nav class="flex xl:justify-start justify-end relative z-10" :style="{ transform: 'translate3d(0,0,0.01px)' }">
+      <nav class="flex xl:justify-start justify-end relative z-10 mr-3" :style="{ transform: 'translate3d(0,0,0.01px)' }">
         <ul
           ref="navRef"
           class="flex flex-col gap-1 relative z-[3]"
@@ -18,10 +18,14 @@
               { active: activeIndex === index }
             ]"
           >
-            <RouterLink
+            <!-- <RouterLink
               :to="item.href || '#'"
               @click="e=> handleClick(e, index)"
               @keydown="e => handleKeyDown(e, index)"
+              class="outline-none xl:px-[4.6rem] px-3 h-[3.2rem] flex items-center relative z-10"
+            > -->
+            <RouterLink
+              :to="item.href || '#'"
               class="outline-none xl:px-[4.6rem] px-3 h-[3.2rem] flex items-center relative z-10"
             >
               <span class="xl:block hidden relative left-6">{{ item.label }}</span>
@@ -38,7 +42,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, useTemplateRef, type Component } from 'vue';
+import { ref, onMounted, onUnmounted, watch, useTemplateRef, type Component, computed } from 'vue';
+import { useRoute } from 'vue-router';
+
 interface GooeyNavItem {
     icon: Component,
     label: string,
@@ -70,7 +76,13 @@ const containerRef = useTemplateRef<HTMLDivElement>('containerRef');
 const navRef = useTemplateRef<HTMLUListElement>('navRef');
 const filterRef = useTemplateRef<HTMLSpanElement>('filterRef');
 const textRef = useTemplateRef<HTMLSpanElement>('textRef');
-const activeIndex = ref<number>(props.initialActiveIndex);
+// const activeIndex = ref<number>(props.initialActiveIndex);
+const route = useRoute()
+
+const activeIndex = computed(() => {
+  const index = props.items.findIndex(item => route.path.includes(item.href || '#'));
+  return index !== -1 ? index : props.initialActiveIndex;
+})
 
 let resizeObserver: ResizeObserver | null = null;
 
@@ -144,49 +156,71 @@ const updateEffectPosition = (element: HTMLElement) => {
   textRef.value.innerText = element.innerText;
 };
 
-const handleClick = (e: Event, index: number) => {
-  console.log('click', index);
-  const liEl = (e.currentTarget as HTMLElement).parentElement as HTMLElement;
-  if (activeIndex.value === index) return;
-  activeIndex.value = index;
-  updateEffectPosition(liEl);
-  if (filterRef.value) {
-    const particles = filterRef.value.querySelectorAll('.particle');
-    particles.forEach(p => filterRef.value!.removeChild(p));
-  }
-  if (textRef.value) {
-    textRef.value.classList.remove('active');
-    void textRef.value.offsetWidth;
-    textRef.value.classList.add('active');
-  }
-  if (filterRef.value) {
-    makeParticles(filterRef.value);
-  }
-};
+// const handleClick = (e: Event, index: number) => {
+//   console.log('click', index);
+//   const liEl = (e.currentTarget as HTMLElement).parentElement as HTMLElement;
+//   if (activeIndex.value === index) return;
+//   activeIndex.value = index;
+//   updateEffectPosition(liEl);
+//   if (filterRef.value) {
+//     const particles = filterRef.value.querySelectorAll('.particle');
+//     particles.forEach(p => filterRef.value!.removeChild(p));
+//   }
+//   if (textRef.value) {
+//     textRef.value.classList.remove('active');
+//     void textRef.value.offsetWidth;
+//     textRef.value.classList.add('active');
+//   }
+//   if (filterRef.value) {
+//     makeParticles(filterRef.value);
+//   }
+// };
 
-const handleKeyDown = (e: KeyboardEvent, index: number) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    const liEl = (e.currentTarget as HTMLElement).parentElement;
-    if (liEl) {
-      handleClick(
-        {
-          currentTarget: liEl
-        } as unknown as Event,
-        index
-      );
+// const handleKeyDown = (e: KeyboardEvent, index: number) => {
+//   if (e.key === 'Enter' || e.key === ' ') {
+//     e.preventDefault();
+//     const liEl = (e.currentTarget as HTMLElement).parentElement;
+//     if (liEl) {
+//       handleClick(
+//         {
+//           currentTarget: liEl
+//         } as unknown as Event,
+//         index
+//       );
+//     }
+//   }
+// };
+watch(activeIndex, (newIndex, oldIndex) => {
+  // 如果索引没有变化，或者组件还没准备好，则不执行
+  if (newIndex === oldIndex || !navRef.value) return;
+
+  const activeLi = navRef.value.querySelectorAll('li')[newIndex] as HTMLElement;
+  if (activeLi) {
+    // 1. 更新效果元素的位置
+    updateEffectPosition(activeLi);
+    
+    // 2. 触发粒子和文本动画（这部分逻辑是从旧的 handleClick 移过来的）
+    if (filterRef.value) {
+      const particles = filterRef.value.querySelectorAll('.particle');
+      particles.forEach(p => filterRef.value!.removeChild(p));
+      makeParticles(filterRef.value);
+    }
+    if (textRef.value) {
+      textRef.value.classList.remove('active');
+      void textRef.value.offsetWidth; // 强制浏览器重绘
+      textRef.value.classList.add('active');
     }
   }
-};
-
-watch(activeIndex, () => {
-  if (!navRef.value || !containerRef.value) return;
-  const activeLi = navRef.value.querySelectorAll('li')[activeIndex.value] as HTMLElement;
-  if (activeLi) {
-    updateEffectPosition(activeLi);
-    textRef.value?.classList.add('active');
-  }
 });
+
+// watch(activeIndex, () => {
+//   if (!navRef.value || !containerRef.value) return;
+//   const activeLi = navRef.value.querySelectorAll('li')[activeIndex.value] as HTMLElement;
+//   if (activeLi) {
+//     updateEffectPosition(activeLi);
+//     textRef.value?.classList.add('active');
+//   }
+// });
 
 onMounted(() => {
   if (!navRef.value || !containerRef.value) return;

@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div class="flex flex-1" :class="{'min-h-0': isCompose}">
+    <div class="flex" :class="{'min-h-0': isCompose}">
       <div>
         <div class="h-[3rem] w-[3rem] mx-2 mt-2">
           <img class="rounded-full select-none" src="/myAvatar.jpg"/>

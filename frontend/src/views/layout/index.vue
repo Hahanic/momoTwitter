@@ -6,7 +6,7 @@
         <n-scrollbar style="max-height: 100vh;">
           <!-- <menuList /> -->
           <div class="w-full h-[5.2rem] z-10 flex items-center relative">
-            <img @click="themeStore.toggleTheme()" class="w-[3.3rem] h-[3.3rem] absolute xl:left-[51px] left-[28px] hover:cursor-pointer" src="/warp.svg" />
+            <img @click="themeStore.toggleTheme()" class="w-[3.3rem] h-[3.3rem] absolute xl:left-[51px] left-[16px] hover:cursor-pointer" src="/warp.svg" />
           </div>
           <GooeyNav
             :items="menuLists"
@@ -65,57 +65,57 @@ const menuLists = [
   {
     icon: HomeIcon,
     label: '主页',
-    href: '#'
+    href: '/home'
   },
   {
     icon: Search,
     label: '探索',
-    href: '#'
+    href: '/explore'
   },
   {
     icon: Bell,
     label: '通知',
-    href: '#'
+    href: '/notifications'
   },
   {
     icon: Mail,
     label: '私信',
-    href: '#'
+    href: '/messages'
   },
   {
     icon: BotIcon,
     label: '智能',
-    href: '#'
+    href: '/bot'
   },
   {
     icon: Rows3,
     label: '列表',
-    href: '#'
+    href: '/lists'
   },
   {
     icon: Bookmark,
     label: '书签',
-    href: '#'
+    href: '/bookmarks'
   },
   {
     icon: BriefcaseBusiness,
     label: '工作',
-    href: '#'
+    href: '/work'
   },
   {
     icon: Users2,
     label: '社群',
-    href: '#'
+    href: '/groups'
   },
   {
     icon: User2,
     label: '个人资料',
-    href: '#'
+    href: '/profile'
   },
   {
     icon: CircleEllipsis,
     label: '更多',
-    href: '#'
+    href: '/more'
   },
   {
     icon: Send,

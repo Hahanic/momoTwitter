@@ -18,9 +18,30 @@ export const router = createRouter({
           component: Home
         },
         {
+          path: '/explore',
+          redirect: '/explore/for_you',
+          component: () => import('@/views/layout/explore/index.vue'),
+          children: [
+            {
+              path: 'for_you',
+              component: () => import('@/components/explore/for_you.vue')
+            },
+            { 
+              path: ':pathMatch(.*)*',
+              name: 'ExploreNotFound',
+              component: () => import('@/components/404/exploreNotFound.vue')
+            }
+          ]
+        },
+        {
           path: '/compose/post',
           component: Home
         },
+        {
+          path: ':pathMatch(.*)*',
+          name: 'GlobalNotFound',
+          component: () => import('@/components/404/globalNotFound.vue')
+        }
       ]
     },
     {

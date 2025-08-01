@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, useTemplateRef, type Component, computed } from 'vue';
+import { onMounted, onUnmounted, watch, useTemplateRef, type Component, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 interface GooeyNavItem {

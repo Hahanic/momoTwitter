@@ -3,9 +3,9 @@
 @theme {
   /* 自定义断点 */
   --breakpoint-sm: 700px;
-  --breakpoint-md: 940px;
-  --breakpoint-lg: 1100px;
-  --breakpoint-xl: 1300px;
+  --breakpoint-md: 970px;
+  --breakpoint-lg: 1130px;
+  --breakpoint-xl: 1320px;
   /* 边框颜色 */
   --color-borderDark: #2f3336;
   --color-borderWhite: #eff3f4;

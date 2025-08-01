@@ -18,16 +18,12 @@ const getDefaultTheme = (): Theme => {
 
 
 const useThemeStore = defineStore('theme', () => {
-  // state: 当前主题
   const currentTheme = ref<Theme>(getDefaultTheme())
-  // getter: 是否是暗黑模式
   const isDarkTheme = computed(() => currentTheme.value === 'dark')
-  // action: 切换主题
   const toggleTheme = () => {
     currentTheme.value = currentTheme.value === 'light' ? 'dark' : 'light'
   }
   
-  // 使用 watch 监听主题变化，并应用副作用
   watch(currentTheme, (newTheme) => {
     const root = document.documentElement
     if (newTheme === 'dark') {

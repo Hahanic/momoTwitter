@@ -38,3 +38,35 @@ export interface UserProfile  {
   website?: string;
   pinnedPostId?: string;
 }
+
+// 帖子
+export interface Post {
+  _id: string;
+  content: string;
+  media: {
+    type: 'image' | 'video' | 'gif';
+    url: string;
+  }[];
+
+  createdAt: string;
+
+  authorInfo: {
+    username: string;
+    displayName: string;
+    avatarUrl: string;
+    isVerified: boolean;
+  };
+
+  stats: {
+    repliesCount: number;
+    quotesCount: number;
+    likesCount: number;
+    viewsCount: number;
+  };
+
+  currentUserInteraction?: {
+    isLiked: boolean;
+    isBookmarked: boolean;
+    isRetweeted: boolean;
+  }
+}

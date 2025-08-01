@@ -24,6 +24,7 @@
         <n-scrollbar class="sm:max-h-[600px]">
           <textarea
             ref="textareaRef"
+            v-model="message"
             @input="handleTextareaInput"
             class="w-full text-xl mt-3 pr-2 resize-none overflow-y-hidden break-all focus:outline-none bg-transparent"
             placeholder="有什么新鲜事?"
@@ -51,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { Image, LucideBot, MenuIcon, LocationEdit, CalendarClockIcon, SmileIcon, XIcon, ArrowLeft } from 'lucide-vue-next';
 import { NScrollbar } from 'naive-ui';
 
@@ -71,6 +72,12 @@ const handleTextareaInput = () => {
     textarea.style.height = `${textarea.scrollHeight}px`;
   }
 }
+
+//
+const message = ref<string>('')
+watch(message, (newValue) => {
+  console.log(newValue)
+});
 </script>
 
 <style scoped>

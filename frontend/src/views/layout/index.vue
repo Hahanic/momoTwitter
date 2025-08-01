@@ -5,8 +5,8 @@
       <header class="xl:w-[17rem] xl:items-start w-[5rem] sm:flex flex-col items-center hidden transition-all h-screen sticky top-0">
         <n-scrollbar style="max-height: 100vh;">
           <!-- <menuList /> -->
-          <div class="w-full h-[5.2rem] z-10 flex items-center relative">
-            <img @click="themeStore.toggleTheme()" class="w-[3.3rem] h-[3.3rem] absolute xl:left-[51px] left-[16px] hover:cursor-pointer" src="/warp.svg" />
+          <div class="w-full h-[3.2rem] z-10 flex items-center relative">
+            <img @click="themeStore.toggleTheme()" class="w-[2.3rem] h-[2.3rem] absolute xl:left-[59px] left-[24px] hover:cursor-pointer" src="/warp.svg" />
           </div>
           <GooeyNav
             :items="menuLists"

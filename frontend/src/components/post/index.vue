@@ -1,5 +1,5 @@
 <template>
-  <div v-for="post in postList" :key="post.src" class="w-full flex hover:cursor-pointer border-b-1 dark:border-borderDark dark:hover:bg-transparent hover:bg-[#f7f7f7] transition-all border-borderWhite">
+  <div v-for="post in postLists" :key="post.src" class="w-full flex hover:cursor-pointer border-b-1 dark:border-borderDark dark:hover:bg-transparent hover:bg-[#f7f7f7] transition-all border-borderWhite">
     <!-- 头像 -->
     <div>
       <div class=" h-[3rem] w-[3rem] mx-2 mt-2">
@@ -46,6 +46,9 @@
   
 <script lang="ts" setup>
 import { MessageCircle, Repeat2, HeartIcon, ChartNoAxesColumnIcon, Bookmark, Share } from 'lucide-vue-next';
+import { postList } from '@/_Mocks/posts';
+
+console.log('postList', postList);
 
 interface Post {
     message?: string,
@@ -56,7 +59,7 @@ interface Post {
     engagementCounts: number,
 }
 
-const postList: Post[] = [
+const postLists: Post[] = [
   {
     message: '小镜好可爱😊',
     src: '/kagami1.jpg',

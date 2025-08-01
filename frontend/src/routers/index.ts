@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import Layout from '@/views/layout/index.vue'
 import Home from '@/views/layout/home/index.vue'
 import Login from '@/views/login/index.vue'
+import More from '@/views/layout/more/index.vue'
+import Profile from '@/views/layout/profile/index.vue'
 import Register from '@/views/register/index.vue'
 
 export const router = createRouter({
@@ -17,6 +19,23 @@ export const router = createRouter({
           path: '/home',
           component: Home
         },
+        {
+          path: '/profile',
+          component: Profile
+        },
+        {
+          path: '/more',
+          component: More,
+          children: [
+            { path: 'account',
+              component: () => import('@/views/layout/more/account/index.vue')
+            },
+            { path: 'settings',
+              component: () => import('@/views/layout/more/settings/index.vue')
+            },
+          ]
+        },
+        // explore routes
         {
           path: '/explore',
           redirect: '/explore/for_you',

@@ -1,4 +1,5 @@
 import User from "../db/model/User.js"
+import jwt from "jsonwebtoken"
 
 export const login = async (req, res) => {
   try {
@@ -17,7 +18,16 @@ export const login = async (req, res) => {
     // 登录成功
     const userToReturn = user.toObject()
     delete userToReturn.password
-    res.status(200).json({ message: '登录成功', user: userToReturn })
+    // 生成并添加token
+    const token = jwt.sign({ userId: userToReturn._id }, process.env.DBHOST, { expiresIn: '24h' })
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    })
+    res.status(200).json({ message: '登录成功', user: userToReturn})
   } catch (error) {
     res.status(500).json({ message: '服务器内部错误，请稍后重试' });
   }
@@ -64,5 +74,14 @@ export const register = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ message: '服务器内部错误，请稍后重试' })
+  }
+}
+
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie('token');
+    res.status(200).json({ message: '登出成功' });
+  } catch (error) {
+    res.status(500).json({ message: '服务器内部错误' });
   }
 }

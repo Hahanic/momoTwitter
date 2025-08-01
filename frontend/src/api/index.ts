@@ -7,6 +7,11 @@ export const userLogin = (userLoginData: userLoginData) => {
   return axiosInstance.post('/login', userLoginData)
 }
 
+// 用户退出登录
+export const userLogout = () => {
+  return axiosInstance.post('/logout')
+}
+
 export const getIdentifyingCode = (): Promise<recieveCode> => {
   return axiosInstance.get('/getIdentifyingCode')
 }
@@ -14,4 +19,14 @@ export const getIdentifyingCode = (): Promise<recieveCode> => {
 // 用户注册
 export const userRegister = (userRegisterData: userRegisterData) => {
   return axiosInstance.post('/register', userRegisterData)
+}
+
+// 用户发帖
+export const createPost = (content: string) => {
+  return axiosInstance.post('/post/create', content)
+}
+
+// 主页加载帖子
+export const getPosts = (page: number) => {
+  return axiosInstance.get('/post/getPosts')
 }

@@ -19,7 +19,7 @@ export const login = async (req, res) => {
     const userToReturn = user.toObject()
     delete userToReturn.password
     // 生成并添加token
-    const token = jwt.sign({ userId: userToReturn._id }, process.env.DBHOST, { expiresIn: '24h' })
+    const token = jwt.sign({ userId: userToReturn._id }, process.env.JWT_SECRET, { expiresIn: '24h' })
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -31,15 +31,6 @@ export const login = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: '服务器内部错误，请稍后重试' });
   }
-}
-
-export const getIdentifyingCode = (req, res) => {
-  const chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < 4; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  res.status(200).json({ code: result, message: "成功" })
 }
 
 export const register = async (req, res) => {
@@ -59,14 +50,26 @@ export const register = async (req, res) => {
     // 创建实例
     const newUser = new User({
       username: email.split('@')[0],
+      displayName: email.split('@')[0],
       email: email,
       password: password
     })
 
     if(newUser) {
       await newUser.save()
+
       const userToReturn = newUser.toObject()
       delete userToReturn.password
+
+      // 生成并添加token
+      const token = jwt.sign({ userId: userToReturn._id }, process.env.JWT_SECRET, { expiresIn: '24h' })
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Lax',
+        maxAge: 24 * 60 * 60 * 1000,
+      })
+
       res.status(201).json({
         message: '注册成功',
         user: userToReturn
@@ -84,4 +87,13 @@ export const logout = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: '服务器内部错误' });
   }
+}
+
+export const getIdentifyingCode = (req, res) => {
+  const chars = 'ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < 4; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  res.status(200).json({ code: result, message: "成功" })
 }

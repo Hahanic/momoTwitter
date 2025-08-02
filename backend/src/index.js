@@ -4,15 +4,16 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './db/index.js'
 import { login, getIdentifyingCode, register, logout } from './controller/auth.js'
+import { createPost } from './controller/post.js'
 
 dotenv.config();
 const app = express()
 const port = 3000
 
-// 解析请求体
-app.use(express.json())
 // 启用cookie-parser中间件
 app.use(cookieParser())
+// 解析请求体
+app.use(express.json())
 
 // 跨域问题
 const allowedOrigins = ['http://localhost:5173'];
@@ -35,6 +36,8 @@ app.post('/api/login', login)
 app.post('/api/logout', logout)
 // 验证码
 app.get('/api/getIdentifyingCode', getIdentifyingCode)
+// 发帖
+app.post('/api/post/create', createPost)
 
 app.listen(process.env.PORT, () => {
   connectDB()

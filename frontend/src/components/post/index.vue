@@ -61,20 +61,20 @@ interface Post {
 
 const postLists: Post[] = [
   {
-    message: '小镜好可爱😊',
-    src: '/kagami1.jpg',
-    commentCounts: 4230,
-    retweetCounts: 1870,
-    likeCounts: 7936,
-    engagementCounts: 18093,
-  },
-  {
     message: 'mili官网的动图',
     src: '/mili.gif',
     commentCounts: 43,
     retweetCounts: 87,
     likeCounts: 936,
     engagementCounts: 87,
+  },
+  {
+    message: '小镜可爱😊',
+    src: '/kagami1.jpg',
+    commentCounts: 4230,
+    retweetCounts: 1870,
+    likeCounts: 7936,
+    engagementCounts: 18093,
   },
   {
     message: '传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物',

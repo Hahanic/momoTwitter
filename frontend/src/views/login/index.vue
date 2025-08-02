@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import {
   NForm,
   NFormItem,
@@ -84,7 +84,7 @@ import {
   type FormInst,
   type FormRules
 } from 'naive-ui'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { getIdentifyingCode } from '@/api/index.ts'
 import useUserStore from '@/stores/user'
 import { throttle } from '@/utils/index.ts'
@@ -93,9 +93,18 @@ import btnTheme from '@/components/btnTheme/index.vue'
 const userStore = useUserStore()
 
 const router = useRouter()
+const route = useRoute()
+
 const loadingBar = useLoadingBar()
 // Naive UI 的消息提示 Hook
 const message = useMessage()
+
+onMounted(() => {
+  if (route.query.redirectReason === 'unauthenticated') {
+    message.error('未登录或状态过期，请重新登录')
+  }
+})
+
 // 表单实例的引用，用于触发表单验证
 const formRef = ref<FormInst | null>(null)
 // 表单数据

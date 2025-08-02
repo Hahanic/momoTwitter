@@ -5,7 +5,8 @@ const axiosInstance: AxiosInstance = axios.create({
   timeout: 10000, //10秒
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
+  withCredentials: true,
 })
 
 axiosInstance.interceptors.request.use(
@@ -44,7 +45,7 @@ axiosInstance.interceptors.response.use(
           break;
         case 404:
           // 请求的资源未找到
-          userFriendlyMessage = '请求的资源未找到';
+          userFriendlyMessage = data.message || '请求的资源未找到';
           console.error('404: Not Found...');
           break;
         case 409:

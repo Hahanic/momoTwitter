@@ -112,6 +112,7 @@ const handlePosting = async () => {
   // 内容为空直接返回
   if (!messageContent.value) return
   // 是否已登陆
+  console.log(userStore)
   if (!userStore.isAuthenticated) {
     message.warning('请先登录！')
     return

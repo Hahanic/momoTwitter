@@ -8,14 +8,41 @@ const usePostStore = defineStore('post', () => {
   // 储存帖子列表
   const posts = ref<RecievePostPayload[]>([])
   // 用户编辑的帖子
-  const editingPost = ref<CreatePostPayload | null>(null)
+  // const editingPost = ref<CreatePostPayload | null>(null)
   // 控制发帖的状态
   const isPosting = ref<boolean>(false)
   // 控制加载帖子的状态
   const isLoading = ref<boolean>(false)
+  // 下一次请求的分页游标
+  const nextCursor = ref<string | null>(null)
+  const hasMore = ref<boolean>(true)
 
   // 获取userStore实例
   const userStore = useUserStore()
+
+  // 主页加载帖子
+  async function fetchMorePosts() {
+    if (isLoading.value || !hasMore.value) return
+
+    try {
+      isLoading.value = true
+
+      const response = await apiGetPost(nextCursor.value)
+      posts.value.push(...response.posts)
+      console.log(posts.value)
+
+      // 更新下一个游标
+      nextCursor.value = response.nextCursor
+      // 后端返回的nextCursor为null，则帖子全加载完了
+      // todo
+
+    } catch (error) {
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
 
   // 发帖方法
   async function createPost(payload: CreatePostPayload) {
@@ -43,28 +70,14 @@ const usePostStore = defineStore('post', () => {
     }
   }
 
-  // 主页加载帖子
-  async function getPosts(page: number = 1) {
-    try {
-      isLoading.value = true
-
-      const response = await apiGetPost(page)
-
-      posts.value.push(...response.data.posts)
-
-    } catch (error) {
-      throw error
-    } finally {
-      isLoading.value = false
-    }
-  }
 
   return {
     posts,
     isPosting,
     createPost,
     isLoading,
-    getPosts
+    fetchMorePosts,
+    hasMore
   }
     
 })

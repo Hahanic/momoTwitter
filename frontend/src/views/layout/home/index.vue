@@ -11,6 +11,10 @@
     <userSendCard />
     <!-- posts -->
     <posts />
+    <div class="h-20 w-full flex justify-center items-center">
+      <LoaderIcon v-if="postStore.hasMore && postStore.isLoading" :class="{ 'animate-spin': postStore.isLoading }" :size="26" />
+      <span v-else>没有更多了</span>
+    </div>
   </div>
 </main>
 
@@ -38,6 +42,9 @@
 <script setup lang="ts">
 import userSendCard from '@/components/userSendCard/index.vue'
 import posts from '@/components/post/index.vue'
-import { NScrollbar } from 'naive-ui';
-import { SearchIcon } from 'lucide-vue-next';
+import { NScrollbar } from 'naive-ui'
+import { SearchIcon, LoaderIcon } from 'lucide-vue-next'
+import usePostStore from '@/stores/post'
+
+const postStore = usePostStore()
 </script>

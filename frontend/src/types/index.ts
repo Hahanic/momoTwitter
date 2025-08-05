@@ -42,14 +42,28 @@ export interface UserProfile  {
 // 前端接收帖子
 export interface RecievePostPayload {
   _id: string;
+  authorId: string;
   content: string;
-  postType: 'standard' | 'reply' | 'quote';
   media: {
     type: 'image' | 'video' | 'gif';
     url: string;
   }[];
-
+  
+  postType: 'standard' | 'reply' | 'quote';
+  parentPostId?: string;
+  quotedPostId?: string;
+  mentions?: string[];
+  hashtags?: string[];
+  visibility?: string;
   createdAt: string;
+  
+  stats: {
+    likesCount: number;
+    repliesCount: number;
+    quotesCount: number;
+    bookmarksCount: number;
+    viewsCount: number;
+  };
 
   authorInfo: {
     username: string;
@@ -58,18 +72,17 @@ export interface RecievePostPayload {
     isVerified: boolean;
   };
 
-  stats: {
-    repliesCount: number;
-    quotesCount: number;
-    likesCount: number;
-    viewsCount: number;
-  };
-
   currentUserInteraction?: {
     isLiked: boolean;
     isBookmarked: boolean;
     isRetweeted: boolean;
   }
+}
+
+// 主页加载帖子
+export interface getPost {
+  posts: RecievePostPayload[];
+  nextCursor: string | null;
 }
 
 // 前端发送帖子

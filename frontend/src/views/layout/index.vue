@@ -22,7 +22,8 @@
       </header>
 
       <div class="transition-all flex">
-        <RouterView />
+        <RouterView>
+        </RouterView>
       </div>
 
     </div>
@@ -34,22 +35,20 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, ref, watch } from 'vue';
+import { defineAsyncComponent, ref, watch } from 'vue'
 import { NScrollbar } from 'naive-ui'
-import GooeyNav from "@/components/menuList/index.vue";
-import { useRoute } from 'vue-router';
-import useThemeStore from '@/stores/theme';
-
-const ComposeModal = defineAsyncComponent(() => 
-  import("@/components/ComposeModal/index.vue")
-);
+import GooeyNav from "@/components/menuList/index.vue"
+import { useRoute } from 'vue-router'
+import useThemeStore from '@/stores/theme'
 
 const themeStore = useThemeStore()
-
 const route = useRoute()
 
+// 模态框
+const ComposeModal = defineAsyncComponent(() => 
+  import("@/components/ComposeModal/index.vue")
+)
 const showModal = ref(true)
-
 watch(() => route.path, (newPath) => {
   if (newPath === '/compose/post') {
     showModal.value = true
@@ -59,7 +58,7 @@ watch(() => route.path, (newPath) => {
 }, { immediate: true }
 )
 
-
+// 帖子列表
 import { HomeIcon, Search, Bell, Mail, BotIcon, Rows3, Bookmark, BriefcaseBusiness, Users2, User2, CircleEllipsis, Send } from 'lucide-vue-next'
 const menuLists = [
   {

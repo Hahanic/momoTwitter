@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './db/index.js'
 import { login, getIdentifyingCode, register, logout } from './controller/auth.js'
-import { createPost } from './controller/post.js'
+import { createPost, getPost } from './controller/post.js'
 
 dotenv.config();
 const app = express()
@@ -32,10 +32,12 @@ app.use(cors({
 app.post('/api/register', register)
 // 登录
 app.post('/api/login', login)
-// 登录
+// 登出
 app.post('/api/logout', logout)
 // 验证码
 app.get('/api/getIdentifyingCode', getIdentifyingCode)
+// 获取帖子
+app.get('/api/post/getPost', getPost)
 // 发帖
 app.post('/api/post/create', createPost)
 

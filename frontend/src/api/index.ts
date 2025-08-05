@@ -1,6 +1,6 @@
 import axiosInstance from './axiosInstance';
 
-import { type userLoginData, type userRegisterData, type recieveCode, type CreatePostPayload, type RecievePostPayload } from '@/types';
+import { type userLoginData, type userRegisterData, type recieveCode, type CreatePostPayload, type RecievePostPayload, type getPost } from '@/types';
 
 // 用户登录
 export const userLogin = (userLoginData: userLoginData) => {
@@ -27,6 +27,11 @@ export const createPost = (payload: CreatePostPayload): Promise<RecievePostPaylo
 }
 
 // 主页加载帖子
-export const getPosts = (page: number) => {
-  return axiosInstance.get('/post/getPosts')
+export const getPosts = (cursor: string | null = null, limit: number = 10): Promise<getPost> => {
+  return axiosInstance.get('/post/getPost', {
+    params: {
+      cursor,
+      limit
+    }
+  })
 }

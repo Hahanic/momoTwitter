@@ -91,6 +91,7 @@ import { throttle } from '@/utils/index.ts'
 import btnTheme from '@/components/btnTheme/index.vue'
 
 const userStore = useUserStore()
+console.log(userStore.login)
 
 const router = useRouter()
 const route = useRoute()
@@ -187,7 +188,7 @@ const getCodethrottle = throttle(btnCreateCode, 2000)
 // 登录
 const handleLogin = (e: MouseEvent) => {
   e.preventDefault() // 阻止表单默认提交行为
-
+  console.log(12)
   formRef.value?.validate(async (errors) => {
     if (errors) return
     try {

@@ -2,12 +2,10 @@ import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 import { userRegister, userLogin, userLogout } from '@/api/index.ts'
 import { type UserProfile, type userLoginData, type userRegisterData  } from "@/types"
-import { useRouter } from "vue-router"
 
 const USER_STORAGE_KEY = 'user_profile'
 
 const useUserStore = defineStore('user', () => {
-  const router = useRouter()
   // 用户基本信息
   const user = ref<UserProfile  | null>(null)
   // 用户当前状态
@@ -30,7 +28,6 @@ const useUserStore = defineStore('user', () => {
         throw new Error('从服务器返回的数据格式不正确')
       }
       setUser(userData)
-      router.push('/')
     } catch (err) {
       throw err
     } finally {
@@ -47,7 +44,6 @@ const useUserStore = defineStore('user', () => {
         throw new Error('从服务器返回的数据格式不正确')
       }
       setUser(userData)
-      router.push('/')
     } catch (err) {
       throw err
     } finally {
@@ -64,7 +60,6 @@ const useUserStore = defineStore('user', () => {
     } catch (err) {
       throw err
     } finally {
-      router.push('/login')
     }
   }
   // 在 store 初始化时，尝试从 localStorage 恢复状态

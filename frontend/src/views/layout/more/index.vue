@@ -35,22 +35,16 @@
 </template>
 
 <script setup lang="ts">
-import { Settings } from 'lucide-vue-next';
-import { useBreakpoints } from '@vueuse/core';
-import { useRoute, useRouter } from 'vue-router';
-import { computed } from 'vue';
+import { computed } from 'vue'
+import { Settings } from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import useWindowStore from '@/stores/window'
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const windowStore = useWindowStore()
 
-const breakpoints = useBreakpoints({
-  mobile: 0,
-  tablet: 700,
-  laptop: 970,
-  desktop: 1130,
-})
-const isMobile = breakpoints.smaller('tablet')
-const isLargeScreen = breakpoints.greaterOrEqual('laptop')
+const { isMobile, isLargeScreen } = storeToRefs(windowStore)
 
 const isChildRouteActive = computed(() => {
   return route.path.startsWith('/more/') && route.path !== '/more'

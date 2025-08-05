@@ -11,7 +11,6 @@ const axiosInstance: AxiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    console.log('请求拦截器', config)
 
     return config;
   },
@@ -55,7 +54,7 @@ axiosInstance.interceptors.response.use(
           break;
         case 500:
           // 服务器内部错误
-          userFriendlyMessage = '服务器内部错误，请联系管理员';
+          userFriendlyMessage = data.message || '服务器内部错误，请联系管理员';
           console.error('500: 服务器内部错误');
           break;
         default:

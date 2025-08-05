@@ -46,9 +46,7 @@
   
 <script lang="ts" setup>
 import { MessageCircle, Repeat2, HeartIcon, ChartNoAxesColumnIcon, Bookmark, Share } from 'lucide-vue-next';
-import { postList } from '@/_Mocks/posts';
 
-console.log('postList', postList);
 
 interface Post {
     message?: string,

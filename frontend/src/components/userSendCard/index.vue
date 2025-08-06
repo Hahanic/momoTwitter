@@ -35,6 +35,7 @@
             ref="textareaRef"
             v-model="messageContent"
             @input="handleTextareaInput"
+            maxlength="1000"
             :disabled="postStore.isPosting"
             class="w-full text-xl mt-3 pr-2 resize-none overflow-y-hidden break-all focus:outline-none bg-transparent placeholder-[#808080]"
             placeholder="有什么新鲜事?"
@@ -90,20 +91,18 @@ const messageContent = ref<string>('')
 // 输入框：自适应高度和草稿
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const handleTextareaInput = () => {
-  // 输入框高度：根据内容自适应
   const textarea = textareaRef.value
+
+  if (!textarea) return
+  // 限制一千字
+  if (messageContent.value.replace(/\s/g, '').length >= 1000) {
+    messageContent.value = messageContent.value.slice(0, 1000)
+    message.warning('不能超过1000字')
+  }
+  // 输入框高度：根据内容自适应
   if(textarea) {
     textarea.style.height = 'auto'
     textarea.style.height = `${textarea.scrollHeight}px`
-  }
-  // 草稿：自动保存
-  if (messageContent.value !== '') {
-    if (messageContent.value.replace(/\s/g, '').length === 1000) {
-      message.warning('草稿内容1000字啦！')
-    }
-    localStorage.setItem('draftMessage', messageContent.value)
-  } else {
-    localStorage.removeItem('draftMessage')
   }
 }
 

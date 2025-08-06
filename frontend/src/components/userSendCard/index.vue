@@ -2,30 +2,26 @@
   <div
     :class="{
       'border-b-1': !isCompose,
-      'h-full max-h-[100vh] flex flex-col': isCompose,
+      'flex h-full max-h-[100vh] flex-col': isCompose,
     }"
-    class="w-full dark:border-borderDark border-borderWhite"
+    class="dark:border-borderDark border-borderWhite w-full"
   >
-    <div
-      v-if="isCompose"
-      class="pt-2 px-2 pb-3 flex justify-between items-center"
-    >
+    <div v-if="isCompose" class="flex items-center justify-between px-2 pt-2 pb-3">
       <RouterLink to="/">
-        <ArrowLeft class="sm:hidden block" :size="26" />
-        <XIcon class="sm:block hidden" :size="26" />
+        <ArrowLeft class="block sm:hidden" :size="26" />
+        <XIcon class="hidden sm:block" :size="26" />
       </RouterLink>
-      <div class="text-[#1eaafe] flex items-center gap-4">
+      <div class="flex items-center gap-4 text-[#1eaafe]">
         <span>草稿</span>
         <div class="block sm:hidden">
           <button
             @click="handlePosting"
             :disabled="postStore.isPosting"
             :class="{
-              'dark:bg-white text-white bg-black hover:cursor-pointer':
-                !!messageContent,
-              'dark:bg-[#787a7a] bg-[#87898c]': !messageContent,
+              'bg-black text-white hover:cursor-pointer dark:bg-white': !!messageContent,
+              'bg-[#87898c] dark:bg-[#787a7a]': !messageContent,
             }"
-            class="w-14 h-9 dark:text-[#000] text-white font-semibold rounded-4xl transition-all"
+            class="h-9 w-14 rounded-4xl font-semibold text-white transition-all dark:text-[#000]"
           >
             发帖
           </button>
@@ -36,19 +32,13 @@
     <div class="flex" :class="{ 'min-h-0': isCompose }">
       <!-- 头像：适应未登录 -->
       <div>
-        <div
-          class="h-[3rem] w-[3rem] mx-2 mt-2 rounded-full flex items-center justify-center"
-        >
-          <img
-            v-if="userStore.isAuthenticated"
-            class="rounded-full select-none"
-            src="/myAvatar.jpg"
-          />
+        <div class="mx-2 mt-2 flex h-[3rem] w-[3rem] items-center justify-center rounded-full">
+          <img v-if="userStore.isAuthenticated" class="rounded-full select-none" src="/myAvatar.jpg" />
           <UserCircle2Icon v-else :size="44" class="text-[#71767b]" />
         </div>
       </div>
 
-      <div class="w-full h-full relative">
+      <div class="relative h-full w-full">
         <n-scrollbar class="sm:max-h-[600px]">
           <textarea
             ref="textareaRef"
@@ -56,18 +46,16 @@
             @input="handleTextareaInput"
             maxlength="1000"
             :disabled="postStore.isPosting"
-            class="w-full text-xl mt-3 pr-2 resize-none overflow-y-hidden break-all focus:outline-none bg-transparent placeholder-[#808080]"
+            class="mt-3 w-full resize-none overflow-y-hidden bg-transparent pr-2 text-xl break-all placeholder-[#808080] focus:outline-none"
             placeholder="有什么新鲜事?"
           ></textarea>
         </n-scrollbar>
       </div>
     </div>
 
-    <div class="min-h-[3rem] sm:pl-[3.8rem] sm:pr-[1rem] px-4 flex">
-      <div
-        class="w-full flex justify-between items-center border-t-1 dark:border-borderDark border-borderWhite"
-      >
-        <div class="flex flex-wrap gap-4 text-icon1">
+    <div class="flex min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]">
+      <div class="dark:border-borderDark border-borderWhite flex w-full items-center justify-between border-t-1">
+        <div class="text-icon1 flex flex-wrap gap-4">
           <button type="button" class="hover:cursor-pointer">
             <Image :size="24" />
           </button>
@@ -92,11 +80,10 @@
             @click="handlePosting"
             :disabled="postStore.isPosting"
             :class="{
-              'dark:bg-white text-white bg-black hover:cursor-pointer':
-                !!messageContent,
-              'dark:bg-[#787a7a] bg-[#87898c]': !messageContent,
+              'bg-black text-white hover:cursor-pointer dark:bg-white': !!messageContent,
+              'bg-[#87898c] dark:bg-[#787a7a]': !messageContent,
             }"
-            class="w-14 h-9 dark:text-[#000] text-white font-semibold rounded-4xl transition-all"
+            class="h-9 w-14 rounded-4xl font-semibold text-white transition-all dark:text-[#000]"
           >
             发帖
           </button>

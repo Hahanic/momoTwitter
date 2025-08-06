@@ -2,11 +2,11 @@
   <div
     v-for="post in postLists"
     :key="post.src"
-    class="w-full flex hover:cursor-pointer border-b-1 dark:border-borderDark dark:hover:bg-transparent hover:bg-[#f7f7f7] transition-all border-borderWhite"
+    class="dark:border-borderDark border-borderWhite flex w-full border-b-1 transition-all hover:cursor-pointer hover:bg-[#f7f7f7] dark:hover:bg-transparent"
   >
     <!-- 头像 -->
     <div>
-      <div class="h-[3rem] w-[3rem] mx-2 mt-2">
+      <div class="mx-2 mt-2 h-[3rem] w-[3rem]">
         <img class="rounded-full select-none" src="/myAvatar.jpg" />
       </div>
     </div>
@@ -26,48 +26,31 @@
         <span>{{ post.message }}</span>
       </div>
       <!-- 图片/视频 -->
-      <div class="w-full flex justify-center">
-        <div class="max-h-[32rem] my-4 mr-2 rounded-xl">
+      <div class="flex w-full justify-center">
+        <div class="my-4 mr-2 max-h-[32rem] rounded-xl">
           <img class="h-full max-w-full rounded-xl" :src="post.src" />
         </div>
       </div>
       <!-- 点赞 -->
-      <div class="mb-4 mr-4 text-[#71767b]">
-        <div class="flex justify-between flex-wrap sm:gap-3 gap-2">
-          <button type="button" class="flex hover:cursor-pointer items-center">
-            <MessageCircle :color="'#71767b'" :size="24" /><span class="pl-1">{{
-              post.commentCounts
-            }}</span>
+      <div class="mr-4 mb-4 text-[#71767b]">
+        <div class="flex flex-wrap justify-between gap-2 sm:gap-3">
+          <button type="button" class="flex items-center hover:cursor-pointer">
+            <MessageCircle :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.commentCounts }}</span>
           </button>
-          <button type="button" class="flex hover:cursor-pointer items-center">
-            <Repeat2 :color="'#71767b'" :size="24" /><span class="pl-1">{{
-              post.retweetCounts
-            }}</span>
+          <button type="button" class="flex items-center hover:cursor-pointer">
+            <Repeat2 :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.retweetCounts }}</span>
           </button>
-          <button type="button" class="flex hover:cursor-pointer items-center">
-            <HeartIcon :color="'#71767b'" :size="24" /><span class="pl-1">{{
-              post.likeCounts
-            }}</span>
+          <button type="button" class="flex items-center hover:cursor-pointer">
+            <HeartIcon :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.likeCounts }}</span>
           </button>
-          <button type="button" class="flex hover:cursor-pointer items-center">
-            <ChartNoAxesColumnIcon :color="'#71767b'" :size="24" /><span
-              class="pl-1"
-              >{{ post.engagementCounts }}</span
-            >
+          <button type="button" class="flex items-center hover:cursor-pointer">
+            <ChartNoAxesColumnIcon :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.engagementCounts }}</span>
           </button>
-          <div
-            class="flex hover:cursor-pointer justify-center items-center gap-3"
-          >
-            <button
-              type="button"
-              class="flex hover:cursor-pointer items-center"
-            >
+          <div class="flex items-center justify-center gap-3 hover:cursor-pointer">
+            <button type="button" class="flex items-center hover:cursor-pointer">
               <Bookmark :color="'#71767b'" :size="24" />
             </button>
-            <button
-              type="button"
-              class="flex hover:cursor-pointer items-center"
-            >
+            <button type="button" class="flex items-center hover:cursor-pointer">
               <Share :color="'#71767b'" :size="24" />
             </button>
           </div>
@@ -78,14 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  MessageCircle,
-  Repeat2,
-  HeartIcon,
-  ChartNoAxesColumnIcon,
-  Bookmark,
-  Share,
-} from 'lucide-vue-next'
+import { MessageCircle, Repeat2, HeartIcon, ChartNoAxesColumnIcon, Bookmark, Share } from 'lucide-vue-next'
 
 interface Post {
   message?: string
@@ -114,8 +90,7 @@ const postLists: Post[] = [
     engagementCounts: 18093,
   },
   {
-    message:
-      '传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物',
+    message: '传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物传颂之物',
     src: '/露露缇耶.png',
     commentCounts: 423,
     retweetCounts: 187,

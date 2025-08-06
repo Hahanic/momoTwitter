@@ -1,6 +1,6 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
-  
+
   prompt: {
     messages: {
       type: '选择你要提交的类型 :',

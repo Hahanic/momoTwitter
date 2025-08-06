@@ -16,23 +16,13 @@ export const createPost = async (req, res) => {
     // 拿到作者Id
     const authorId = decoded.userId
     // 拿到帖子内容
-    const {
-      content,
-      postType,
-      media,
-      parentPostId,
-      quotedPostId,
-      poll,
-      visibility,
-    } = req.body
+    const { content, postType, media, parentPostId, quotedPostId, poll, visibility } = req.body
     // 数据本身有问题
     if (!content?.trim() || !postType) {
       return res.status(400).json({ message: '帖子内容和类型不能为空' })
     }
     // 根基Id找作者
-    const author = await User.findById(authorId).select(
-      'username displayName avatarUrl isVerified'
-    )
+    const author = await User.findById(authorId).select('username displayName avatarUrl isVerified')
     if (!author) {
       return res.status(404).json({ message: '未找到该用户' })
     }
@@ -55,20 +45,14 @@ export const createPost = async (req, res) => {
       case 'standard':
         break
       case 'reply':
-        if (!parentPostId)
-          return res
-            .status(400)
-            .json({ message: '回复帖必须提供 parentPostId' })
+        if (!parentPostId) return res.status(400).json({ message: '回复帖必须提供 parentPostId' })
         postData.parentPostId = parentPostId
         await Post.findByIdAndUpdate(parentPostId, {
           $inc: { 'stats.repliesCount': 1 },
         })
         break
       case 'quote':
-        if (!quotedPostId)
-          return res
-            .status(400)
-            .json({ message: '引用帖必须提供 quotedPostId' })
+        if (!quotedPostId) return res.status(400).json({ message: '引用帖必须提供 quotedPostId' })
         postData.quotedPostId = quotedPostId
         await Post.findByIdAndUpdate(quotedPostId, {
           $inc: { 'stats.quotesCount': 1 },
@@ -99,10 +83,7 @@ export const createPost = async (req, res) => {
     res.status(201).json(responsePayload)
   } catch (error) {
     // 如果 token 无效或过期，jwt.verify 会抛出错误
-    if (
-      error.name === 'JsonWebTokenError' ||
-      error.name === 'TokenExpiredError'
-    ) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'Token 无效或已过期' })
     }
     // 服务器内部错误
@@ -126,13 +107,9 @@ export const getPost = async (req, res) => {
       query.createdAt = { $lt: cursor }
     }
     // 查询帖子
-    const posts = await Post.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean()
+    const posts = await Post.find(query).sort({ createdAt: -1 }).limit(limit).lean()
     // 计算下一个游标
-    const nextCursor =
-      posts.length > 0 ? posts[posts.length - 1].createdAt.toISOString() : null
+    const nextCursor = posts.length > 0 ? posts[posts.length - 1].createdAt.toISOString() : null
 
     // 如果用户已登录，返回带上交互信息
     const token = req.cookies.token
@@ -151,12 +128,8 @@ export const getPost = async (req, res) => {
         postId: { $in: postIds },
       }).select('postId')
 
-      const likedPostIds = new Set(
-        userLikes.map((like) => like.postId.toString())
-      )
-      const bookmarkedPostIds = new Set(
-        userBookmarks.map((bookmark) => bookmark.postId.toString())
-      )
+      const likedPostIds = new Set(userLikes.map((like) => like.postId.toString()))
+      const bookmarkedPostIds = new Set(userBookmarks.map((bookmark) => bookmark.postId.toString()))
 
       const results = posts.map((post) => ({
         ...post,
@@ -174,10 +147,7 @@ export const getPost = async (req, res) => {
     res.status(200).json({ posts, nextCursor })
   } catch (error) {
     // 如果 token 无效或过期，jwt.verify 会抛出错误
-    if (
-      error.name === 'JsonWebTokenError' ||
-      error.name === 'TokenExpiredError'
-    ) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'Token 无效或已过期' })
     }
     res.status(500).json({ message: '服务器内部错误，请稍后再试' })

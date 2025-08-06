@@ -29,17 +29,12 @@ export const userRegister = (userRegisterData: userRegisterData) => {
 }
 
 // 用户发帖
-export const createPost = (
-  payload: CreatePostPayload
-): Promise<RecievePostPayload> => {
+export const createPost = (payload: CreatePostPayload): Promise<RecievePostPayload> => {
   return axiosInstance.post('/post/create', payload)
 }
 
 // 主页加载帖子
-export const getPosts = (
-  cursor: string | null = null,
-  limit: number = 10
-): Promise<getPost> => {
+export const getPosts = (cursor: string | null = null, limit: number = 10): Promise<getPost> => {
   return axiosInstance.get('/post/getPost', {
     params: {
       cursor,

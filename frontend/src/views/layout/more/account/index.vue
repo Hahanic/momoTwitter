@@ -1,12 +1,9 @@
 <template>
   <div class="w-full">
-    <div class="flex flex-col items-center justify-center h-full">
-      <h1 class="text-2xl font-bold mb-4">Account Settings</h1>
+    <div class="flex h-full flex-col items-center justify-center">
+      <h1 class="mb-4 text-2xl font-bold">Account Settings</h1>
       <p class="text-gray-600">Manage your account settings here.</p>
-      <button
-        @click="logoutAndclear"
-        class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
+      <button @click="logoutAndclear" class="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
         Logout
       </button>
     </div>

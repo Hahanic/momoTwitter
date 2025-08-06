@@ -1,17 +1,15 @@
 <template>
-  <div
-    class="w-full h-full flex justify-center dark:bg-[#000] dark:text-white bg-white text-amber-950"
-  >
-    <div class="transition-all flex">
+  <div class="flex h-full w-full justify-center bg-white text-amber-950 dark:bg-[#000] dark:text-white">
+    <div class="flex transition-all">
       <header
-        class="xl:w-[17rem] xl:items-start w-[5rem] sm:flex flex-col items-center hidden transition-all h-screen sticky top-0"
+        class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center transition-all sm:flex xl:w-[17rem] xl:items-start"
       >
         <n-scrollbar style="max-height: 100vh">
           <!-- <menuList /> -->
-          <div class="w-full h-[3.2rem] z-10 flex items-center relative">
+          <div class="relative z-10 flex h-[3.2rem] w-full items-center">
             <img
               @click="themeStore.toggleTheme()"
-              class="w-[2.3rem] h-[2.3rem] absolute xl:left-[59px] left-[24px] hover:cursor-pointer"
+              class="absolute left-[24px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
               src="/warp.svg"
             />
           </div>
@@ -28,7 +26,7 @@
         </n-scrollbar>
       </header>
 
-      <div class="transition-all flex">
+      <div class="flex transition-all">
         <RouterView> </RouterView>
       </div>
     </div>
@@ -49,9 +47,7 @@ const themeStore = useThemeStore()
 const route = useRoute()
 
 // 模态框
-const ComposeModal = defineAsyncComponent(
-  () => import('@/components/ComposeModal/index.vue')
-)
+const ComposeModal = defineAsyncComponent(() => import('@/components/ComposeModal/index.vue'))
 const showModal = ref(true)
 watch(
   () => route.path,

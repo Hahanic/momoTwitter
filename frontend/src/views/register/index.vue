@@ -6,20 +6,9 @@
       header-style="text-align: center; font-size: 1.5rem;"
       content-style="padding: 10px 20px;"
     >
-      <n-form
-        ref="formRef"
-        :model="formValue"
-        :rules="rules"
-        label-placement="left"
-        label-align="left"
-        size="large"
-      >
+      <n-form ref="formRef" :model="formValue" :rules="rules" label-placement="left" label-align="left" size="large">
         <n-form-item path="email" label="账号">
-          <n-input
-            v-model:value="formValue.email"
-            placeholder="请输入邮箱"
-            clearable
-          />
+          <n-input v-model:value="formValue.email" placeholder="请输入邮箱" clearable />
         </n-form-item>
         <n-form-item path="password" label="密码">
           <n-input
@@ -31,18 +20,10 @@
         </n-form-item>
 
         <n-form-item path="emailCode" class="flex h-10">
-          <n-button
-            size="large"
-            style="margin-right: 10px; width: 7rem; font-size: 14px"
-            @click="getCodethrottle"
-          >
+          <n-button size="large" style="margin-right: 10px; width: 7rem; font-size: 14px" @click="getCodethrottle">
             <span>获取验证码</span>
           </n-button>
-          <n-input
-            v-model:value="formValue.emailCode"
-            type="text"
-            placeholder="请输入邮箱验证码"
-          />
+          <n-input v-model:value="formValue.emailCode" type="text" placeholder="请输入邮箱验证码" />
         </n-form-item>
         <n-form-item style="margin-top: 25px">
           <n-button type="primary" block @click="handleLogin"> 确定 </n-button>
@@ -50,16 +31,11 @@
       </n-form>
 
       <n-space justify="end" class="login-links">
-        <n-button text type="primary" @click="router.push('/login')">
-          已经有账号？去登录
-        </n-button>
+        <n-button text type="primary" @click="router.push('/login')"> 已经有账号？去登录 </n-button>
       </n-space>
 
-      <div class="hidden sm:block absolute bottom-0 left-0 translate-x-[-100%]">
-        <img
-          src="/src/assets/images/marisa.png"
-          class="w-32 pointer-events-none select-none"
-        />
+      <div class="absolute bottom-0 left-0 hidden translate-x-[-100%] sm:block">
+        <img src="/src/assets/images/marisa.png" class="pointer-events-none w-32 select-none" />
         <btnTheme :size="'42'" class="toggle" />
       </div>
     </n-card>
@@ -129,9 +105,7 @@ const rules: FormRules = {
         const allowedCharsRegex = /^[a-zA-Z0-9!@#$%^&*()-_+=\[\]{}|;:,.<>/?]*$/
         const containsOnlyAllowedChars = allowedCharsRegex.test(value)
         if (!containsOnlyAllowedChars) {
-          return new Error(
-            '密码包含不允许的字符。只能使用字母、数字和常见的特殊符号。'
-          )
+          return new Error('密码包含不允许的字符。只能使用字母、数字和常见的特殊符号。')
         }
         return true
       },

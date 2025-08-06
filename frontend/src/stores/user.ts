@@ -1,11 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { userRegister, userLogin, userLogout } from '@/api/index.ts'
-import {
-  type UserProfile,
-  type userLoginData,
-  type userRegisterData,
-} from '@/types'
+import { type UserProfile, type userLoginData, type userRegisterData } from '@/types'
 
 const USER_STORAGE_KEY = 'user_profile'
 

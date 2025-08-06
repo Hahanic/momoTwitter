@@ -1,11 +1,11 @@
 <template>
-  <div class="w-full flex flex-col p-4">
+  <div class="flex w-full flex-col p-4">
     <router-link to="12" class="mb-3">
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <h1 class="font-semibold">今日博德之门更新八号补丁</h1>
         <button
           @click.prevent="() => console.log('more')"
-          class="flex justify-center items-center text-[#71767b] hover:text-[#1d9bf0] hover:bg-[#0a171f] hover:cursor-pointer transition-all rounded-full"
+          class="flex items-center justify-center rounded-full text-[#71767b] transition-all hover:cursor-pointer hover:bg-[#0a171f] hover:text-[#1d9bf0]"
         >
           <MoreHorizontalIcon :size="22" />
         </button>
@@ -15,11 +15,11 @@
     <ul class="flex flex-col gap-3">
       <li>
         <router-link to="12" class="text-[0.9rem]">
-          <div class="flex justify-between items-center">
+          <div class="flex items-center justify-between">
             <p class="text-[#71767b]"><span>1 · </span>全球趋势</p>
             <button
               @click.prevent="() => console.log('more')"
-              class="flex justify-center items-center text-[#71767b] hover:text-[#1d9bf0] hover:bg-[#0a171f] hover:cursor-pointer transition-all rounded-full"
+              class="flex items-center justify-center rounded-full text-[#71767b] transition-all hover:cursor-pointer hover:bg-[#0a171f] hover:text-[#1d9bf0]"
             >
               <MoreHorizontalIcon :size="22" />
             </button>
@@ -30,11 +30,11 @@
       </li>
       <li>
         <router-link to="12" class="text-[0.9rem]">
-          <div class="flex justify-between items-center">
+          <div class="flex items-center justify-between">
             <p class="text-[#71767b]"><span>2 · </span>全球趋势</p>
             <button
               @click.prevent="() => console.log('more')"
-              class="flex justify-center items-center text-[#71767b] hover:text-[#1d9bf0] hover:bg-[#0a171f] hover:cursor-pointer transition-all rounded-full"
+              class="flex items-center justify-center rounded-full text-[#71767b] transition-all hover:cursor-pointer hover:bg-[#0a171f] hover:text-[#1d9bf0]"
             >
               <MoreHorizontalIcon :size="22" />
             </button>
@@ -45,11 +45,11 @@
       </li>
       <li v-for="i in 10">
         <router-link to="12" class="text-[0.9rem]">
-          <div class="flex justify-between items-center">
+          <div class="flex items-center justify-between">
             <p class="text-[#71767b]"><span>3 · </span>全球趋势</p>
             <button
               @click.prevent="() => console.log('more')"
-              class="flex justify-center items-center text-[#71767b] hover:text-[#1d9bf0] hover:bg-[#0a171f] hover:cursor-pointer transition-all rounded-full"
+              class="flex items-center justify-center rounded-full text-[#71767b] transition-all hover:cursor-pointer hover:bg-[#0a171f] hover:text-[#1d9bf0]"
             >
               <MoreHorizontalIcon :size="22" />
             </button>

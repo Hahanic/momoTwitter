@@ -19,11 +19,7 @@ export const login = async (req, res) => {
     const userToReturn = user.toObject()
     delete userToReturn.password
     // 生成并添加token
-    const token = jwt.sign(
-      { userId: userToReturn._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    )
+    const token = jwt.sign({ userId: userToReturn._id }, process.env.JWT_SECRET, { expiresIn: '24h' })
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -66,11 +62,7 @@ export const register = async (req, res) => {
       delete userToReturn.password
 
       // 生成并添加token
-      const token = jwt.sign(
-        { userId: userToReturn._id },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-      )
+      const token = jwt.sign({ userId: userToReturn._id }, process.env.JWT_SECRET, { expiresIn: '24h' })
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

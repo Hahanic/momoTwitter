@@ -3,12 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './db/index.js'
-import {
-  login,
-  getIdentifyingCode,
-  register,
-  logout,
-} from './controller/auth.js'
+import { login, getIdentifyingCode, register, logout } from './controller/auth.js'
 import { createPost, getPost } from './controller/post.js'
 
 dotenv.config()

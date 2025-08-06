@@ -1,39 +1,27 @@
 <template>
   <main
-    v-show="
-      isLargeScreen || !isChildRouteActive || (!isMobile && !isChildRouteActive)
-    "
+    v-show="isLargeScreen || !isChildRouteActive || (!isMobile && !isChildRouteActive)"
     :class="{
-      'lg:w-[25rem] w-[15rem]': isLargeScreen,
+      'w-[15rem] lg:w-[25rem]': isLargeScreen,
       'w-[38rem]': !isLargeScreen && !isMobile,
       'w-[100vw]': isMobile,
     }"
-    class="border-x-1 dark:border-borderDark border-borderWhite transition-all"
+    class="dark:border-borderDark border-borderWhite border-x-1 transition-all"
   >
-    <div class="w-full flex flex-col">
-      <div class="w-full flex items-center mx-2 my-3">
+    <div class="flex w-full flex-col">
+      <div class="mx-2 my-3 flex w-full items-center">
         <Settings :size="24" />
-        <p class="text-xl pl-2">设置</p>
+        <p class="pl-2 text-xl">设置</p>
       </div>
       <ul>
-        <li
-          class="w-full transition-all dark:hover:bg-[#16181c] hover:bg-[#f7f9f9]"
-        >
-          <RouterLink
-            to="/more/account"
-            class="w-full flex items-center justify-between p-3"
-          >
+        <li class="w-full transition-all hover:bg-[#f7f9f9] dark:hover:bg-[#16181c]">
+          <RouterLink to="/more/account" class="flex w-full items-center justify-between p-3">
             <p>你的账号</p>
             <span>&gt;</span>
           </RouterLink>
         </li>
-        <li
-          class="w-full transition-all dark:hover:bg-[#16181c] hover:bg-[#f7f9f9]"
-        >
-          <RouterLink
-            to="/more/settings"
-            class="w-full flex items-center justify-between p-3"
-          >
+        <li class="w-full transition-all hover:bg-[#f7f9f9] dark:hover:bg-[#16181c]">
+          <RouterLink to="/more/settings" class="flex w-full items-center justify-between p-3">
             <p>辅助功能、显示和语言</p>
             <span>&gt;</span>
           </RouterLink>
@@ -45,12 +33,11 @@
   <aside
     v-show="isLargeScreen || isChildRouteActive"
     :class="{
-      'w-[38rem]':
-        isLargeScreen || (!isLargeScreen && !isMobile && isChildRouteActive),
+      'w-[38rem]': isLargeScreen || (!isLargeScreen && !isMobile && isChildRouteActive),
       'w-[100vw]': isMobile && isChildRouteActive,
       'ml-7': isLargeScreen,
     }"
-    class="md:min-h-screen border-r-1 dark:border-borderDark border-borderWhite h-screen transition-all sticky top-0"
+    class="dark:border-borderDark border-borderWhite sticky top-0 h-screen border-r-1 transition-all md:min-h-screen"
   >
     <RouterView />
   </aside>

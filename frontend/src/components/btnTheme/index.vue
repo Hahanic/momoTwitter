@@ -1,15 +1,7 @@
 <template>
-  <n-icon
-    :size="size"
-    @click="themeStore.toggleTheme"
-    class="hover:scale-110 transition cursor-pointer"
-  >
+  <n-icon :size="size" @click="themeStore.toggleTheme" class="cursor-pointer transition hover:scale-110">
     <Transition name="fade" mode="out-in">
-      <SunIcon
-        v-if="!themeStore.isDarkTheme"
-        key="sunicon"
-        class="theme-icon"
-      />
+      <SunIcon v-if="!themeStore.isDarkTheme" key="sunicon" class="theme-icon" />
       <MoonIcon v-else key="moonicon" class="theme-icon" />
     </Transition>
   </n-icon>

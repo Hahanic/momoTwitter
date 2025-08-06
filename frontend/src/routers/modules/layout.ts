@@ -32,8 +32,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
           {
             path: 'for_you',
             name: 'ExploreForYou',
-            component: () =>
-              import('@/views/layout/explore/children/for_you.vue'),
+            component: () => import('@/views/layout/explore/children/for_you.vue'),
           },
           {
             path: ':pathMatch(.*)*',

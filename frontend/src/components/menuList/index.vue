@@ -2,12 +2,12 @@
   <div>
     <div class="relative" ref="containerRef">
       <nav
-        class="flex xl:justify-start justify-end relative z-10 mr-3"
+        class="relative z-10 mr-3 flex justify-end xl:justify-start"
         :style="{ transform: 'translate3d(0,0,0.01px)' }"
       >
         <ul
           ref="navRef"
-          class="flex flex-col gap-1 relative z-[3]"
+          class="relative z-[3] flex flex-col gap-1"
           :style="{
             color: 'white',
             textShadow: '0 1px 1px hsl(205deg 30% 10% / 0.2)',
@@ -17,7 +17,7 @@
             v-for="(item, index) in items"
             :key="index"
             :class="[
-              'rounded-full relative cursor-pointer transition-[background-color_color_box-shadow] duration-300 ease shadow-[0_0_0.5px_1.5px_transparent] dark:text-white text-amber-950',
+              'ease relative cursor-pointer rounded-full text-amber-950 shadow-[0_0_0.5px_1.5px_transparent] transition-[background-color_color_box-shadow] duration-300 dark:text-white',
               { active: activeIndex === index },
             ]"
           >
@@ -29,16 +29,10 @@
             > -->
             <RouterLink
               :to="item.href || '#'"
-              class="outline-none xl:px-[4.6rem] px-3 h-[3.2rem] flex items-center relative z-10"
+              class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
             >
-              <span class="xl:block hidden relative left-6">{{
-                item.label
-              }}</span>
-              <component
-                :is="item.icon"
-                :size="'1.7rem'"
-                class="xl:absolute left-[4rem]"
-              />
+              <span class="relative left-6 hidden xl:block">{{ item.label }}</span>
+              <component :is="item.icon" :size="'1.7rem'" class="left-[4rem] xl:absolute" />
             </RouterLink>
           </li>
         </ul>
@@ -51,14 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  onMounted,
-  onUnmounted,
-  watch,
-  useTemplateRef,
-  type Component,
-  computed,
-} from 'vue'
+import { onMounted, onUnmounted, watch, useTemplateRef, type Component, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 interface GooeyNavItem {
@@ -96,9 +83,7 @@ const textRef = useTemplateRef<HTMLSpanElement>('textRef')
 const route = useRoute()
 
 const activeIndex = computed(() => {
-  const index = props.items.findIndex((item) =>
-    route.path.includes(item.href || '#')
-  )
+  const index = props.items.findIndex((item) => route.path.includes(item.href || '#'))
   return index !== -1 ? index : props.initialActiveIndex
 })
 
@@ -106,21 +91,12 @@ let resizeObserver: ResizeObserver | null = null
 
 const noise = (n = 1) => n / 2 - Math.random() * n
 
-const getXY = (
-  distance: number,
-  pointIndex: number,
-  totalPoints: number
-): [number, number] => {
+const getXY = (distance: number, pointIndex: number, totalPoints: number): [number, number] => {
   const angle = ((360 + noise(8)) / totalPoints) * pointIndex * (Math.PI / 180)
   return [distance * Math.cos(angle), distance * Math.sin(angle)]
 }
 
-const createParticle = (
-  i: number,
-  t: number,
-  d: [number, number],
-  r: number
-) => {
+const createParticle = (i: number, t: number, d: [number, number], r: number) => {
   const rotate = noise(r / 10)
   return {
     start: getXY(d[0], props.particleCount - i, props.particleCount),
@@ -251,17 +227,13 @@ watch(activeIndex, (newIndex, oldIndex) => {
 
 onMounted(() => {
   if (!navRef.value || !containerRef.value) return
-  const activeLi = navRef.value.querySelectorAll('li')[
-    activeIndex.value
-  ] as HTMLElement
+  const activeLi = navRef.value.querySelectorAll('li')[activeIndex.value] as HTMLElement
   if (activeLi) {
     updateEffectPosition(activeLi)
     textRef.value?.classList.add('active')
   }
   resizeObserver = new ResizeObserver(() => {
-    const currentActiveLi = navRef.value?.querySelectorAll('li')[
-      activeIndex.value
-    ] as HTMLElement
+    const currentActiveLi = navRef.value?.querySelectorAll('li')[activeIndex.value] as HTMLElement
     if (currentActiveLi) {
       updateEffectPosition(currentActiveLi)
     }
@@ -401,25 +373,21 @@ onUnmounted(() => {
 
 @keyframes particle {
   0% {
-    transform: rotate(0deg)
-      translate(calc(var(--start-x)), calc(var(--start-y)));
+    transform: rotate(0deg) translate(calc(var(--start-x)), calc(var(--start-y)));
     opacity: 1;
     animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
   }
   70% {
-    transform: rotate(calc(var(--rotate) * 0.5))
-      translate(calc(var(--end-x) * 1.2), calc(var(--end-y) * 1.2));
+    transform: rotate(calc(var(--rotate) * 0.5)) translate(calc(var(--end-x) * 1.2), calc(var(--end-y) * 1.2));
     opacity: 1;
     animation-timing-function: ease;
   }
   85% {
-    transform: rotate(calc(var(--rotate) * 0.66))
-      translate(calc(var(--end-x)), calc(var(--end-y)));
+    transform: rotate(calc(var(--rotate) * 0.66)) translate(calc(var(--end-x)), calc(var(--end-y)));
     opacity: 1;
   }
   100% {
-    transform: rotate(calc(var(--rotate) * 1.2))
-      translate(calc(var(--end-x) * 0.5), calc(var(--end-y) * 0.5));
+    transform: rotate(calc(var(--rotate) * 1.2)) translate(calc(var(--end-x) * 0.5), calc(var(--end-y) * 0.5));
     opacity: 1;
   }
 }

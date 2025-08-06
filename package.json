@@ -7,7 +7,7 @@
     "backend"
   ],
   "lint-staged": {
-    "*.{js,ts}": "eslint --fix",
+    "*.{js,ts,vue}": "eslint --fix",
     "*.{json,md,html}": "prettier --write"
   },
   "main": "index.js",
@@ -15,7 +15,8 @@
     "test": "echo \"Error: no test specified\"",
     "prepare": "husky",
     "commit": "cz",
-    "dev": "concurrently \"npm:dev --workspace=frontend\" \"npm:dev --workspace=backend\""
+    "dev": "concurrently \"npm:dev --workspace=frontend\" \"npm:dev --workspace=backend\"",
+    "format": "prettier --write ."
   },
   "config": {
     "commitizen": {

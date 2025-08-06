@@ -10,12 +10,14 @@ const getDefaultTheme = (): Theme => {
   if (savedTheme === 'light' || savedTheme === 'dark') {
     return savedTheme
   }
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  if (
+    window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  ) {
     return 'dark'
   }
   return 'light'
 }
-
 
 const useThemeStore = defineStore('theme', () => {
   const currentTheme = ref<Theme>(getDefaultTheme())
@@ -23,19 +25,23 @@ const useThemeStore = defineStore('theme', () => {
   const toggleTheme = () => {
     currentTheme.value = currentTheme.value === 'light' ? 'dark' : 'light'
   }
-  
-  watch(currentTheme, (newTheme) => {
-    const root = document.documentElement
-    if (newTheme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
+
+  watch(
+    currentTheme,
+    (newTheme) => {
+      const root = document.documentElement
+      if (newTheme === 'dark') {
+        root.classList.add('dark')
+      } else {
+        root.classList.remove('dark')
+      }
+      localStorage.setItem(THEME_KEY, newTheme)
+    },
+    {
+      // 立即执行一次，确保在初始化时就应用主题
+      immediate: true,
     }
-    localStorage.setItem(THEME_KEY, newTheme)
-  }, {
-    // 立即执行一次，确保在初始化时就应用主题
-    immediate: true,
-  })
+  )
 
   return {
     currentTheme,

@@ -31,7 +31,11 @@
         </n-form-item>
 
         <n-form-item path="userInputCode" class="flex h-10">
-          <n-button size="large" style="margin-right: 10px;width: 7rem;font-size: 14px;" @click="getCodethrottle">
+          <n-button
+            size="large"
+            style="margin-right: 10px; width: 7rem; font-size: 14px"
+            @click="getCodethrottle"
+          >
             <span>{{ generatedCode || '获取验证码' }}</span>
           </n-button>
           <n-input
@@ -40,14 +44,8 @@
             placeholder="请输入验证码"
           />
         </n-form-item>
-        <n-form-item style="margin-top: 25px;">
-          <n-button
-            type="primary"
-            block
-            @click="handleLogin"
-          >
-            登录
-          </n-button>
+        <n-form-item style="margin-top: 25px">
+          <n-button type="primary" block @click="handleLogin"> 登录 </n-button>
         </n-form-item>
       </n-form>
 
@@ -61,12 +59,13 @@
       </n-space>
 
       <div class="hidden sm:block absolute bottom-0 left-0 translate-x-[-100%]">
-        <img src="/src/assets/images/marisa.png" class="w-32 pointer-events-none select-none">
+        <img
+          src="/src/assets/images/marisa.png"
+          class="w-32 pointer-events-none select-none"
+        />
         <btnTheme :size="'42'" class="toggle" />
       </div>
     </n-card>
-
-
   </div>
 </template>
 
@@ -82,7 +81,7 @@ import {
   useMessage,
   useLoadingBar,
   type FormInst,
-  type FormRules
+  type FormRules,
 } from 'naive-ui'
 import { useRouter, useRoute } from 'vue-router'
 import { getIdentifyingCode } from '@/api/index.ts'
@@ -120,36 +119,38 @@ const rules: FormRules = {
     {
       required: true,
       message: '请输入邮箱',
-      trigger: 'blur'
+      trigger: 'blur',
     },
     {
       pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       message: '请输入有效的邮箱地址',
-      trigger: ['blur', 'input'] 
+      trigger: ['blur', 'input'],
     },
   ],
   password: [
     {
       required: true,
       message: '请输入密码',
-      trigger: 'blur'
+      trigger: 'blur',
     },
     {
       min: 4,
       message: '密码至少需要4个字符',
-      trigger: ['blur', 'input']
+      trigger: ['blur', 'input'],
     },
     {
       validator: (_, value) => {
-        const allowedCharsRegex = /^[a-zA-Z0-9!@#$%^&*()-_+=\[\]{}|;:,.<>/?]*$/;
-        const containsOnlyAllowedChars = allowedCharsRegex.test(value);
-        if(!containsOnlyAllowedChars) {
-          return new Error('密码包含不允许的字符。只能使用字母、数字和常见的特殊符号。');
+        const allowedCharsRegex = /^[a-zA-Z0-9!@#$%^&*()-_+=\[\]{}|;:,.<>/?]*$/
+        const containsOnlyAllowedChars = allowedCharsRegex.test(value)
+        if (!containsOnlyAllowedChars) {
+          return new Error(
+            '密码包含不允许的字符。只能使用字母、数字和常见的特殊符号。'
+          )
         }
         return true
       },
-      trigger: ['blur', 'input']
-    }
+      trigger: ['blur', 'input'],
+    },
   ],
   userInputCode: [
     {
@@ -159,19 +160,19 @@ const rules: FormRules = {
     },
     {
       validator: (_, value) => {
-        if(!generatedCode.value) return new Error('请先获取验证码')
-        if(!value) return new Error('请填写验证码')
+        if (!generatedCode.value) return new Error('请先获取验证码')
+        if (!value) return new Error('请填写验证码')
         if (value.toLowerCase() === generatedCode.value.toLowerCase()) {
           return true
         }
         return new Error('验证码不正确')
       },
-      trigger: 'blur'
-    }
-  ]
+      trigger: 'blur',
+    },
+  ],
 }
 // 验证码
-const generatedCode  = ref<string>('')
+const generatedCode = ref<string>('')
 // 向后端获取验证码
 const btnCreateCode = async function () {
   try {
@@ -233,6 +234,4 @@ const handleForgotPassword = () => {
   top: 0;
   left: -4px;
 }
-
-
 </style>

@@ -1,11 +1,11 @@
-import { defineStore } from "pinia"
-import { ref } from "vue"
-import { useBreakpoints } from "@vueuse/core"
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { useBreakpoints } from '@vueuse/core'
 
 const useWindowStore = defineStore('window', () => {
   // home的滚动
   let homeScrollTop = ref<number>(0)
-  function setHomeScrollTop (position: number) {
+  function setHomeScrollTop(position: number) {
     homeScrollTop.value = position
   }
   // 视口的断点
@@ -22,7 +22,7 @@ const useWindowStore = defineStore('window', () => {
     homeScrollTop,
     setHomeScrollTop,
     isMobile,
-    isLargeScreen
+    isLargeScreen,
   }
 })
 

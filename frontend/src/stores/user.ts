@@ -1,13 +1,17 @@
-import { defineStore } from "pinia"
-import { computed, ref } from "vue"
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 import { userRegister, userLogin, userLogout } from '@/api/index.ts'
-import { type UserProfile, type userLoginData, type userRegisterData  } from "@/types"
+import {
+  type UserProfile,
+  type userLoginData,
+  type userRegisterData,
+} from '@/types'
 
 const USER_STORAGE_KEY = 'user_profile'
 
 const useUserStore = defineStore('user', () => {
   // 用户基本信息
-  const user = ref<UserProfile  | null>(null)
+  const user = ref<UserProfile | null>(null)
   // 用户当前状态
   const isLogining = ref<boolean>(false)
   const isRegistering = ref<boolean>(false)
@@ -19,7 +23,7 @@ const useUserStore = defineStore('user', () => {
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData))
   }
   // 登录方法
-  async function login (params: userLoginData) {
+  async function login(params: userLoginData) {
     try {
       isLogining.value = true
       const res: any = await userLogin(params)
@@ -35,7 +39,7 @@ const useUserStore = defineStore('user', () => {
     }
   }
   // 注册方法
-  async function register (params: userRegisterData) {
+  async function register(params: userRegisterData) {
     try {
       isRegistering.value = true
       const res: any = await userRegister(params)
@@ -56,7 +60,6 @@ const useUserStore = defineStore('user', () => {
       user.value = null
       localStorage.removeItem(USER_STORAGE_KEY)
       await userLogout()
-
     } catch (err) {
       throw err
     } finally {
@@ -66,7 +69,7 @@ const useUserStore = defineStore('user', () => {
   // 这确保了用户刷新页面后，登录状态不会丢失
   const storedUser = localStorage.getItem(USER_STORAGE_KEY)
   if (storedUser) {
-      user.value = JSON.parse(storedUser)
+    user.value = JSON.parse(storedUser)
   }
 
   return {
@@ -76,7 +79,7 @@ const useUserStore = defineStore('user', () => {
     setUser,
     login,
     register,
-    logout
+    logout,
   }
 })
 

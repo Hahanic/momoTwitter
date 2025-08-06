@@ -1,12 +1,9 @@
-import { createRouter, createWebHistory } from "vue-router"
-import layoutRoutes from "./modules/layout.ts"
-import userRoutes from "./modules/user.ts"
-import useUserStore from "@/stores/user.ts"
+import { createRouter, createWebHistory } from 'vue-router'
+import layoutRoutes from './modules/layout.ts'
+import userRoutes from './modules/user.ts'
+import useUserStore from '@/stores/user.ts'
 
-const routes = [
-  ...layoutRoutes,
-  ...userRoutes
-]
+const routes = [...layoutRoutes, ...userRoutes]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,7 +15,7 @@ router.beforeEach((to, _from, next) => {
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
     next({
       name: 'Login',
-      query: { redirectReason: 'unauthenticated' }
+      query: { redirectReason: 'unauthenticated' },
     })
   } else {
     next()

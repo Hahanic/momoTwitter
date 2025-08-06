@@ -1,8 +1,8 @@
-import { defineStore } from "pinia"
-import useUserStore from "./user"
-import { createPost as apiCreatePost, getPosts as apiGetPost } from "@/api"
-import { type RecievePostPayload, type CreatePostPayload } from "@/types"
-import { ref } from "vue"
+import { defineStore } from 'pinia'
+import useUserStore from './user'
+import { createPost as apiCreatePost, getPosts as apiGetPost } from '@/api'
+import { type RecievePostPayload, type CreatePostPayload } from '@/types'
+import { ref } from 'vue'
 
 const usePostStore = defineStore('post', () => {
   // 储存帖子列表
@@ -35,7 +35,6 @@ const usePostStore = defineStore('post', () => {
       nextCursor.value = response.nextCursor
       // 后端返回的nextCursor为null，则帖子全加载完了
       // todo
-
     } catch (error) {
       throw error
     } finally {
@@ -43,11 +42,10 @@ const usePostStore = defineStore('post', () => {
     }
   }
 
-
   // 发帖方法
   async function createPost(payload: CreatePostPayload) {
     if (!userStore.isAuthenticated) {
-      throw new Error("用户未登录，无法发帖")
+      throw new Error('用户未登录，无法发帖')
     }
     isPosting.value = true
     try {
@@ -64,12 +62,11 @@ const usePostStore = defineStore('post', () => {
       //   userStore.user.stats.postsCount++
       // }
     } catch (error) {
-        throw error
+      throw error
     } finally {
       isPosting.value = false
     }
   }
-
 
   return {
     posts,
@@ -77,9 +74,8 @@ const usePostStore = defineStore('post', () => {
     createPost,
     isLoading,
     fetchMorePosts,
-    hasMore
+    hasMore,
   }
-    
 })
 
 export default usePostStore

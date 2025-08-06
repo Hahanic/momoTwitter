@@ -3,10 +3,15 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './db/index.js'
-import { login, getIdentifyingCode, register, logout } from './controller/auth.js'
+import {
+  login,
+  getIdentifyingCode,
+  register,
+  logout,
+} from './controller/auth.js'
 import { createPost, getPost } from './controller/post.js'
 
-dotenv.config();
+dotenv.config()
 const app = express()
 const port = 3000
 
@@ -16,17 +21,19 @@ app.use(cookieParser())
 app.use(express.json())
 
 // 跨域问题
-const allowedOrigins = ['http://localhost:5173'];
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
+const allowedOrigins = ['http://localhost:5173']
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
+    credentials: true,
+  })
+)
 
 // 注册
 app.post('/api/register', register)

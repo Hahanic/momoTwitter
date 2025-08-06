@@ -1,0 +1,40 @@
+{
+  "name": "momotwitter",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\"",
+    "prepare": "husky",
+    "commit": "cz",
+    "dev": "concurrently \"npm:dev --workspace=frontend\" \"npm:dev --workspace=backend\""
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hahanic/momoTwitter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hahanic/momoTwitter/issues"
+  },
+  "homepage": "https://github.com/Hahanic/momoTwitter#readme",
+  "description": "",
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "commitizen": "^4.3.1",
+    "concurrently": "^9.2.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.1.7"
+  }
+}

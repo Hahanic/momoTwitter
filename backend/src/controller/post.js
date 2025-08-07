@@ -87,7 +87,7 @@ export const createPost = async (req, res) => {
       return res.status(401).json({ message: 'Token 无效或已过期' })
     }
     // 服务器内部错误
-    console.error('创建帖子时发生错误:', error)
+    console.error('创建帖子时发生错误:', error.message)
     res.status(500).json({ message: '服务器内部错误，请稍后再试' })
   }
 }
@@ -119,24 +119,25 @@ export const getPost = async (req, res) => {
       const currentUserId = decoded.userId
       const postIds = posts.map((p) => p._id)
 
-      const userLikes = await Like.find({
-        userId: currentUserId,
-        postId: { $in: postIds },
-      }).select('postId')
-      const userBookmarks = await Bookmark.find({
-        userId: currentUserId,
-        postId: { $in: postIds },
-      }).select('postId')
+      const [userLikes, userBookmarks, userRetweets] = await Promise.all([
+        // 查询点赞
+        Like.find({ userId: currentUserId, postId: { $in: postIds } }).select('postId'),
+        // 查询收藏
+        Bookmark.find({ userId: currentUserId, postId: { $in: postIds } }).select('postId'),
+        // 在 Post 集合中查找由当前用户创建的'retweet'记录
+        Post.find({ authorId: currentUserId, postType: 'retweet', retweetedPostId: { $in: postIds } }).select('retweetedPostId'),
+      ]);
 
       const likedPostIds = new Set(userLikes.map((like) => like.postId.toString()))
       const bookmarkedPostIds = new Set(userBookmarks.map((bookmark) => bookmark.postId.toString()))
+      const retweetedPostIds = new Set(userRetweets.map((retweet) => retweet.postId.toString()))
 
       const results = posts.map((post) => ({
         ...post,
         currentUserInteraction: {
           isLiked: likedPostIds.has(post._id.toString()),
           isBookmarked: bookmarkedPostIds.has(post._id.toString()),
-          isRetweeted: false,
+          isRetweeted: retweetedPostIds.has(post._id.toString()),
         },
       }))
 

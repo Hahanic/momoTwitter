@@ -64,7 +64,6 @@ import { throttle } from '@/utils/index.ts'
 import btnTheme from '@/components/btnTheme/index.vue'
 
 const userStore = useUserStore()
-console.log(userStore.login)
 
 const router = useRouter()
 const route = useRoute()
@@ -169,6 +168,7 @@ const handleLogin = (e: MouseEvent) => {
       await userStore.login(formValue.value)
       loadingBar.finish()
       message.success('登录成功')
+      router.push('/')
       generatedCode.value = ''
     } catch (err: any) {
       message.error(err.message || '发生了一个意料之外的错误')

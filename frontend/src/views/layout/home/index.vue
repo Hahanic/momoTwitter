@@ -19,8 +19,8 @@
       <!-- user -->
       <userSendCard />
       <!-- posts -->
-      <posts />
-      <div class="flex h-20 w-full items-center justify-center">
+      <posts :postLists="postStore.posts" />
+      <div ref="observerEl" class="flex h-20 w-full items-center justify-center">
         <LoaderIcon
           v-if="postStore.hasMore && postStore.isLoading"
           :class="{ 'animate-spin': postStore.isLoading }"
@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import userSendCard from '@/components/userSendCard/index.vue'
 import posts from '@/components/post/index.vue'
 import { NScrollbar } from 'naive-ui'
@@ -61,4 +62,49 @@ import { SearchIcon, LoaderIcon } from 'lucide-vue-next'
 import usePostStore from '@/stores/post'
 
 const postStore = usePostStore()
+
+const loadMorePosts = async () => {
+  try {
+    await postStore.fetchMorePosts()
+  } catch (error: any) {
+    console.log(error.message || error)
+  }
+}
+
+// 滚动加载帖子
+const observerEl = ref<HTMLElement | null>(null)
+const scrollRoot = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+onMounted(() => {
+  scrollRoot.value = document.querySelector('.n-scrollbar-container')
+  // 首次加载
+  if (postStore.posts.length === 0) {
+    loadMorePosts()
+  }
+})
+// 其实放进onMounted也行，不过这样更健壮
+watch([scrollRoot, observerEl], ([rootElement, targetElement]) => {
+  if (observer) {
+    observer.disconnect()
+  }
+  if (rootElement && targetElement) {
+    const options = {
+      root: rootElement,
+      rootMargin: '0px 0px 0px 0px',
+      threshold: 0,
+    }
+    observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        console.log('observer')
+        loadMorePosts()
+      }
+    }, options)
+    observer.observe(targetElement)
+  }
+})
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+  }
+})
 </script>

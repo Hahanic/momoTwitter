@@ -49,9 +49,10 @@ export interface RecievePostPayload {
     url: string
   }[]
 
-  postType: 'standard' | 'reply' | 'quote'
+  postType: 'standard' | 'reply' | 'quote' | 'retweet'
   parentPostId?: string
   quotedPostId?: string
+  retweetedPostId?: string
   mentions?: string[]
   hashtags?: string[]
   visibility?: string

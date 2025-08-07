@@ -11,7 +11,7 @@ const postSchema = new mongoose.Schema(
     content: {
       type: String,
       trim: true,
-      maxLength: 280, // 类似推特的字数限制
+      maxLength: 1000, // 类似推特的字数限制
     },
     media: [
       {
@@ -21,14 +21,21 @@ const postSchema = new mongoose.Schema(
     ],
     postType: {
       type: String,
-      enum: ['standard', 'reply', 'quote'],
+      enum: ['standard', 'reply', 'quote', 'retweet'],
       default: 'standard',
     },
+    // 回复
     parentPostId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Post',
     },
+    // 引用
     quotedPostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
+    // 转推
+    retweetedPostId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Post',
     },
@@ -55,7 +62,7 @@ const postSchema = new mongoose.Schema(
     stats: {
       likesCount: { type: Number, default: 0 },
       repliesCount: { type: Number, default: 0 },
-      quotesCount: { type: Number, default: 0 },
+      quotesAndRetwCount: { type: Number, default: 0 },
       bookmarksCount: { type: Number, default: 0 },
       viewsCount: { type: Number, default: 0 },
     },

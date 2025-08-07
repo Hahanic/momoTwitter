@@ -43,10 +43,9 @@
           <textarea
             ref="textareaRef"
             v-model="messageContent"
-            @input="handleTextareaInput"
-            maxlength="1000"
+            maxlength="1001"
             :disabled="postStore.isPosting"
-            class="mt-3 w-full resize-none overflow-y-hidden bg-transparent pr-2 text-xl break-all placeholder-[#808080] focus:outline-none"
+            class="textareaEl mt-3 w-full resize-none overflow-y-hidden bg-transparent pr-2 text-xl break-all placeholder-[#808080] focus:outline-none"
             placeholder="有什么新鲜事?"
           ></textarea>
         </n-scrollbar>
@@ -94,7 +93,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import {
   Image,
   LucideBot,
@@ -122,31 +121,31 @@ withDefaults(defineProps<Props>(), {
 })
 
 const messageContent = ref<string>('')
+let textareaEl: HTMLTextAreaElement | null = null
 
-// 输入框：自适应高度和草稿
-const textareaRef = ref<HTMLTextAreaElement | null>(null)
-const handleTextareaInput = () => {
-  const textarea = textareaRef.value
-
-  if (!textarea) return
+// 输入框：自适应高度和清除
+watch(() => messageContent.value, (newValue) => {
+  if (!textareaEl) return
+  // 提交变空
+  if (newValue === '') {
+    textareaEl.style.height = 'auto'
+    return
+  }
   // 限制一千字
-  if (messageContent.value.replace(/\s/g, '').length >= 1000) {
-    messageContent.value = messageContent.value.slice(0, 1000)
+  if (newValue.replace(/\s/g, '').length >= 1000) {
+    messageContent.value = newValue.slice(0, 1000)
     message.warning('不能超过1000字')
   }
   // 输入框高度：根据内容自适应
-  if (textarea) {
-    textarea.style.height = 'auto'
-    textarea.style.height = `${textarea.scrollHeight}px`
-  }
-}
+  textareaEl.style.height = 'auto'
+  textareaEl.style.height = `${textareaEl.scrollHeight}px`
+})
 
 // 发帖方法
 const handlePosting = async () => {
   // 内容为空直接返回
   if (!messageContent.value) return
   // 是否已登陆
-  console.log(userStore)
   if (!userStore.isAuthenticated) {
     message.warning('请先登录！')
     return
@@ -160,8 +159,6 @@ const handlePosting = async () => {
     message.success('发帖成功！')
     // 清空输入框
     messageContent.value = ''
-    // 清除草稿
-    localStorage.removeItem('draftMessage')
   } catch (error: any) {
     message.error(error.message || '发帖失败，请稍后再试')
     console.error(error.message || '发帖失败:')
@@ -169,14 +166,7 @@ const handlePosting = async () => {
 }
 
 onMounted(() => {
-  // 恢复草稿内容
-  const draftMessage = localStorage.getItem('draftMessage')
-  if (draftMessage) {
-    messageContent.value = draftMessage
-    setTimeout(() => {
-      handleTextareaInput()
-    }, 0)
-  }
+  textareaEl = document.querySelector('.textareaEl')
 })
 </script>
 

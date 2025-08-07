@@ -13,7 +13,9 @@
 <script setup lang="ts">
 import useUserStore from '@/stores/user'
 import { useLoadingBar, useMessage } from 'naive-ui'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const loadingBar = useLoadingBar()
 const message = useMessage()
 
@@ -23,10 +25,11 @@ const logoutAndclear = async () => {
   loadingBar.start()
   try {
     await userStore.logout()
+    message.success('已退出登录')
+    router.push('/login')
   } catch (error) {
     console.error('Logout failed:', error)
     loadingBar.error()
-    message.error('Logout failed, please try again.')
   } finally {
     loadingBar.finish()
   }

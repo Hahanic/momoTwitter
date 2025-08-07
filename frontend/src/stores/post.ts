@@ -34,7 +34,7 @@ const usePostStore = defineStore('post', () => {
       // 更新下一个游标
       nextCursor.value = response.nextCursor
       // 后端返回的nextCursor为null，则帖子全加载完了
-      // todo
+      hasMore.value = nextCursor.value === null ? false : true
     } catch (error) {
       throw error
     } finally {
@@ -52,11 +52,10 @@ const usePostStore = defineStore('post', () => {
       // 调用API创建帖子
       const response = await apiCreatePost(payload)
       const newPost = response
-      console.log(newPost)
       // 将新帖子添加到列表最前面
-      // if (newPost.postType === 'standard') {
-      //   posts.value.unshift(newPost)
-      // }
+      if (newPost.postType === 'standard') {
+        posts.value.unshift(newPost)
+      }
       // 更新用户发帖数
       // if (userStore.user?.stats) {
       //   userStore.user.stats.postsCount++

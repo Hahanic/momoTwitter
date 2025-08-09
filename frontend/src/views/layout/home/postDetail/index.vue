@@ -36,7 +36,7 @@
               <span class="break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
             </div>
             <!-- 统计信息 -->
-            <div class="text-gray-500">
+            <div class="dark:border-borderDark border-borderWhite border-y py-3 text-gray-500">
               <div class="flex flex-wrap justify-between gap-2 sm:gap-3">
                 <button type="button" class="flex items-center hover:cursor-pointer">
                   <MessageCircle :color="'#71767b'" :size="24" /><span class="pl-1">{{
@@ -70,6 +70,9 @@
         </div>
       </div>
 
+      <!-- 用户回复 -->
+      <PostReply />
+
       <!-- 回复列表 -->
       <div v-if="replies.length > 0">
         <div
@@ -80,7 +83,10 @@
           <div class="flex">
             <!-- 头像 -->
             <div class="mr-3">
-              <img class="max-h-10 max-w-10 rounded-full" :src="reply.authorInfo.avatarUrl || '/myAvatar.jpg'" />
+              <img
+                class="max-h-[3rem] max-w-[3rem] rounded-full"
+                :src="reply.authorInfo.avatarUrl || '/myAvatar.jpg'"
+              />
             </div>
             <!-- 内容 -->
             <div class="flex-1">
@@ -178,6 +184,7 @@ import {
 import usePostStore from '@/stores/post'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
+import PostReply from '@/components/postReply/index.vue'
 
 const route = useRoute()
 const router = useRouter()

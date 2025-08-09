@@ -11,6 +11,7 @@
   --color-borderWhite: #eff3f4;
   /* 图标颜色 */
   --color-icon1: #1eaafe;
+  --color-icon2: #1d9bf0;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

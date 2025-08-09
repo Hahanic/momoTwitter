@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './db/index.js'
 import { login, getIdentifyingCode, register, logout } from './controller/auth.js'
-import { createPost, getPost } from './controller/post.js'
+import { createPost, getPost, getPostReplies } from './controller/post.js'
 
 dotenv.config()
 const app = express()
@@ -42,6 +42,8 @@ app.get('/api/getIdentifyingCode', getIdentifyingCode)
 app.get('/api/post/getPost', getPost)
 // 发帖
 app.post('/api/post/create', createPost)
+// 获取帖子的回复
+app.get('/api/post/:postId/replies', getPostReplies)
 
 app.listen(process.env.PORT, () => {
   connectDB()

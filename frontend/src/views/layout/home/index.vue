@@ -95,7 +95,6 @@ watch([scrollRoot, observerEl], ([rootElement, targetElement]) => {
     }
     observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
-        console.log('observer')
         loadMorePosts()
       }
     }, options)

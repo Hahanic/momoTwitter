@@ -62,9 +62,11 @@ const tagList = ref([
 <style scoped>
 .router-link-active {
   font-weight: 600;
-  color: white; /* 或者你希望的激活颜色 */
+  color: black;
 }
-
+.dark .router-link-active {
+  color: white;
+}
 /* 让激活链接下的下划线显示出来 */
 .router-link-active .active-underline {
   display: block;

@@ -1,0 +1,15 @@
+{
+  "git.ignoreLimitWarning": true,
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.autoSave": "off",
+  "editor.fontSize": 34,
+  "workbench.preferredLightColorTheme": "Default Light Modern",
+  "chat.editor.fontSize": 30,
+  "chat.setup.signInDialogVariant": "default",
+  "inlineChat.holdToSpeech": true,
+  "editor.smoothScrolling": true,
+  "editor.cursorSmoothCaretAnimation": "on",
+  "terminal.integrated.smoothScrolling": true
+}

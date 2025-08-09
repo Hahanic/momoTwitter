@@ -16,6 +16,11 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         component: Home,
       },
       {
+        path: '/home/post/:postId/replies',
+        name: 'PostDetail',
+        component: () => import('@/views/layout/home/postDetail/index.vue'),
+      },
+      {
         path: '/profile',
         name: 'Profile',
         component: Profile,

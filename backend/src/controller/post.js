@@ -125,8 +125,10 @@ export const getPost = async (req, res) => {
         // 查询收藏
         Bookmark.find({ userId: currentUserId, postId: { $in: postIds } }).select('postId'),
         // 在 Post 集合中查找由当前用户创建的'retweet'记录
-        Post.find({ authorId: currentUserId, postType: 'retweet', retweetedPostId: { $in: postIds } }).select('retweetedPostId'),
-      ]);
+        Post.find({ authorId: currentUserId, postType: 'retweet', retweetedPostId: { $in: postIds } }).select(
+          'retweetedPostId'
+        ),
+      ])
 
       const likedPostIds = new Set(userLikes.map((like) => like.postId.toString()))
       const bookmarkedPostIds = new Set(userBookmarks.map((bookmark) => bookmark.postId.toString()))
@@ -151,6 +153,78 @@ export const getPost = async (req, res) => {
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'Token 无效或已过期' })
     }
+    res.status(500).json({ message: '服务器内部错误，请稍后再试' })
+  }
+}
+
+// 获取帖子的回复
+export const getPostReplies = async (req, res) => {
+  try {
+    const { postId } = req.params
+    const limit = parseInt(req.query.limit) || 10
+    const cursor = req.query.cursor ? new Date(req.query.cursor) : null
+
+    // 首先验证父帖子是否存在
+    const parentPost = await Post.findById(postId)
+    if (!parentPost) {
+      return res.status(404).json({ message: '帖子不存在' })
+    }
+
+    // 查询回复条件
+    const query = {
+      postType: 'reply',
+      parentPostId: postId,
+      visibility: 'public',
+    }
+
+    // 如果有游标，则加入时间条件
+    if (cursor) {
+      query.createdAt = { $lt: cursor }
+    }
+
+    // 查询回复
+    const replies = await Post.find(query).sort({ createdAt: -1 }).limit(limit).lean()
+
+    // 计算下一个游标
+    const nextCursor = replies.length > 0 ? replies[replies.length - 1].createdAt.toISOString() : null
+
+    // 如果用户已登录，返回带上交互信息
+    const token = req.cookies.token
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+      const currentUserId = decoded.userId
+      const replyIds = replies.map((r) => r._id)
+
+      const [userLikes, userBookmarks, userRetweets] = await Promise.all([
+        Like.find({ userId: currentUserId, postId: { $in: replyIds } }).select('postId'),
+        Bookmark.find({ userId: currentUserId, postId: { $in: replyIds } }).select('postId'),
+        Post.find({
+          authorId: currentUserId,
+          postType: 'retweet',
+          retweetedPostId: { $in: replyIds },
+        }).select('retweetedPostId'),
+      ])
+
+      const likedPostIds = new Set(userLikes.map((like) => like.postId.toString()))
+      const bookmarkedPostIds = new Set(userBookmarks.map((bookmark) => bookmark.postId.toString()))
+      const retweetedPostIds = new Set(userRetweets.map((retweet) => retweet.retweetedPostId.toString()))
+
+      const results = replies.map((reply) => ({
+        ...reply,
+        currentUserInteraction: {
+          isLiked: likedPostIds.has(reply._id.toString()),
+          isBookmarked: bookmarkedPostIds.has(reply._id.toString()),
+          isRetweeted: retweetedPostIds.has(reply._id.toString()),
+        },
+      }))
+
+      return res.status(200).json({ replies: results, nextCursor, parentPost })
+    }
+
+    // 如果用户没登录，直接返回回复
+    res.status(200).json({ replies, nextCursor, parentPost })
+  } catch (error) {
+    console.error('获取帖子回复时发生错误:', error.message)
     res.status(500).json({ message: '服务器内部错误，请稍后再试' })
   }
 }

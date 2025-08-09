@@ -7,6 +7,7 @@ import {
   type CreatePostPayload,
   type RecievePostPayload,
   type getPost,
+  type getPostReply,
 } from '@/types'
 
 // 用户登录
@@ -34,8 +35,22 @@ export const createPost = (payload: CreatePostPayload): Promise<RecievePostPaylo
 }
 
 // 主页加载帖子
-export const getPosts = (cursor: string | null = null, limit: number = 10): Promise<getPost> => {
+export const getPosts = (replyCursor: string | null = null, limit: number = 10): Promise<getPost> => {
   return axiosInstance.get('/post/getPost', {
+    params: {
+      cursor: replyCursor,
+      limit,
+    },
+  })
+}
+
+// 获取帖子回复
+export const getPostReplies = (
+  postId: string,
+  cursor: string | null = null,
+  limit: number = 10
+): Promise<getPostReply> => {
+  return axiosInstance.get(`/post/${postId}/replies`, {
     params: {
       cursor,
       limit,

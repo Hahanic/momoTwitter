@@ -43,7 +43,7 @@
           <textarea
             ref="textareaRef"
             v-model="messageContent"
-            maxlength="1001"
+            maxlength="301"
             :disabled="postStore.isPosting"
             class="textareaEl mt-3 w-full resize-none overflow-y-hidden bg-transparent pr-2 text-xl break-all placeholder-[#808080] focus:outline-none"
             placeholder="有什么新鲜事?"
@@ -116,30 +116,39 @@ const message = useMessage()
 interface Props {
   isCompose?: boolean
 }
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isCompose: false,
 })
 
 const messageContent = ref<string>('')
-let textareaEl: HTMLTextAreaElement | null = null
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
 // 输入框：自适应高度和清除
-watch(() => messageContent.value, (newValue) => {
-  if (!textareaEl) return
-  // 提交变空
-  if (newValue === '') {
-    textareaEl.style.height = 'auto'
-    return
+watch(
+  () => messageContent.value,
+  (newValue) => {
+    if (!textareaRef.value) return
+    // 提交变空
+    if (newValue === '') {
+      textareaRef.value.style.height = 'auto'
+      if (props.isCompose) {
+        localStorage.removeItem('messsageContent')
+      }
+      return
+    }
+    // 限制三百字
+    if (newValue.length >= 301) {
+      messageContent.value = newValue.slice(0, 300)
+      message.warning('不能超过300字')
+    }
+    // 输入框高度：根据内容自适应
+    textareaRef.value.style.height = 'auto'
+    textareaRef.value.style.height = `${textareaRef.value.scrollHeight}px`
+    if (props.isCompose) {
+      localStorage.setItem('messsageContent', messageContent.value)
+    }
   }
-  // 限制一千字
-  if (newValue.replace(/\s/g, '').length >= 1000) {
-    messageContent.value = newValue.slice(0, 1000)
-    message.warning('不能超过1000字')
-  }
-  // 输入框高度：根据内容自适应
-  textareaEl.style.height = 'auto'
-  textareaEl.style.height = `${textareaEl.scrollHeight}px`
-})
+)
 
 // 发帖方法
 const handlePosting = async () => {
@@ -166,7 +175,17 @@ const handlePosting = async () => {
 }
 
 onMounted(() => {
-  textareaEl = document.querySelector('.textareaEl')
+  // 加载本地缓存的内容
+  if (props.isCompose) {
+    const savedContent = localStorage.getItem('messsageContent')
+    if (savedContent) {
+      messageContent.value = savedContent
+      setTimeout(() => {
+        textareaRef.value!.style.height = 'auto'
+        textareaRef.value!.style.height = `${textareaRef.value!.scrollHeight}px`
+      }, 0)
+    }
+  }
 })
 </script>
 

@@ -86,6 +86,13 @@ export interface getPost {
   nextCursor: string | null
 }
 
+// 获取帖子回复
+export interface getPostReply {
+  replies: RecievePostPayload[]
+  nextCursor: string | null
+  parentPost: RecievePostPayload
+}
+
 // 前端发送帖子
 export interface CreatePostPayload {
   content: string

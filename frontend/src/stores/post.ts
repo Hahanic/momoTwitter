@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import useUserStore from './user'
-import { createPost as apiCreatePost, getPosts as apiGetPost } from '@/api'
+import { createPost as apiCreatePost, getPosts as apiGetPost, getPostReplies as apiGetReplies } from '@/api'
 import { type RecievePostPayload, type CreatePostPayload } from '@/types'
 import { ref } from 'vue'
 
@@ -19,28 +19,6 @@ const usePostStore = defineStore('post', () => {
 
   // 获取userStore实例
   const userStore = useUserStore()
-
-  // 主页加载帖子
-  async function fetchMorePosts() {
-    if (isLoading.value || !hasMore.value) return
-
-    try {
-      isLoading.value = true
-
-      const response = await apiGetPost(nextCursor.value)
-      posts.value.push(...response.posts)
-      console.log(posts.value)
-
-      // 更新下一个游标
-      nextCursor.value = response.nextCursor
-      // 后端返回的nextCursor为null，则帖子全加载完了
-      hasMore.value = nextCursor.value === null ? false : true
-    } catch (error) {
-      throw error
-    } finally {
-      isLoading.value = false
-    }
-  }
 
   // 发帖方法
   async function createPost(payload: CreatePostPayload) {
@@ -67,12 +45,49 @@ const usePostStore = defineStore('post', () => {
     }
   }
 
+  // 主页加载帖子
+  async function fetchMorePosts() {
+    if (isLoading.value || !hasMore.value) return
+
+    try {
+      isLoading.value = true
+
+      const response = await apiGetPost(nextCursor.value)
+      posts.value.push(...response.posts)
+      console.log('posts:主页加载', posts.value)
+
+      // 更新下一个游标
+      nextCursor.value = response.nextCursor
+      // 后端返回的nextCursor为null，则帖子全加载完了
+      hasMore.value = nextCursor.value === null ? false : true
+    } catch (error) {
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // 评论获取
+  async function fetchReplies(postId: string, replyCursor: string | null = null, limit: number = 10) {
+    try {
+      const response = await apiGetReplies(postId, replyCursor, limit)
+      return {
+        replies: response.replies,
+        nextCursor: response.nextCursor,
+        parentPost: response.parentPost,
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
   return {
     posts,
     isPosting,
-    createPost,
     isLoading,
+    createPost,
     fetchMorePosts,
+    fetchReplies,
     hasMore,
   }
 })

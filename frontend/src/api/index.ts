@@ -35,10 +35,10 @@ export const createPost = (payload: CreatePostPayload): Promise<RecievePostPaylo
 }
 
 // 主页加载帖子
-export const getPosts = (replyCursor: string | null = null, limit: number = 10): Promise<getPost> => {
+export const getPosts = (cursor: string | null = null, limit: number = 10): Promise<getPost> => {
   return axiosInstance.get('/post/getPost', {
     params: {
-      cursor: replyCursor,
+      cursor,
       limit,
     },
   })

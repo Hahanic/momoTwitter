@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import useUserStore from './user'
-import { createPost as apiCreatePost, getPosts as apiGetPost, getPostReplies as apiGetReplies } from '@/api'
+import { createPost as apiCreatePost, getPosts as apiGetPost } from '@/api'
 import { type RecievePostPayload, type CreatePostPayload } from '@/types'
 import { ref } from 'vue'
 
@@ -54,12 +54,12 @@ const usePostStore = defineStore('post', () => {
 
       const response = await apiGetPost(nextCursor.value)
       posts.value.push(...response.posts)
-      console.log('posts:主页加载', posts.value)
+      console.log('postStore主页加载', posts.value)
 
       // 更新下一个游标
       nextCursor.value = response.nextCursor
       // 后端返回的nextCursor为null，则帖子全加载完了
-      hasMore.value = nextCursor.value === null ? false : true
+      hasMore.value = response.nextCursor !== null
     } catch (error) {
       throw error
     } finally {
@@ -67,18 +67,11 @@ const usePostStore = defineStore('post', () => {
     }
   }
 
-  // 评论获取
-  async function fetchReplies(postId: string, replyCursor: string | null = null, limit: number = 10) {
-    try {
-      const response = await apiGetReplies(postId, replyCursor, limit)
-      return {
-        replies: response.replies,
-        nextCursor: response.nextCursor,
-        parentPost: response.parentPost,
-      }
-    } catch (error) {
-      throw error
-    }
+  // 重置帖子状态
+  function resetPosts() {
+    posts.value = []
+    nextCursor.value = null
+    hasMore.value = true
   }
 
   return {
@@ -87,7 +80,7 @@ const usePostStore = defineStore('post', () => {
     isLoading,
     createPost,
     fetchMorePosts,
-    fetchReplies,
+    resetPosts,
     hasMore,
   }
 })

@@ -70,7 +70,7 @@
         </div>
       </div>
 
-      <!-- 用户回复 -->
+      <!-- 用户发送回复 -->
       <PostReply />
 
       <!-- 回复列表 -->
@@ -133,6 +133,13 @@
         <span>加载中...</span>
       </div>
 
+      <!-- 加载更多回复按钮 -->
+      <div v-else-if="hasMoreReplies && replies.length > 0" class="flex h-20 w-full items-center justify-center">
+        <button @click="loadMoreReplies" class="px-4 py-2 font-medium text-blue-500 hover:text-blue-600">
+          加载更多回复
+        </button>
+      </div>
+
       <!-- 没有更多回复 -->
       <div v-else-if="!hasMoreReplies && replies.length > 0" class="flex h-20 w-full items-center justify-center">
         <span>没有更多回复了</span>
@@ -168,8 +175,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
+import useReplyStore from '@/stores/reply'
+import PostReply from '@/components/postReply/index.vue'
+import { formatDate } from '@/utils'
 import { NScrollbar } from 'naive-ui'
 import {
   SearchIcon,
@@ -181,64 +192,22 @@ import {
   Bookmark,
   Share,
 } from 'lucide-vue-next'
-import usePostStore from '@/stores/post'
-import { type RecievePostPayload } from '@/types'
-import { formatDate } from '@/utils'
-import PostReply from '@/components/postReply/index.vue'
 
 const route = useRoute()
 const router = useRouter()
-const postStore = usePostStore()
+const replyStore = useReplyStore()
 
-// 当前帖子数据
-const currentPost = ref<RecievePostPayload | null>(null)
-// 回复列表
-const replies = ref<RecievePostPayload[]>([])
-// 加载状态
-const isLoadingReplies = ref(false)
-// 分页游标
-const repliesCursor = ref<string | null>(null)
-// 是否还有更多回复
-const hasMoreReplies = ref(true)
+const { currentPost, replies, isLoadingReplies, hasMoreReplies } = storeToRefs(replyStore)
 
-// 获取帖子详情
-const loadPostDetail = async () => {
-  const postId = route.params.postId as string
-  // 首先尝试从store中找到当前帖子
-  const foundPost = postStore.posts.find((post) => post._id === postId)
-  if (foundPost) {
-    currentPost.value = foundPost
-  }
-  // 加载回复
-  await loadReplies(postId)
+const postId = route.params.postId as string
+
+// 加载更多回复
+const loadMoreReplies = async () => {
+  await replyStore.loadReplies(postId)
 }
 
-// 加载回复
-const loadReplies = async (postId: string) => {
-  if (isLoadingReplies.value) return
-
-  try {
-    isLoadingReplies.value = true
-    const response = await postStore.fetchReplies(postId, repliesCursor.value)
-    console.log('loadReplies', response, currentPost.value)
-    // 如果没有找到当前帖子，使用返回的parentPost
-    if (!currentPost.value && response.parentPost) {
-      currentPost.value = response.parentPost
-    }
-    // 追加回复到列表
-    replies.value.push(...response.replies)
-    // 更新游标和是否还有更多数据
-    repliesCursor.value = response.nextCursor
-    hasMoreReplies.value = response.nextCursor !== null
-  } catch (error) {
-    console.error('加载回复失败:', error)
-  } finally {
-    isLoadingReplies.value = false
-  }
-}
-
-// 组件挂载时加载数据
+// 组件挂载时加载原帖子数据
 onMounted(() => {
-  loadPostDetail()
+  replyStore.loadPostDetail(postId)
 })
 </script>

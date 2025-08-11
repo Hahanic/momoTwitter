@@ -10,5 +10,5 @@
 
 <script setup lang="ts">
 import { NScrollbar } from 'naive-ui'
-import userSendCard from '@/components/userSendCard/index.vue'
+import userSendCard from '@/components/postCreate/index.vue'
 </script>

@@ -121,6 +121,32 @@ export const createPost = async (req, res) => {
   }
 }
 
+// 获取单条帖子
+export const getOnePost = async (req, res) => {
+  try {
+    const { postId } = req.params
+    let post = await Post.findById(postId).lean()
+    if (!post) {
+      return res.status(404).json({ message: '帖子不存在' })
+    }
+
+    // 用户是否存在 添加交互信息
+    const token = req.cookies.token
+    if (token) {
+      const currentUserId = verifyUserToken(token)
+      if (currentUserId) {
+        const interactions = await getUserInteractions(currentUserId, [postId])
+        post = addUserInteractions([post], interactions)[0]
+      }
+    }
+
+    res.status(200).json(post)
+  } catch (error) {
+    console.error('获取单条帖子时发生错误:', error.message)
+    res.status(500).json({ message: '服务器内部错误，请稍后再试' })
+  }
+}
+
 // 获取全部帖子
 export const getPost = async (req, res) => {
   try {

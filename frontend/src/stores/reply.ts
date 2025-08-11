@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { type RecievePostPayload } from '@/types'
-import { getPostReplies as apiGetReplies, apiCreateReply, apiLikePost } from '@/api'
+import { getPostReplies as apiGetReplies, apiCreateReply, apiLikePost, apiGetOnePost } from '@/api'
 import usePostStore from './post'
 import useUserStore from './user'
 
@@ -36,6 +36,10 @@ const useReplyStore = defineStore('reply', () => {
     const foundPost = postStore.posts.find((post) => post._id === postId)
     if (foundPost) {
       currentPost.value = foundPost
+    } else {
+      // 如果没有找到帖子，从服务器加载，如果登录了就附带交互信息
+      const response = await apiGetOnePost(postId)
+      currentPost.value = response
     }
     // 加载回复
     await loadReplies(postId)

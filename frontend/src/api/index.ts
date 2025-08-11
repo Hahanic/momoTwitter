@@ -34,6 +34,11 @@ export const createPost = (payload: CreatePostPayload): Promise<RecievePostPaylo
   return axiosInstance.post('/post/create', payload)
 }
 
+// 获取单条帖子
+export const apiGetOnePost = (postId: string): Promise<RecievePostPayload> => {
+  return axiosInstance.get(`/post/${postId}/get`)
+}
+
 // 主页加载帖子
 export const getPosts = (cursor: string | null = null, limit: number = 10): Promise<getPost> => {
   return axiosInstance.get('/post/getPost', {

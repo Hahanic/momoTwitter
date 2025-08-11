@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './db/index.js'
 import { login, getIdentifyingCode, register, logout } from './controller/auth.js'
-import { createPost, createPostReply, getPost, getPostReplies, likePost } from './controller/post.js'
+import { createPost, createPostReply, getPost, getPostReplies, likePost, getOnePost } from './controller/post.js'
 import { protectAuthRoute } from './middleware/authMiddleware.js'
 
 dotenv.config()
@@ -43,6 +43,8 @@ app.get('/api/getIdentifyingCode', getIdentifyingCode)
 app.get('/api/post/getPost', getPost)
 // 发帖
 app.post('/api/post/create', protectAuthRoute, createPost)
+// 获取单条帖子
+app.get('/api/post/:postId/get', getOnePost)
 // 获取帖子的回复
 app.get('/api/post/:postId/replies', getPostReplies)
 // 发送帖子的回复

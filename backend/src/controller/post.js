@@ -248,3 +248,47 @@ export const createPostReply = async (req, res) => {
     res.status(500).json({ message: '服务器内部错误，请稍后再试' })
   }
 }
+
+// 点赞
+export const likePost = async (req, res) => {
+  try {
+    const { postId } = req.params
+    const currentUserId = req.user.id
+
+    // 验证帖子是否存在
+    const post = await Post.findById(postId)
+    if (!post) {
+      return res.status(404).json({ message: '帖子不存在' })
+    }
+
+    // 检查用户是否已经点赞过这个帖子
+    const existingLike = await Like.findOne({ userId: currentUserId, postId })
+
+    if (existingLike) {
+      // 如果已经点赞，则取消点赞
+      await Like.deleteOne({ userId: currentUserId, postId })
+      await Post.findByIdAndUpdate(postId, {
+        $inc: { 'stats.likesCount': -1 },
+      })
+      res.status(200).json({
+        message: '取消点赞成功',
+        isLiked: false,
+        likesCount: post.stats.likesCount - 1,
+      })
+    } else {
+      // 如果没有点赞，则添加点赞
+      const newLike = new Like({ userId: currentUserId, postId })
+      await newLike.save()
+      await Post.findByIdAndUpdate(postId, {
+        $inc: { 'stats.likesCount': 1 },
+      })
+      res.status(200).json({
+        message: '点赞成功',
+        isLiked: true,
+        likesCount: post.stats.likesCount + 1,
+      })
+    }
+  } catch (error) {
+    res.status(500).json({ message: '服务器内部错误，请稍后再试' })
+  }
+}

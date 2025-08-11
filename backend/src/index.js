@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import { connectDB } from './db/index.js'
 import { login, getIdentifyingCode, register, logout } from './controller/auth.js'
-import { createPost, createPostReply, getPost, getPostReplies } from './controller/post.js'
+import { createPost, createPostReply, getPost, getPostReplies, likePost } from './controller/post.js'
 import { protectAuthRoute } from './middleware/authMiddleware.js'
 
 dotenv.config()
@@ -47,6 +47,8 @@ app.post('/api/post/create', protectAuthRoute, createPost)
 app.get('/api/post/:postId/replies', getPostReplies)
 // 发送帖子的回复
 app.post('/api/post/:postId/replies', protectAuthRoute, createPostReply)
+// 点赞帖子
+app.post('/api/post/:postId/like', protectAuthRoute, likePost)
 
 app.listen(process.env.PORT, () => {
   connectDB()

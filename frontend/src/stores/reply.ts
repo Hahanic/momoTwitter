@@ -50,7 +50,6 @@ const useReplyStore = defineStore('reply', () => {
       const response = await apiCreateReply(currentPost.value._id, content)
       // 更新当前帖子的回复计数
       currentPost.value.stats.repliesCount++
-      console.log('回复:', response)
       // 追加回复到列表
       replies.value.unshift(response)
     } catch (error) {
@@ -94,6 +93,7 @@ const useReplyStore = defineStore('reply', () => {
 
     // 当前评论
     const reply = replies.value.find((r) => r._id === replyId)
+    console.log('当前评论:', reply)
     if (!reply) return
 
     // 记录原始状态

@@ -242,7 +242,15 @@ export const createPostReply = async (req, res) => {
       { $inc: { 'stats.repliesCount': 1 } }
       //{ new: true }, 选项将返回更新后的文档
     )
-    res.status(201).json(newReply)
+    res.status(201).json({
+      //记得转为普通对象
+      ...newReply.toObject(),
+      currentUserInteraction: {
+        isLiked: false,
+        isBookmarked: false,
+        isRetweeted: false,
+      },
+    })
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: '服务器内部错误，请稍后再试' })

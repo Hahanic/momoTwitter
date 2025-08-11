@@ -1,19 +1,8 @@
-import jwt from 'jsonwebtoken'
 import Post from '../db/model/Post.js'
 import User from '../db/model/User.js'
 import Like from '../db/model/Like.js'
 import Bookmark from '../db/model/Bookmark.js'
-
-// 解析并验证游标
-const parseCursor = (cursor) => {
-  if (!cursor) return null
-
-  const parsedCursor = new Date(cursor)
-  if (isNaN(parsedCursor.getTime())) {
-    throw new Error('无效的游标格式')
-  }
-  return parsedCursor
-}
+import { verifyUserToken, parseCursor } from '../utils/index.js'
 
 // 获取用户交互信息
 const getUserInteractions = async (currentUserId, postIds) => {
@@ -49,34 +38,11 @@ const addUserInteractions = (posts, interactions) => {
   }))
 }
 
-// 验证用户token并返回用户ID
-const verifyUserToken = (token) => {
-  if (!token) return null
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    return decoded.userId
-  } catch (error) {
-    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      throw new Error('Token 无效或已过期')
-    }
-    throw error
-  }
-}
-
 // 发送帖子
 export const createPost = async (req, res) => {
   try {
-    const token = req.cookies.token
-    if (!token) {
-      return res.status(401).json({ message: '用户未认证，请求被拒绝' })
-    }
-
     // 验证token并获取用户ID
-    const authorId = verifyUserToken(token)
-    if (!authorId) {
-      return res.status(401).json({ message: '用户未认证，请求被拒绝' })
-    }
+    const authorId = req.user.id
 
     // 拿到帖子内容
     const { content, postType, media, parentPostId, quotedPostId, poll, visibility } = req.body
@@ -151,10 +117,6 @@ export const createPost = async (req, res) => {
 
     res.status(201).json(responsePayload)
   } catch (error) {
-    if (error.message === 'Token 无效或已过期') {
-      return res.status(401).json({ message: error.message })
-    }
-    console.error('创建帖子时发生错误:', error.message)
     res.status(500).json({ message: '服务器内部错误，请稍后再试' })
   }
 }
@@ -250,6 +212,39 @@ export const getPostReplies = async (req, res) => {
       return res.status(400).json({ message: error.message })
     }
     console.error('获取帖子回复时发生错误:', error.message)
+    res.status(500).json({ message: '服务器内部错误，请稍后再试' })
+  }
+}
+
+// 发送帖子回复
+export const createPostReply = async (req, res) => {
+  try {
+    const { postId } = req.params
+    const { content } = req.body
+    const currentUserId = req.user.id
+
+    // 验证帖子是否存在
+    const parentPost = await Post.findById(postId)
+    if (!parentPost) {
+      return res.status(404).json({ message: '帖子不存在' })
+    }
+    // 创建回复
+    const newReply = new Post({
+      content,
+      postType: 'reply',
+      parentPostId: postId,
+      authorId: currentUserId,
+      authorInfo: await User.findById(currentUserId).select('username displayName avatarUrl isVerified'),
+    })
+    await newReply.save()
+    await Post.findByIdAndUpdate(
+      postId,
+      { $inc: { 'stats.repliesCount': 1 } }
+      //{ new: true }, 选项将返回更新后的文档
+    )
+    res.status(201).json(newReply)
+  } catch (error) {
+    console.log(error)
     res.status(500).json({ message: '服务器内部错误，请稍后再试' })
   }
 }

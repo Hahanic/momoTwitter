@@ -13,7 +13,7 @@
             ref="textareaRef"
             v-model="messageContent"
             maxlength="301"
-            :disabled="postStore.isPosting"
+            :disabled="replyStore.isReplying"
             @focus="handleTextareaFocus"
             class="textareaEl mt-3 h-[2rem] w-full resize-none overflow-y-hidden bg-transparent pr-2 text-xl break-all placeholder-[#808080] focus:outline-none"
             placeholder="发布你的回复"
@@ -63,7 +63,7 @@
         </div>
         <button
           @click="handlePosting"
-          :disabled="postStore.isPosting"
+          :disabled="replyStore.isReplying"
           :class="{
             'bg-black text-white hover:cursor-pointer dark:bg-white': !!messageContent,
             'bg-[#87898c] dark:bg-[#787a7a]': !messageContent,
@@ -91,11 +91,11 @@ import {
 } from 'lucide-vue-next'
 import { NScrollbar, useMessage } from 'naive-ui'
 import useUserStore from '@/stores/user'
-import usePostStore from '@/stores/post'
 import useWindowStore from '@/stores/window'
+import useReplyStore from '@/stores/reply'
 
-const postStore = usePostStore()
 const userStore = useUserStore()
+const replyStore = useReplyStore()
 const windowStore = useWindowStore()
 const message = useMessage()
 
@@ -140,16 +140,13 @@ const handlePosting = async () => {
   }
   // 发帖
   try {
-    await postStore.createPost({
-      content: messageContent.value,
-      postType: 'standard',
-    })
-    message.success('发帖成功！')
+    await replyStore.createReply(messageContent.value)
+    message.success('回复成功！')
     // 清空输入框
     messageContent.value = ''
   } catch (error: any) {
-    message.error(error.message || '发帖失败，请稍后再试')
-    console.error(error.message || '发帖失败:')
+    message.error(error.message || '回复失败，请稍后再试')
+    console.error(error.message || '回复失败:')
   }
 }
 </script>

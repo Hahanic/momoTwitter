@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { type RecievePostPayload } from '@/types'
-import { getPostReplies as apiGetReplies } from '@/api'
+import { getPostReplies as apiGetReplies, apiCreateReply } from '@/api'
 import usePostStore from './post'
 
 const useReplyStore = defineStore('reply', () => {
@@ -13,6 +13,8 @@ const useReplyStore = defineStore('reply', () => {
   const replies = ref<RecievePostPayload[]>([])
   // 加载状态
   const isLoadingReplies = ref(false)
+  // 发送状态
+  const isReplying = ref(false)
   // 分页游标
   const repliesCursor = ref<string | null>(null)
   // 是否还有更多回复
@@ -25,13 +27,32 @@ const useReplyStore = defineStore('reply', () => {
     repliesCursor.value = null
     hasMoreReplies.value = true
 
-    // 首先尝试从store中找到当前帖子
+    // 从postStore中找到当前帖子
     const foundPost = postStore.posts.find((post) => post._id === postId)
     if (foundPost) {
       currentPost.value = foundPost
     }
     // 加载回复
     await loadReplies(postId)
+  }
+
+  // 发送回复
+  const createReply = async (content: string) => {
+    if (!currentPost.value) return
+
+    try {
+      isReplying.value = true
+      const response = await apiCreateReply(currentPost.value._id, content)
+      // 更新当前帖子的回复计数
+      currentPost.value.stats.repliesCount++
+      console.log('回复:', response)
+      // 追加回复到列表
+      replies.value.unshift(response)
+    } catch (error) {
+      throw error
+    } finally {
+      isReplying.value = false
+    }
   }
 
   // 加载回复
@@ -62,10 +83,12 @@ const useReplyStore = defineStore('reply', () => {
     currentPost,
     replies,
     isLoadingReplies,
+    isReplying,
     repliesCursor,
     hasMoreReplies,
     loadPostDetail,
     loadReplies,
+    createReply,
   }
 })
 

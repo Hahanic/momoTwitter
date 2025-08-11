@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
-import userSendCard from '@/components/userSendCard/index.vue'
+import userSendCard from '@/components/postCreate/index.vue'
 import posts from '@/components/post/index.vue'
 import { NScrollbar } from 'naive-ui'
 import { SearchIcon, LoaderIcon } from 'lucide-vue-next'

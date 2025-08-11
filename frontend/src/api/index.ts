@@ -57,3 +57,8 @@ export const getPostReplies = (
     },
   })
 }
+
+// 发送帖子回复
+export const apiCreateReply = (postId: string, content: string): Promise<RecievePostPayload> => {
+  return axiosInstance.post(`/post/${postId}/replies`, { content })
+}

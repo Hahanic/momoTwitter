@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import useUserStore from './user'
-import { createPost as apiCreatePost, getPosts as apiGetPost } from '@/api'
+import { createPost as apiCreatePost, getPosts as apiGetPost, apiLikePost } from '@/api'
 import { type RecievePostPayload, type CreatePostPayload } from '@/types'
 import { ref } from 'vue'
 
@@ -13,6 +13,8 @@ const usePostStore = defineStore('post', () => {
   const isPosting = ref<boolean>(false)
   // 控制加载帖子的状态
   const isLoading = ref<boolean>(false)
+  // 控制正在点赞帖子的状态
+  const isLiking = ref<boolean>(false)
   // 下一次请求的分页游标
   const nextCursor = ref<string | null>(null)
   const hasMore = ref<boolean>(true)
@@ -67,6 +69,38 @@ const usePostStore = defineStore('post', () => {
     }
   }
 
+  // 主页点赞帖子
+  async function likePost(postId: string) {
+    if (!userStore.isAuthenticated) {
+      throw new Error('请先登录')
+    }
+    if (isLiking.value) return
+
+    // 当前帖子
+    const post = posts.value.find((p) => p._id === postId)
+    if (!post) return
+
+    // 记录原始状态
+    const originalIsLiked = post.currentUserInteraction!.isLiked
+    const originalLikesCount = post.stats.likesCount
+    // 加载状态
+    isLiking.value = true
+    // 乐观更新UI
+    post.stats.likesCount = originalLikesCount + (!originalIsLiked ? 1 : -1)
+    post.currentUserInteraction!.isLiked = !originalIsLiked
+
+    try {
+      await apiLikePost(postId)
+    } catch (error) {
+      // 失败就回滚
+      post.stats.likesCount = originalLikesCount
+      post.currentUserInteraction!.isLiked = originalIsLiked
+      throw error
+    } finally {
+      isLiking.value = false
+    }
+  }
+
   // 重置帖子状态
   function resetPosts() {
     posts.value = []
@@ -78,9 +112,11 @@ const usePostStore = defineStore('post', () => {
     posts,
     isPosting,
     isLoading,
+    isLiking,
     createPost,
     fetchMorePosts,
     resetPosts,
+    likePost,
     hasMore,
   }
 })

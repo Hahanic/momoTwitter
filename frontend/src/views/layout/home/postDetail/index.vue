@@ -47,9 +47,12 @@
                   <Repeat2 :color="'#71767b'" :size="24" /><span class="pl-1">{{ currentPost.stats.quotesCount }}</span>
                 </button>
                 <button type="button" class="flex items-center hover:cursor-pointer">
-                  <HeartIcon :color="'#71767b'" :size="24" /><span class="pl-1">{{
-                    currentPost.stats.likesCount
-                  }}</span>
+                  <HeartIcon
+                    @click.stop="postStore.likePost(currentPost._id)"
+                    :fill="currentPost.currentUserInteraction?.isLiked ? 'red' : 'none'"
+                    :color="'#71767b'"
+                    :size="24"
+                  /><span class="pl-1">{{ currentPost.stats.likesCount }}</span>
                 </button>
                 <button type="button" class="flex items-center hover:cursor-pointer">
                   <ChartNoAxesColumnIcon :color="'#71767b'" :size="24" /><span class="pl-1">{{
@@ -112,8 +115,16 @@
                   <button type="button" class="flex items-center hover:cursor-pointer">
                     <Repeat2 :color="'#71767b'" :size="18" /><span class="pl-1">{{ reply.stats.quotesCount }}</span>
                   </button>
-                  <button type="button" class="flex items-center hover:cursor-pointer">
-                    <HeartIcon :color="'#71767b'" :size="18" /><span class="pl-1">{{ reply.stats.likesCount }}</span>
+                  <button
+                    @click.stop="replyStore.likeReply(reply._id)"
+                    type="button"
+                    class="flex items-center hover:cursor-pointer"
+                  >
+                    <HeartIcon
+                      :color="'#71767b'"
+                      :fill="reply.currentUserInteraction?.isLiked ? 'red' : 'none'"
+                      :size="18"
+                    /><span class="pl-1">{{ reply.stats.likesCount }}</span>
                   </button>
                   <button type="button" class="flex items-center hover:cursor-pointer">
                     <Bookmark :color="'#71767b'" :size="18" />
@@ -179,6 +190,7 @@ import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import useReplyStore from '@/stores/reply'
+import usePostStore from '@/stores/post'
 import PostReply from '@/components/postReply/index.vue'
 import { formatDate } from '@/utils'
 import { NScrollbar } from 'naive-ui'
@@ -196,6 +208,7 @@ import {
 const route = useRoute()
 const router = useRouter()
 const replyStore = useReplyStore()
+const postStore = usePostStore()
 
 const { currentPost, replies, isLoadingReplies, hasMoreReplies } = storeToRefs(replyStore)
 

@@ -1,11 +1,16 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { type RecievePostPayload } from '@/types'
-import { getPostReplies as apiGetReplies, apiCreateReply } from '@/api'
+import { getPostReplies as apiGetReplies, apiCreateReply, apiLikePost } from '@/api'
 import usePostStore from './post'
+import useUserStore from './user'
 
 const useReplyStore = defineStore('reply', () => {
   const postStore = usePostStore()
+  const userStore = useUserStore()
+
+  //评论的点赞状态
+  const isLiking = ref(false)
 
   // 当前帖子数据
   const currentPost = ref<RecievePostPayload | null>(null)
@@ -79,6 +84,39 @@ const useReplyStore = defineStore('reply', () => {
       isLoadingReplies.value = false
     }
   }
+
+  // 点赞回复
+  async function likeReply(replyId: string) {
+    if (!userStore.isAuthenticated) {
+      throw new Error('请先登录')
+    }
+    if (isLiking.value) return
+
+    // 当前评论
+    const reply = replies.value.find((r) => r._id === replyId)
+    if (!reply) return
+
+    // 记录原始状态
+    const originalIsLiked = reply.currentUserInteraction!.isLiked
+    const originalLikesCount = reply.stats.likesCount
+    // 加载状态
+    isLiking.value = true
+    // 乐观更新UI
+    reply.stats.likesCount = originalLikesCount + (!originalIsLiked ? 1 : -1)
+    reply.currentUserInteraction!.isLiked = !originalIsLiked
+
+    try {
+      await apiLikePost(replyId)
+    } catch (error) {
+      // 失败就回滚
+      reply.stats.likesCount = originalLikesCount
+      reply.currentUserInteraction!.isLiked = originalIsLiked
+      throw error
+    } finally {
+      isLiking.value = false
+    }
+  }
+
   return {
     currentPost,
     replies,
@@ -89,6 +127,7 @@ const useReplyStore = defineStore('reply', () => {
     loadPostDetail,
     loadReplies,
     createReply,
+    likeReply,
   }
 })
 

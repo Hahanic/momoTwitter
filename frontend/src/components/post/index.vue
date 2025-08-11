@@ -55,11 +55,15 @@
             <Repeat2 :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.stats.quotesCount }}</span>
           </button>
           <button
-            @click.stop="() => console.log('头像点击')"
+            @click.stop="postStore.likePost(post._id)"
             type="button"
             class="flex items-center hover:cursor-pointer"
           >
-            <HeartIcon :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.stats.likesCount }}</span>
+            <HeartIcon
+              :color="'#71767b'"
+              :fill="post.currentUserInteraction?.isLiked ? 'red' : 'none'"
+              :size="24"
+            /><span class="pl-1">{{ post.stats.likesCount }}</span>
           </button>
           <button
             @click.stop="() => console.log('头像点击')"
@@ -96,8 +100,10 @@ import { NScrollbar } from 'naive-ui'
 import { MessageCircle, Repeat2, HeartIcon, ChartNoAxesColumnIcon, Bookmark, Share } from 'lucide-vue-next'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
+import usePostStore from '@/stores/post'
 
 const router = useRouter()
+const postStore = usePostStore()
 
 defineProps<{
   postLists: RecievePostPayload[]

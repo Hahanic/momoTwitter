@@ -62,3 +62,8 @@ export const getPostReplies = (
 export const apiCreateReply = (postId: string, content: string): Promise<RecievePostPayload> => {
   return axiosInstance.post(`/post/${postId}/replies`, { content })
 }
+
+// 点赞帖子
+export const apiLikePost = (postId: string): Promise<{ message: string; isLiked: boolean; likesCount: number }> => {
+  return axiosInstance.post(`/post/${postId}/like`)
+}

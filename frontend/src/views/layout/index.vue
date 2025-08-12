@@ -4,7 +4,7 @@
       <header
         class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center transition-all sm:flex xl:w-[17rem] xl:items-start"
       >
-        <n-scrollbar style="max-height: 100vh">
+        <n-scrollbar style="max-height: 100%">
           <!-- <menuList /> -->
           <div class="relative z-10 flex h-[3.2rem] w-full items-center">
             <img

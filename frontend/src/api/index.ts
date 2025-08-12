@@ -13,26 +13,26 @@ import {
 
 // 检查用户登录状态，靠自动发送的cookie
 export const getCurrentUser = (): Promise<UserProfile> => {
-  return axiosInstance.get('/getCurrentUser')
+  return axiosInstance.get('/user/getCurrentUser')
 }
 
 // 用户登录
 export const userLogin = (userLoginData: userLoginData) => {
-  return axiosInstance.post('/login', userLoginData)
+  return axiosInstance.post('/user/login', userLoginData)
 }
 
 // 用户退出登录
 export const userLogout = () => {
-  return axiosInstance.post('/logout')
+  return axiosInstance.post('/user/logout')
 }
 
 export const getIdentifyingCode = (): Promise<recieveCode> => {
-  return axiosInstance.get('/getIdentifyingCode')
+  return axiosInstance.get('/user/getIdentifyingCode')
 }
 
 // 用户注册
 export const userRegister = (userRegisterData: userRegisterData) => {
-  return axiosInstance.post('/register', userRegisterData)
+  return axiosInstance.post('/user/register', userRegisterData)
 }
 
 // 用户发帖

@@ -56,7 +56,7 @@ onMounted(() => {
   <NMessageProvider>
     <n-config-provider :theme="themeStore.isDarkTheme ? darkTheme : lightTheme">
       <n-loading-bar-provider>
-        <n-scrollbar ref="scrollbarRef" @scroll="handleScroll" style="max-height: 100vh">
+        <n-scrollbar ref="scrollbarRef" @scroll="handleScroll" style="max-height: 100dvh">
           <RouterView />
         </n-scrollbar>
       </n-loading-bar-provider>

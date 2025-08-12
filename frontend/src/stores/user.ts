@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { userRegister, userLogin, userLogout } from '@/api/index.ts'
+import { userRegister, userLogin, userLogout, getCurrentUser } from '@/api/index.ts'
 import { type UserProfile, type userLoginData, type userRegisterData } from '@/types'
 
 const USER_STORAGE_KEY = 'user_profile'
@@ -14,10 +14,29 @@ const useUserStore = defineStore('user', () => {
   // 判断用户是否登录
   const isAuthenticated = computed(() => !!user.value)
   // 保存用户信息
-  function setUser(userData: UserProfile) {
+  function setUser(userData: UserProfile | null) {
     user.value = userData
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData))
+    if (userData) {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData))
+    } else {
+      localStorage.removeItem(USER_STORAGE_KEY)
+    }
   }
+
+  // 检查/更新用户登录信息
+  async function checkCurrentUser() {
+    try {
+      const res: UserProfile = await getCurrentUser()
+      if (!res) {
+        throw new Error('从服务器返回的数据格式不正确')
+      }
+      setUser(res)
+    } catch (err) {
+      setUser(null)
+      throw err
+    }
+  }
+
   // 登录方法
   async function login(params: userLoginData) {
     try {
@@ -72,6 +91,7 @@ const useUserStore = defineStore('user', () => {
     user,
     isAuthenticated,
     isLogining,
+    checkCurrentUser,
     setUser,
     login,
     register,

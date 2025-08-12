@@ -8,7 +8,13 @@ import {
   type RecievePostPayload,
   type getPost,
   type getPostReply,
+  type UserProfile,
 } from '@/types'
+
+// 检查用户登录状态，靠自动发送的cookie
+export const getCurrentUser = (): Promise<UserProfile> => {
+  return axiosInstance.get('/getCurrentUser')
+}
 
 // 用户登录
 export const userLogin = (userLoginData: userLoginData) => {

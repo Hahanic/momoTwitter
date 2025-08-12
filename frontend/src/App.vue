@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import {
   NConfigProvider,
   NScrollbar,
@@ -11,10 +11,12 @@ import {
 } from 'naive-ui'
 import usethemeStore from './stores/theme.ts'
 import useWindowStore from './stores/window.ts'
+import useUserStore from './stores/user.ts'
 import { useRoute } from 'vue-router'
 
 const themeStore = usethemeStore()
 const windowStore = useWindowStore()
+const userStore = useUserStore()
 const route = useRoute()
 
 // 恢复滚动位置
@@ -44,6 +46,10 @@ watch(
   },
   { immediate: true }
 )
+
+onMounted(() => {
+  userStore.checkCurrentUser()
+})
 </script>
 
 <template>

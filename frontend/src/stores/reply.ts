@@ -88,6 +88,38 @@ const useReplyStore = defineStore('reply', () => {
     }
   }
 
+  // 点赞当前帖子，从起一个是因为在Detail页面刷新会导致postStore里的posts被重置
+  const likeCurrentPost = async () => {
+    if (!userStore.isAuthenticated) {
+      throw new Error('请先登录')
+    }
+    if (isLiking.value) return
+
+    // 当前帖子
+    const post = currentPost.value
+    if (!post) return
+
+    // 记录原始状态
+    const originalIsLiked = post.currentUserInteraction!.isLiked
+    const originalLikesCount = post.stats.likesCount
+    // 加载状态
+    isLiking.value = true
+    // 乐观更新UI
+    post.stats.likesCount = originalLikesCount + (!originalIsLiked ? 1 : -1)
+    post.currentUserInteraction!.isLiked = !originalIsLiked
+
+    try {
+      await apiLikePost(post._id)
+    } catch (error) {
+      // 失败就回滚
+      post.stats.likesCount = originalLikesCount
+      post.currentUserInteraction!.isLiked = originalIsLiked
+      throw error
+    } finally {
+      isLiking.value = false
+    }
+  }
+
   // 点赞回复
   async function likeReply(replyId: string) {
     if (!userStore.isAuthenticated) {
@@ -97,7 +129,6 @@ const useReplyStore = defineStore('reply', () => {
 
     // 当前评论
     const reply = replies.value.find((r) => r._id === replyId)
-    console.log('当前评论:', reply)
     if (!reply) return
 
     // 记录原始状态
@@ -132,6 +163,7 @@ const useReplyStore = defineStore('reply', () => {
     loadReplies,
     createReply,
     likeReply,
+    likeCurrentPost,
   }
 })
 

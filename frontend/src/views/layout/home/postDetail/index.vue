@@ -48,7 +48,7 @@
                 </button>
                 <button type="button" class="flex items-center hover:cursor-pointer">
                   <HeartIcon
-                    @click.stop="postStore.likePost(currentPost._id)"
+                    @click.stop="replyStore.likeCurrentPost"
                     :fill="currentPost.currentUserInteraction?.isLiked ? 'red' : 'none'"
                     :color="'#71767b'"
                     :size="24"
@@ -190,7 +190,6 @@ import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import useReplyStore from '@/stores/reply'
-import usePostStore from '@/stores/post'
 import PostReply from '@/components/postReply/index.vue'
 import { formatDate } from '@/utils'
 import { NScrollbar } from 'naive-ui'
@@ -208,7 +207,6 @@ import {
 const route = useRoute()
 const router = useRouter()
 const replyStore = useReplyStore()
-const postStore = usePostStore()
 
 const { currentPost, replies, isLoadingReplies, hasMoreReplies } = storeToRefs(replyStore)
 

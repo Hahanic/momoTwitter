@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import usePostStore from './post'
 import useUserStore from './user'
 
-import { getPostReplies as apiGetReplies, apiCreateReply, apiLikePost, apiGetOnePost } from '@/api'
+import { getPostReplies as apiGetReplies, apiCreateReply, apiLikePost, apiGetOnePost, getReplyParentPost } from '@/api'
 import { type RecievePostPayload } from '@/types'
 
 const useReplyStore = defineStore('reply', () => {
@@ -16,6 +16,8 @@ const useReplyStore = defineStore('reply', () => {
 
   // 当前帖子数据
   const currentPost = ref<RecievePostPayload | null>(null)
+  // 如果当前帖子是replay，那么就会有parentPost
+  const parentPost = ref<RecievePostPayload | null>(null)
   // 回复列表
   const replies = ref<RecievePostPayload[]>([])
   // 加载状态
@@ -28,14 +30,11 @@ const useReplyStore = defineStore('reply', () => {
   const hasMoreReplies = ref(true)
 
   // 获取帖子详情
-  const loadPostDetail = async (postId: string) => {
-    // 重置回复相关状态
-    replies.value = []
-    repliesCursor.value = null
-    hasMoreReplies.value = true
-
-    // 从postStore中找到当前帖子
-    const foundPost = postStore.posts.find((post) => post._id === postId)
+  // 这个会在PostDetail页面加载以及路由route.params.postId变化时调用
+  async function loadPostDetail(postId: string) {
+    // 从postStore中找到当前帖子，这是从 主页 || 回复 进入的 (prettier规则表达式也换行了:)
+    const foundPost =
+      postStore.posts.find((post) => post._id === postId) || replies.value.find((reply) => reply._id === postId)
     if (foundPost) {
       currentPost.value = foundPost
     } else {
@@ -43,12 +42,59 @@ const useReplyStore = defineStore('reply', () => {
       const response = await apiGetOnePost(postId)
       currentPost.value = response
     }
+
+    // 重置回复相关状态
+    replies.value = []
+    repliesCursor.value = null
+    hasMoreReplies.value = true
+
     // 加载回复
     await loadReplies(postId)
+    // 如果是reply帖子，加载parentPost
+    await loadParentPost(postId)
+  }
+
+  // 加载parentPost， 如果是reply的话
+  async function loadParentPost(postId: string) {
+    if (!currentPost.value || currentPost.value.postType !== 'reply') return
+
+    try {
+      const response = await getReplyParentPost(postId)
+      console.log(response)
+      parentPost.value = null
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // 加载回复
+  async function loadReplies(postId: string) {
+    if (isLoadingReplies.value) return
+
+    try {
+      isLoadingReplies.value = true
+      const response = await apiGetReplies(postId, repliesCursor.value)
+
+      console.log('评论:', response)
+      // 如果没有找到当前帖子，使用返回的parentPost
+      // 这个挺重要的，就是在回复的回复发送reply时，更新currentPost的repliesCounts
+      if (response.parentPost) {
+        currentPost.value = response.parentPost
+      }
+      // 追加回复到列表
+      replies.value.push(...response.replies)
+      // 更新游标和是否还有更多数据
+      repliesCursor.value = response.nextCursor
+      hasMoreReplies.value = response.nextCursor !== null
+    } catch (error) {
+      throw error
+    } finally {
+      isLoadingReplies.value = false
+    }
   }
 
   // 发送回复
-  const createReply = async (content: string) => {
+  async function createReply(content: string) {
     if (!currentPost.value) return
 
     try {
@@ -62,31 +108,6 @@ const useReplyStore = defineStore('reply', () => {
       throw error
     } finally {
       isReplying.value = false
-    }
-  }
-
-  // 加载回复
-  const loadReplies = async (postId: string) => {
-    if (isLoadingReplies.value) return
-
-    try {
-      isLoadingReplies.value = true
-      const response = await apiGetReplies(postId, repliesCursor.value)
-
-      console.log('评论:', response)
-      // 如果没有找到当前帖子，使用返回的parentPost
-      if (!currentPost.value && response.parentPost) {
-        currentPost.value = response.parentPost
-      }
-      // 追加回复到列表
-      replies.value.push(...response.replies)
-      // 更新游标和是否还有更多数据
-      repliesCursor.value = response.nextCursor
-      hasMoreReplies.value = response.nextCursor !== null
-    } catch (error) {
-      throw error
-    } finally {
-      isLoadingReplies.value = false
     }
   }
 

@@ -69,6 +69,13 @@ export const getPostReplies = (
   })
 }
 
+// 获取reply帖子的parentPost
+export const getReplyParentPost = (
+  replyId: string
+): Promise<{ message: string; resultParentPosts: RecievePostPayload[] }> => {
+  return axiosInstance.get(`/post/${replyId}/parent`)
+}
+
 // 发送帖子回复
 export const apiCreateReply = (postId: string, content: string): Promise<RecievePostPayload> => {
   return axiosInstance.post(`/post/${postId}/replies`, { content })

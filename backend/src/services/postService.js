@@ -64,4 +64,28 @@ export class PostService {
   static async updatePostStats(postId, updates) {
     return await Post.findByIdAndUpdate(postId, { $inc: updates })
   }
+
+  // 更新所有祖先帖子的回复统计
+  static async updateAncestorRepliesCount(postId, increment = 1) {
+    const ancestorIds = []
+    let currentParentId = postId
+
+    // 收集所有祖先帖子ID
+    while (currentParentId) {
+      const parentPost = await Post.findById(currentParentId).select('parentPostId').lean()
+      if (!parentPost) {
+        break
+      }
+
+      ancestorIds.push(currentParentId)
+      currentParentId = parentPost.parentPostId
+    }
+
+    // 批量更新所有祖先帖子的回复统计
+    if (ancestorIds.length > 0) {
+      await Post.updateMany({ _id: { $in: ancestorIds } }, { $inc: { 'stats.repliesCount': increment } })
+    }
+
+    return ancestorIds
+  }
 }

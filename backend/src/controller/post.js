@@ -34,7 +34,7 @@ export const createPost = async (req, res) => {
         return sendResponse(res, 400, '回复帖必须提供 parentPostId')
       }
       postData.parentPostId = parentPostId
-      await PostService.updatePostStats(parentPostId, { 'stats.repliesCount': 1 })
+      await PostService.updateAncestorRepliesCount(parentPostId, 1)
       break
     case 'quote':
       if (!quotedPostId) {
@@ -182,6 +182,75 @@ export const getPostReplies = async (req, res) => {
   sendResponse(res, 200, '获取回复成功', { replies: results, nextCursor, parentPost })
 }
 
+// 获取帖子的parentPost
+export const getReplyParentPost = async (req, res) => {
+  const { postId } = req.params // 修正参数名
+  const MAX_DEPTH = 10 // 防止无限递归的最大深度
+
+  // 验证本回复是否存在
+  const reply = await Post.findById(postId).lean()
+  if (!reply) {
+    return sendResponse(res, 404, '回复不存在')
+  }
+
+  // 验证是否为回复类型且有parentPostId
+  if (reply.postType !== 'reply' || !reply.parentPostId) {
+    return sendResponse(res, 404, '父帖子不存在')
+  }
+
+  // 获取所有祖先帖子ID
+  const ancestorIds = []
+  let currentParentId = reply.parentPostId
+  let depth = 0
+
+  // 收集所有祖先ID
+  while (currentParentId && depth < MAX_DEPTH) {
+    ancestorIds.push(currentParentId)
+
+    // 查找当前父帖子的父帖子ID
+    const parentPost = await Post.findById(currentParentId).select('parentPostId').lean()
+    if (!parentPost) {
+      break
+    }
+
+    currentParentId = parentPost.parentPostId
+    depth++
+  }
+
+  if (ancestorIds.length === 0) {
+    return sendResponse(res, 200, '获取父帖子成功', [])
+  }
+
+  // 一次性查询所有祖先帖子
+  const ancestorPosts = await Post.find({
+    _id: { $in: ancestorIds },
+    visibility: 'public',
+  }).lean()
+
+  // 按照从最近到最远的顺序排序
+  const ancestorsMap = new Map(ancestorPosts.map((post) => [post._id.toString(), post]))
+  const ancestors = ancestorIds.map((id) => ancestorsMap.get(id.toString())).filter(Boolean) // 过滤掉不存在或不可见的帖子
+
+  // 如果用户登录了，添加交互信息
+  const token = req.cookies.token
+  let resultParentPosts = ancestors
+
+  if (token && ancestors.length > 0) {
+    try {
+      const currentUserId = verifyUserToken(token)
+      if (currentUserId) {
+        const postIds = ancestors.map((p) => p._id)
+        const interactions = await PostService.getUserInteractions(currentUserId, postIds)
+        resultParentPosts = PostService.addUserInteractions(ancestors, interactions)
+      }
+    } catch (error) {
+      // Token 错误时忽略，返回不带交互信息的帖子
+    }
+  }
+
+  sendResponse(res, 200, '获取父帖子成功', { resultParentPosts })
+}
+
 // 发送帖子回复
 export const createPostReply = async (req, res) => {
   const { postId } = req.params
@@ -212,7 +281,9 @@ export const createPostReply = async (req, res) => {
   })
 
   await newReply.save()
-  await PostService.updatePostStats(postId, { 'stats.repliesCount': 1 })
+
+  // 更新所有祖先帖子的回复统计（包括直接父帖子）
+  await PostService.updateAncestorRepliesCount(postId, 1)
 
   const responseData = {
     ...newReply.toObject(),

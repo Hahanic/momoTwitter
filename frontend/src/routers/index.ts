@@ -12,6 +12,7 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   const userStore = useUserStore()
+  // 如果用户未登录且访问的页面需要身份验证，则重定向到登录页面
   if (to.meta.requiresAuth && !userStore.isAuthenticated) {
     next({
       name: 'Login',

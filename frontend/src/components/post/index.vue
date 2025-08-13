@@ -39,56 +39,7 @@
       </div> -->
       <!-- 点赞 -->
       <div class="mt-2 mr-4 mb-4 text-[#71767b]">
-        <div class="flex flex-wrap justify-between gap-2 sm:gap-3">
-          <button
-            @click.stop="() => console.log('头像点击')"
-            type="button"
-            class="flex items-center hover:cursor-pointer"
-          >
-            <MessageCircle :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.stats.repliesCount }}</span>
-          </button>
-          <button
-            @click.stop="() => console.log('头像点击')"
-            type="button"
-            class="flex items-center hover:cursor-pointer"
-          >
-            <Repeat2 :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.stats.quotesCount }}</span>
-          </button>
-          <button
-            @click.stop="postStore.likePost(post._id)"
-            type="button"
-            class="flex items-center hover:cursor-pointer"
-          >
-            <HeartIcon
-              :color="'#71767b'"
-              :fill="post.currentUserInteraction?.isLiked ? 'red' : 'none'"
-              :size="24"
-            /><span class="pl-1">{{ post.stats.likesCount }}</span>
-          </button>
-          <button
-            @click.stop="() => console.log('头像点击')"
-            type="button"
-            class="flex items-center hover:cursor-pointer"
-          >
-            <ChartNoAxesColumnIcon :color="'#71767b'" :size="24" /><span class="pl-1">{{ post.stats.viewsCount }}</span>
-          </button>
-          <div class="flex items-center justify-center gap-3 hover:cursor-pointer">
-            <button
-              @click.stop="() => console.log('头像点击')"
-              type="button"
-              class="flex items-center hover:cursor-pointer"
-            >
-              <Bookmark :color="'#71767b'" :size="24" />
-            </button>
-            <button
-              @click.stop="() => console.log('头像点击')"
-              type="button"
-              class="flex items-center hover:cursor-pointer"
-            >
-              <Share :color="'#71767b'" :size="24" />
-            </button>
-          </div>
-        </div>
+        <PostAction :post="post" variant="full" @like="postStore.likePost(post._id)" />
       </div>
     </div>
   </div>
@@ -97,10 +48,10 @@
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
 import { NScrollbar } from 'naive-ui'
-import { MessageCircle, Repeat2, HeartIcon, ChartNoAxesColumnIcon, Bookmark, Share } from 'lucide-vue-next'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
 import usePostStore from '@/stores/post'
+import PostAction from '@/components/postAction/index.vue'
 
 const router = useRouter()
 const postStore = usePostStore()

@@ -37,37 +37,7 @@
             </div>
             <!-- 统计信息 -->
             <div class="dark:border-borderDark border-borderWhite border-y py-3 text-gray-500">
-              <div class="flex flex-wrap justify-between gap-2 sm:gap-3">
-                <button type="button" class="flex items-center hover:cursor-pointer">
-                  <MessageCircle :color="'#71767b'" :size="24" /><span class="pl-1">{{
-                    currentPost.stats.repliesCount
-                  }}</span>
-                </button>
-                <button type="button" class="flex items-center hover:cursor-pointer">
-                  <Repeat2 :color="'#71767b'" :size="24" /><span class="pl-1">{{ currentPost.stats.quotesCount }}</span>
-                </button>
-                <button type="button" class="flex items-center hover:cursor-pointer">
-                  <HeartIcon
-                    @click.stop="replyStore.likeCurrentPost"
-                    :fill="currentPost.currentUserInteraction?.isLiked ? 'red' : 'none'"
-                    :color="'#71767b'"
-                    :size="24"
-                  /><span class="pl-1">{{ currentPost.stats.likesCount }}</span>
-                </button>
-                <button type="button" class="flex items-center hover:cursor-pointer">
-                  <ChartNoAxesColumnIcon :color="'#71767b'" :size="24" /><span class="pl-1">{{
-                    currentPost.stats.viewsCount
-                  }}</span>
-                </button>
-                <div class="flex items-center justify-center gap-3 hover:cursor-pointer">
-                  <button type="button" class="flex items-center hover:cursor-pointer">
-                    <Bookmark :color="'#71767b'" :size="24" />
-                  </button>
-                  <button type="button" class="flex items-center hover:cursor-pointer">
-                    <Share :color="'#71767b'" :size="24" />
-                  </button>
-                </div>
-              </div>
+              <PostAction :post="currentPost" variant="full" @like="replyStore.likeCurrentPost" />
             </div>
           </div>
         </div>
@@ -106,33 +76,7 @@
               </div>
               <!-- 回复操作 -->
               <div class="text-sm text-gray-500">
-                <div class="flex flex-wrap gap-x-6 gap-y-2">
-                  <button type="button" class="flex items-center hover:cursor-pointer">
-                    <MessageCircle :color="'#71767b'" :size="18" /><span class="pl-1">{{
-                      reply.stats.repliesCount
-                    }}</span>
-                  </button>
-                  <button type="button" class="flex items-center hover:cursor-pointer">
-                    <Repeat2 :color="'#71767b'" :size="18" /><span class="pl-1">{{ reply.stats.quotesCount }}</span>
-                  </button>
-                  <button
-                    @click.stop="replyStore.likeReply(reply._id)"
-                    type="button"
-                    class="flex items-center hover:cursor-pointer"
-                  >
-                    <HeartIcon
-                      :color="'#71767b'"
-                      :fill="reply.currentUserInteraction?.isLiked ? 'red' : 'none'"
-                      :size="18"
-                    /><span class="pl-1">{{ reply.stats.likesCount }}</span>
-                  </button>
-                  <button type="button" class="flex items-center hover:cursor-pointer">
-                    <Bookmark :color="'#71767b'" :size="18" />
-                  </button>
-                  <button type="button" class="flex items-center hover:cursor-pointer">
-                    <Share :color="'#71767b'" :size="18" />
-                  </button>
-                </div>
+                <PostAction :post="reply" variant="compact" @like="replyStore.likeReply(reply._id)" />
               </div>
             </div>
           </div>
@@ -193,16 +137,8 @@ import useReplyStore from '@/stores/reply'
 import PostReply from '@/components/postReply/index.vue'
 import { formatDate } from '@/utils'
 import { NScrollbar } from 'naive-ui'
-import {
-  SearchIcon,
-  ArrowLeft,
-  MessageCircle,
-  Repeat2,
-  HeartIcon,
-  ChartNoAxesColumnIcon,
-  Bookmark,
-  Share,
-} from 'lucide-vue-next'
+import { SearchIcon, ArrowLeft } from 'lucide-vue-next'
+import PostAction from '@/components/postAction/index.vue'
 
 const route = useRoute()
 const router = useRouter()

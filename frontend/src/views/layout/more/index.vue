@@ -35,7 +35,7 @@
     :class="{
       'w-[38rem]': isLargeScreen || (!isLargeScreen && !isMobile && isChildRouteActive),
       'w-[100vw]': isMobile && isChildRouteActive,
-      'ml-7': isLargeScreen,
+      'ml-7 pr-7': isLargeScreen,
     }"
     class="dark:border-borderDark border-borderWhite sticky top-0 h-screen border-r-1 transition-all md:min-h-screen"
   >

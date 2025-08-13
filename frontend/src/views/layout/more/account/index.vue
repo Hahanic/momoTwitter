@@ -1,5 +1,32 @@
 <template>
-  <div class="w-full">
+  <div class="dark:border-borderDark border-borderWhite mt-3 w-full border-t-1 pt-3">
+    <!-- 用户信息 -->
+    <div v-if="userStore.isAuthenticated">
+      <div class="flex h-[6rem] items-center">
+        <img :src="userStore.user?.avatarUrl || '/myAvatar.jpg'" class="w-[6rem] rounded-full" />
+        <div class="ml-4 flex h-full flex-col justify-center">
+          <span>{{ userStore.user?.displayName }}</span>
+          <span>@{{ userStore.user?.username }}</span>
+        </div>
+      </div>
+
+      <button
+        @click="logoutAndclear"
+        class="rounded bg-[#d4237a] px-4 py-2 text-white transition-colors hover:bg-[#a11a5b]"
+      >
+        退出登录
+      </button>
+    </div>
+    <div v-else>
+      <button
+        @click="router.push('/login')"
+        class="rounded bg-[#d4237a] px-4 py-2 text-white transition-colors hover:bg-[#a11a5b]"
+      >
+        点击登录
+      </button>
+    </div>
+  </div>
+  <!-- <div class="w-full border">
     <div class="flex h-full flex-col items-center justify-center">
       <h1 class="mb-4 text-2xl font-bold">Account Settings</h1>
       <p class="text-gray-600">Manage your account settings here.</p>
@@ -7,7 +34,7 @@
         Logout
       </button>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script setup lang="ts">

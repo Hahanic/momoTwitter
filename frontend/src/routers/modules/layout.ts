@@ -24,9 +24,9 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         path: '/profile',
         name: 'Profile',
         component: Profile,
-        meta: {
-          requiresAuth: true,
-        },
+        // meta: {
+        //   requiresAuth: true,
+        // },
       },
       {
         path: '/explore',
@@ -55,9 +55,6 @@ const layoutRoutes: Array<RouteRecordRaw> = [
             path: 'account',
             name: 'MoreAccount',
             component: () => import('@/views/layout/more/account/index.vue'),
-            meta: {
-              requiresAuth: true,
-            },
           },
           {
             path: 'settings',

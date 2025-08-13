@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
 import {
   NConfigProvider,
   NScrollbar,
@@ -9,10 +8,12 @@ import {
   lightTheme,
   type ScrollbarInst,
 } from 'naive-ui'
-import usethemeStore from './stores/theme.ts'
-import useWindowStore from './stores/window.ts'
-import useUserStore from './stores/user.ts'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+
+import usethemeStore from './stores/theme.ts'
+import useUserStore from './stores/user.ts'
+import useWindowStore from './stores/window.ts'
 
 const themeStore = usethemeStore()
 const windowStore = useWindowStore()
@@ -56,7 +57,7 @@ onMounted(() => {
   <NMessageProvider>
     <n-config-provider :theme="themeStore.isDarkTheme ? darkTheme : lightTheme">
       <n-loading-bar-provider>
-        <n-scrollbar ref="scrollbarRef" @scroll="handleScroll" style="max-height: 100dvh">
+        <n-scrollbar ref="scrollbarRef" style="max-height: 100dvh" @scroll="handleScroll">
           <RouterView />
         </n-scrollbar>
       </n-loading-bar-provider>

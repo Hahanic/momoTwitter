@@ -46,8 +46,8 @@
 </template>
 
 <script setup lang="ts">
-import { NScrollbar } from 'naive-ui'
 import { SearchIcon, SettingsIcon } from 'lucide-vue-next'
+import { NScrollbar } from 'naive-ui'
 import { ref } from 'vue'
 
 const tagList = ref([

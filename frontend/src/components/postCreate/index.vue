@@ -93,7 +93,6 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue'
 import {
   Image,
   LucideBot,
@@ -106,8 +105,10 @@ import {
   UserCircle2Icon,
 } from 'lucide-vue-next'
 import { NScrollbar, useMessage } from 'naive-ui'
-import useUserStore from '@/stores/user'
+import { onMounted, ref, watch } from 'vue'
+
 import usePostStore from '@/stores/post'
+import useUserStore from '@/stores/user'
 
 const postStore = usePostStore()
 const userStore = useUserStore()

@@ -37,10 +37,25 @@
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, ref, watch } from 'vue'
+import {
+  HomeIcon,
+  Search,
+  Bell,
+  Mail,
+  BotIcon,
+  Rows3,
+  Bookmark,
+  BriefcaseBusiness,
+  Users2,
+  User2,
+  CircleEllipsis,
+  Send,
+} from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
-import GooeyNav from '@/components/menuList/index.vue'
+import { defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+
+import GooeyNav from '@/components/menuList/index.vue'
 import useThemeStore from '@/stores/theme'
 
 const themeStore = useThemeStore()
@@ -62,20 +77,6 @@ watch(
 )
 
 // 帖子列表
-import {
-  HomeIcon,
-  Search,
-  Bell,
-  Mail,
-  BotIcon,
-  Rows3,
-  Bookmark,
-  BriefcaseBusiness,
-  Users2,
-  User2,
-  CircleEllipsis,
-  Send,
-} from 'lucide-vue-next'
 const menuLists = [
   {
     icon: HomeIcon,

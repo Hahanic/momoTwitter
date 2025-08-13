@@ -44,7 +44,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
 import {
   NForm,
   NFormItem,
@@ -57,11 +56,13 @@ import {
   type FormInst,
   type FormRules,
 } from 'naive-ui'
+import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+
 import { getIdentifyingCode } from '@/api/index.ts'
+import btnTheme from '@/components/btnTheme/index.vue'
 import useUserStore from '@/stores/user'
 import { throttle } from '@/utils/index.ts'
-import btnTheme from '@/components/btnTheme/index.vue'
 
 const userStore = useUserStore()
 
@@ -160,7 +161,6 @@ const getCodethrottle = throttle(btnCreateCode, 2000)
 // 登录
 const handleLogin = (e: MouseEvent) => {
   e.preventDefault() // 阻止表单默认提交行为
-  console.log(12)
   formRef.value?.validate(async (errors) => {
     if (errors) return
     try {

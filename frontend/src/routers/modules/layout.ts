@@ -1,6 +1,7 @@
 import { type RouteRecordRaw } from 'vue-router'
-import Layout from '@/views/layout/index.vue'
+
 import Home from '@/views/layout/home/index.vue'
+import Layout from '@/views/layout/index.vue'
 import More from '@/views/layout/more/index.vue'
 import Profile from '@/views/layout/profile/index.vue'
 

@@ -43,23 +43,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import {
   NForm,
   NFormItem,
   NCard,
   NInput,
   NButton,
-  NSpace,
   useMessage,
+  NSpace,
   useLoadingBar,
   type FormInst,
   type FormRules,
 } from 'naive-ui'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { throttle } from '@/utils/index.ts'
+
 import btnTheme from '@/components/btnTheme/index.vue'
 import useUserStore from '@/stores/user'
+import { throttle } from '@/utils/index.ts'
 
 const userStore = useUserStore()
 

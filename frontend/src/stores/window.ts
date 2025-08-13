@@ -1,6 +1,6 @@
+import { useBreakpoints } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useBreakpoints } from '@vueuse/core'
 
 const useWindowStore = defineStore('window', () => {
   // home的滚动

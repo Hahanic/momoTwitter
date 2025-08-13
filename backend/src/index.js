@@ -1,13 +1,14 @@
-import express from 'express'
+import os from 'os'
+
+import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import cookieParser from 'cookie-parser'
-import os from 'os'
+import express from 'express'
+
 import { connectDB } from './db/index.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
-
-import userRoutes from './routes/userRoutes.js'
 import postRoutes from './routes/postRoutes.js'
+import userRoutes from './routes/userRoutes.js'
 
 dotenv.config()
 const app = express()

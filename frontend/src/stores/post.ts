@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
+
 import useUserStore from './user'
+
 import { createPost as apiCreatePost, getPosts as apiGetPost, apiLikePost } from '@/api'
 import { type RecievePostPayload, type CreatePostPayload } from '@/types'
-import { ref } from 'vue'
 
 const usePostStore = defineStore('post', () => {
   // 储存帖子列表

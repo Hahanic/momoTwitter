@@ -44,10 +44,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Settings } from 'lucide-vue-next'
-import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
 import useWindowStore from '@/stores/window'
 
 const route = useRoute()

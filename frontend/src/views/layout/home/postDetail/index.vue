@@ -130,15 +130,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRoute, useRouter } from 'vue-router'
-import useReplyStore from '@/stores/reply'
-import PostReply from '@/components/postReply/index.vue'
-import { formatDate } from '@/utils'
-import { NScrollbar } from 'naive-ui'
 import { SearchIcon, ArrowLeft } from 'lucide-vue-next'
+import { NScrollbar } from 'naive-ui'
+import { storeToRefs } from 'pinia'
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
 import PostAction from '@/components/postAction/index.vue'
+import PostReply from '@/components/postReply/index.vue'
+import useReplyStore from '@/stores/reply'
+import { formatDate } from '@/utils'
 
 const route = useRoute()
 const router = useRouter()

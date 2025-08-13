@@ -11,16 +11,16 @@
       </div>
 
       <button
-        @click="logoutAndclear"
         class="rounded bg-[#d4237a] px-4 py-2 text-white transition-colors hover:bg-[#a11a5b]"
+        @click="logoutAndclear"
       >
         退出登录
       </button>
     </div>
     <div v-else>
       <button
-        @click="router.push('/login')"
         class="rounded bg-[#d4237a] px-4 py-2 text-white transition-colors hover:bg-[#a11a5b]"
+        @click="router.push('/login')"
       >
         点击登录
       </button>
@@ -38,9 +38,10 @@
 </template>
 
 <script setup lang="ts">
-import useUserStore from '@/stores/user'
 import { useLoadingBar, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
+
+import useUserStore from '@/stores/user'
 
 const router = useRouter()
 const loadingBar = useLoadingBar()

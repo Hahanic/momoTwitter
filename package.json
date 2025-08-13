@@ -2,6 +2,7 @@
   "name": "momotwitter",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "workspaces": [
     "frontend",
     "backend"
@@ -16,7 +17,9 @@
     "prepare": "husky",
     "commit": "cz",
     "dev": "concurrently \"npm:dev --workspace=frontend\" \"npm:dev --workspace=backend\"",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "config": {
     "commitizen": {
@@ -37,12 +40,18 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.33.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "@vue/eslint-config-typescript": "^14.6.0",
     "commitizen": "^4.3.1",
     "concurrently": "^9.2.0",
     "cz-git": "^1.12.0",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.3",
+    "eslint-plugin-vue": "^10.4.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.4",
     "prettier": "^3.6.2",

@@ -1,9 +1,7 @@
-import Post from '../db/model/Post.js'
-import User from '../db/model/User.js'
 import Like from '../db/model/Like.js'
-import Bookmark from '../db/model/Bookmark.js'
-import { verifyUserToken, parseCursor, sendResponse } from '../utils/index.js'
+import Post from '../db/model/Post.js'
 import { PostService } from '../services/postService.js'
+import { verifyUserToken, parseCursor, sendResponse } from '../utils/index.js'
 
 // 发送帖子
 export const createPost = async (req, res) => {

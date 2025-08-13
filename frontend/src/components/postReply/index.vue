@@ -78,7 +78,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
 import {
   Image,
   LucideBot,
@@ -90,9 +89,11 @@ import {
   MapPin,
 } from 'lucide-vue-next'
 import { NScrollbar, useMessage } from 'naive-ui'
+import { ref, watch } from 'vue'
+
+import useReplyStore from '@/stores/reply'
 import useUserStore from '@/stores/user'
 import useWindowStore from '@/stores/window'
-import useReplyStore from '@/stores/reply'
 
 const userStore = useUserStore()
 const replyStore = useReplyStore()

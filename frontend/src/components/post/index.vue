@@ -46,12 +46,13 @@
 </template>
 
 <script lang="ts" setup>
-import { useRouter } from 'vue-router'
 import { NScrollbar } from 'naive-ui'
+import { useRouter } from 'vue-router'
+
+import PostAction from '@/components/postAction/index.vue'
+import usePostStore from '@/stores/post'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
-import usePostStore from '@/stores/post'
-import PostAction from '@/components/postAction/index.vue'
 
 const router = useRouter()
 const postStore = usePostStore()

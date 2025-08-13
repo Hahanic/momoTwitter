@@ -8,8 +8,9 @@
 </template>
 
 <script lang="ts" setup>
-import { NIcon } from 'naive-ui'
 import { MoonIcon, SunIcon } from 'lucide-vue-next'
+import { NIcon } from 'naive-ui'
+
 import usethemeStore from '@/stores/theme'
 
 const themeStore = usethemeStore()

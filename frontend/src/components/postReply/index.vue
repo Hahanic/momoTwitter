@@ -31,7 +31,7 @@
     <div class="min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]" :class="{ 'mt-3 max-h-[6rem]': hasUserFocused }">
       <!-- 地点 -->
       <div
-        :class="{ 'ml-[3.5rem]': windowStore.isMobile && !hasUserFocused }"
+        :class="{ 'pl-[3.5rem]': windowStore.isMobile && !hasUserFocused }"
         class="text-icon2 flex h-[1.5rem] w-full items-center"
       >
         <MapPin :size="20" />

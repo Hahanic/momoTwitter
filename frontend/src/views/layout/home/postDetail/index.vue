@@ -1,5 +1,8 @@
 <template>
-  <main class="dark:border-borderDark border-borderWhite w-[100vw] border-x-1 sm:min-h-screen sm:w-[38rem]">
+  <main
+    :class="{ 'dark:border-borderDark border-borderWhite border-x-1': !windowStore.isMobile }"
+    class="w-[100vw] sm:min-h-screen sm:w-[38rem]"
+  >
     <div
       class="dark:border-borderDark border-borderWhite sticky top-0 z-10 grid h-[3.2rem] w-full grid-cols-2 border-b-1 bg-[#ffffff]/80 backdrop-blur-lg dark:bg-[#000]/80 dark:backdrop-blur-sm"
     >
@@ -48,39 +51,7 @@
 
       <!-- 回复列表 -->
       <div v-if="replies.length > 0">
-        <div
-          v-for="reply in replies"
-          :key="reply._id"
-          class="dark:border-borderDark border-borderWhite border-b p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50"
-        >
-          <div class="flex">
-            <!-- 头像 -->
-            <div class="mr-3">
-              <img
-                class="max-h-[3rem] max-w-[3rem] rounded-full"
-                :src="reply.authorInfo.avatarUrl || '/myAvatar.jpg'"
-              />
-            </div>
-            <!-- 内容 -->
-            <div class="flex-1">
-              <!-- 作者信息 -->
-              <div class="mb-1 flex flex-wrap items-center">
-                <span class="font-semibold">{{ reply.authorInfo.displayName }}</span>
-                <span class="ml-2 text-sm text-gray-500">@{{ reply.authorInfo.username }}</span>
-                <span class="mx-1 text-gray-500">·</span>
-                <span class="text-sm text-gray-500">{{ formatDate(reply.createdAt) }}</span>
-              </div>
-              <!-- 回复内容 -->
-              <div class="mb-2">
-                <span class="break-all whitespace-pre-wrap">{{ reply.content }}</span>
-              </div>
-              <!-- 回复操作 -->
-              <div class="text-sm text-gray-500">
-                <PostAction :post="reply" variant="compact" @like="replyStore.likeReply(reply._id)" />
-              </div>
-            </div>
-          </div>
-        </div>
+        <Post v-for="reply in replies" :post="reply" :type="'reply'" :key="reply._id" />
       </div>
 
       <!-- 加载更多回复 -->
@@ -133,17 +104,20 @@
 import { SearchIcon, ArrowLeft } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
 import { storeToRefs } from 'pinia'
-import { onMounted } from 'vue'
+import { watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import Post from '@/components/post/index.vue'
 import PostAction from '@/components/postAction/index.vue'
 import PostReply from '@/components/postReply/index.vue'
 import useReplyStore from '@/stores/reply'
+import useWindowStore from '@/stores/window'
 import { formatDate } from '@/utils'
 
 const route = useRoute()
 const router = useRouter()
 const replyStore = useReplyStore()
+const windowStore = useWindowStore()
 
 const { currentPost, replies, isLoadingReplies, hasMoreReplies } = storeToRefs(replyStore)
 
@@ -155,7 +129,16 @@ const loadMoreReplies = async () => {
 }
 
 // 组件挂载时加载原帖子数据
-onMounted(() => {
-  replyStore.loadPostDetail(postId)
-})
+// onMounted(() => {
+//   replyStore.loadPostDetail(postId)
+// })
+watch(
+  () => route.params.postId,
+  (newPostId) => {
+    if (newPostId) {
+      replyStore.loadPostDetail(newPostId as string)
+    }
+  },
+  { immediate: true } // 立即执行一次
+)
 </script>

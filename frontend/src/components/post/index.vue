@@ -1,7 +1,5 @@
 <template>
   <div
-    v-for="post in postLists"
-    :key="post._id"
     class="dark:border-borderDark border-borderWhite flex w-full border-b-1 transition-all hover:cursor-pointer hover:bg-[#f7f7f7] dark:hover:bg-transparent"
     @click="handlePostClick(post)"
   >
@@ -37,9 +35,8 @@
           <img class="h-full max-w-full rounded-xl" :src="post.src" />
         </div>
       </div> -->
-      <!-- 点赞 -->
       <div class="mt-2 mr-4 mb-4 text-[#71767b]">
-        <PostAction :post="post" variant="full" @like="postStore.likePost(post._id)" />
+        <PostAction :post="post" variant="full" @like="handlePostLike" />
       </div>
     </div>
   </div>
@@ -51,22 +48,48 @@ import { useRouter } from 'vue-router'
 
 import PostAction from '@/components/postAction/index.vue'
 import usePostStore from '@/stores/post'
+import useReplyStore from '@/stores/reply'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
 
 const router = useRouter()
 const postStore = usePostStore()
+const replyStore = useReplyStore()
 
-defineProps<{
-  postLists: RecievePostPayload[]
+const props = defineProps<{
+  post: RecievePostPayload
+  type: 'post' | 'postDetail' | 'reply'
 }>()
+
+// 根据不同类型帖子映射不同方法
+const actionLikeMap = {
+  reply: () => replyStore.likeReply(props.post._id),
+  post: () => postStore.likePost(props.post._id),
+  postDetail: () => replyStore.likeCurrentPost(),
+}
+// 根据不同类型帖子映射不同路由跳转
+const routeMap = {
+  reply: 'PostDetail', // todo
+  post: 'PostDetail',
+  postDetail: '#', // todo
+}
 
 // 处理帖子点击事件
 const handlePostClick = (post: RecievePostPayload) => {
+  if (routeMap[props.type] === '#') return
   router.push({
-    name: 'PostDetail',
+    name: routeMap[props.type],
     params: { postId: post._id },
   })
+}
+
+// 点赞
+const handlePostLike = async () => {
+  try {
+    await actionLikeMap[props.type]()
+  } catch (error: any) {
+    console.log(error.message || error)
+  }
 }
 </script>
 

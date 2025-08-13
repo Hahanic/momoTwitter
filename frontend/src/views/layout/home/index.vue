@@ -1,5 +1,8 @@
 <template>
-  <main class="dark:border-borderDark border-borderWhite w-[100vw] border-x-1 sm:min-h-screen sm:w-[38rem]">
+  <main
+    :class="{ 'dark:border-borderDark border-borderWhite border-x-1': !windowStore.isMobile }"
+    class="w-[100vw] sm:min-h-screen sm:w-[38rem]"
+  >
     <div
       class="dark:border-borderDark border-borderWhite sticky top-0 z-10 grid h-[3.2rem] w-full grid-cols-2 border-b-1 bg-[#ffffff]/80 backdrop-blur-lg dark:bg-[#000]/80 dark:backdrop-blur-sm"
     >
@@ -17,9 +20,9 @@
 
     <div class="w-full">
       <!-- user -->
-      <userSendCard />
+      <UserSendCard />
       <!-- posts -->
-      <posts :postLists="postStore.posts" />
+      <Posts v-for="post in postStore.posts" :post="post" :type="'post'" :key="post._id" />
       <div ref="observerEl" class="flex h-20 w-full items-center justify-center">
         <LoaderIcon
           v-if="postStore.hasMore && postStore.isLoading"
@@ -58,12 +61,13 @@ import { SearchIcon, LoaderIcon } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 
-import posts from '@/components/post/index.vue'
-import userSendCard from '@/components/postCreate/index.vue'
+import Posts from '@/components/post/index.vue'
+import UserSendCard from '@/components/postCreate/index.vue'
 import usePostStore from '@/stores/post'
+import useWindowStore from '@/stores/window.ts'
 
 const postStore = usePostStore()
-
+const windowStore = useWindowStore()
 const loadMorePosts = async () => {
   try {
     await postStore.fetchMorePosts()

@@ -13,13 +13,13 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\"",
     "prepare": "husky",
     "commit": "cz",
     "dev": "concurrently \"npm:dev --workspace=frontend\" \"npm:dev --workspace=backend\"",
     "format": "prettier --write .",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "check": "npm run format && npm run lint"
   },
   "config": {
     "commitizen": {

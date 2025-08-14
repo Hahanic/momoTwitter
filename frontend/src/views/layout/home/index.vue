@@ -8,6 +8,7 @@
     >
       <div
         class="flex cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/90"
+        @dblclick="refreshPosts"
       >
         为你推荐
       </div>
@@ -22,11 +23,11 @@
       <!-- user -->
       <UserSendCard />
       <!-- posts -->
-      <Posts v-for="post in postStore.posts" :post="post" :type="'post'" :key="post._id" />
+      <Posts v-for="post in feedStore.posts" :post="post" :type="'post'" :key="post._id" />
       <div ref="observerEl" class="flex h-20 w-full items-center justify-center">
         <LoaderIcon
-          v-if="postStore.hasMore && postStore.isLoading"
-          :class="{ 'animate-spin': postStore.isLoading }"
+          v-if="feedStore.hasMore && feedStore.isLoading"
+          :class="{ 'animate-spin': feedStore.isLoading }"
           :size="26"
         />
         <span v-else>没有更多了</span>
@@ -63,14 +64,30 @@ import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 import Posts from '@/components/post/index.vue'
 import UserSendCard from '@/components/postCreate/index.vue'
-import usePostStore from '@/stores/post'
-import useWindowStore from '@/stores/window.ts'
+import { usePostFeedStore, useWindowStore } from '@/stores'
 
-const postStore = usePostStore()
+const feedStore = usePostFeedStore()
 const windowStore = useWindowStore()
+
 const loadMorePosts = async () => {
   try {
-    await postStore.fetchMorePosts()
+    await feedStore.loadMorePosts()
+  } catch (error: any) {
+    console.log(error.message || error)
+  }
+}
+
+const loadInitialPosts = async () => {
+  try {
+    await feedStore.loadInitialPosts()
+  } catch (error: any) {
+    console.log(error.message || error)
+  }
+}
+
+const refreshPosts = async () => {
+  try {
+    await feedStore.refreshPosts()
   } catch (error: any) {
     console.log(error.message || error)
   }
@@ -80,12 +97,20 @@ const loadMorePosts = async () => {
 const observerEl = ref<HTMLElement | null>(null)
 const scrollRoot = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
-onMounted(() => {
+onMounted(async () => {
   scrollRoot.value = document.querySelector('.n-scrollbar-container')
+
   // 首次加载
-  if (postStore.posts.length === 0) {
-    loadMorePosts()
+  if (feedStore.posts.length === 0) {
+    await loadInitialPosts()
   }
+
+  // 预加载前几个帖子的详情以优化体验
+  setTimeout(() => {
+    if (feedStore.posts.length > 0) {
+      feedStore.preloadPostDetails(3)
+    }
+  }, 1000)
 })
 // 其实放进onMounted也行，不过这样更健壮
 watch([scrollRoot, observerEl], ([rootElement, targetElement]) => {
@@ -99,7 +124,8 @@ watch([scrollRoot, observerEl], ([rootElement, targetElement]) => {
       threshold: 0,
     }
     observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
+      if (entries[0].isIntersecting && feedStore.hasMore && !feedStore.isLoading) {
+        console.log('IntersectionObserver 触发 loadMorePosts')
         loadMorePosts()
       }
     }, options)

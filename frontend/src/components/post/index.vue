@@ -1,17 +1,27 @@
 <template>
   <div
-    class="dark:border-borderDark border-borderWhite flex w-full border-b-1 transition-all hover:cursor-pointer hover:bg-[#f7f7f7] dark:hover:bg-transparent"
+    :class="{ 'dark:border-borderDark border-borderWhite border-b-1': type !== 'parent' }"
+    class="shover:bg-[#f7f7f7] flex w-full transition-all hover:cursor-pointer dark:hover:bg-transparent"
     @click="handlePostClick(post)"
   >
-    <!-- :key="post.src" -->
     <!-- 头像 -->
-    <div @click.stop="() => console.log('头像点击')">
-      <div class="mx-2 mt-2 h-[3rem] w-[3rem]">
+    <div class="relative">
+      <div @click.stop="() => console.log('头像点击')" class="relative mx-2 mt-2 h-[3rem] w-[3rem]">
+        <!-- 边框 -->
+        <div
+          class="absolute inset-0 rounded-full border-2 border-transparent transition-all hover:border-blue-500"
+        ></div>
+        <!-- 头像 -->
         <img class="rounded-full select-none" src="/myAvatar.jpg" />
       </div>
+      <!-- parentPost向下的线程 -->
+      <div
+        v-if="type === 'parent'"
+        class="absolute left-[2rem] h-[calc(100%-3rem)] rounded-2xl border-[1.5px] border-[#333639]"
+      ></div>
     </div>
     <!-- 内容 -->
-    <div class="w-full text-[0.9rem]">
+    <div class="w-full text-[1rem]">
       <!-- 名字/用户id/日期 -->
       <div class="mt-2.5 flex">
         <span @click.stop="() => console.log('displayname点击')" class="font-semibold hover:underline">{{
@@ -47,49 +57,33 @@ import { NScrollbar } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
 import PostAction from '@/components/postAction/index.vue'
-import usePostStore from '@/stores/post'
-import useReplyStore from '@/stores/reply'
+import { usePostInteractionStore } from '@/stores'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
 
 const router = useRouter()
-const postStore = usePostStore()
-const replyStore = useReplyStore()
+const postInteractionStore = usePostInteractionStore()
 
 const props = defineProps<{
   post: RecievePostPayload
-  type: 'post' | 'postDetail' | 'reply'
+  type: 'post' | 'reply' | 'parent'
 }>()
-
-// 根据不同类型帖子映射不同方法
-const actionLikeMap = {
-  reply: () => replyStore.likeReply(props.post._id),
-  post: () => postStore.likePost(props.post._id),
-  postDetail: () => replyStore.likeCurrentPost(),
-}
-// 根据不同类型帖子映射不同路由跳转
-const routeMap = {
-  reply: 'PostDetail', // todo
-  post: 'PostDetail',
-  postDetail: '#', // todo
-}
-
-// 处理帖子点击事件
-const handlePostClick = (post: RecievePostPayload) => {
-  if (routeMap[props.type] === '#') return
-  router.push({
-    name: routeMap[props.type],
-    params: { postId: post._id },
-  })
-}
 
 // 点赞
 const handlePostLike = async () => {
   try {
-    await actionLikeMap[props.type]()
+    await postInteractionStore.toggleLike(props.post._id)
   } catch (error: any) {
     console.log(error.message || error)
   }
+}
+
+// 处理帖子点击事件
+const handlePostClick = (post: RecievePostPayload) => {
+  router.push({
+    name: 'PostDetail',
+    params: { postId: post._id },
+  })
 }
 </script>
 

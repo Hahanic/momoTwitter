@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 import usePostStore from './post'
 import useUserStore from './user'
 
-import { getPostReplies as apiGetReplies, apiCreateReply, apiLikePost, apiGetOnePost, getReplyParentPost } from '@/api'
+import { getPostReplies as apiGetReplies, apiCreateReply, apiLikePost, apiGetOnePost } from '@/api'
 import { type RecievePostPayload } from '@/types'
 
 const useReplyStore = defineStore('reply', () => {
@@ -18,6 +18,8 @@ const useReplyStore = defineStore('reply', () => {
   const currentPost = ref<RecievePostPayload | null>(null)
   // 如果当前帖子是replay，那么就会有parentPost
   const parentPost = ref<RecievePostPayload | null>(null)
+  // 父帖子链（从根帖子到当前帖子的父级，像栈一样）
+  const parentChain = ref<RecievePostPayload[]>([])
   // 回复列表
   const replies = ref<RecievePostPayload[]>([])
   // 加载状态
@@ -47,25 +49,111 @@ const useReplyStore = defineStore('reply', () => {
     replies.value = []
     repliesCursor.value = null
     hasMoreReplies.value = true
+    parentPost.value = null // 重置父帖子
+    parentChain.value = [] // 重置父帖子链
+
+    // 如果是reply帖子，构建父帖子链
+    if (currentPost.value?.postType === 'reply' && currentPost.value.parentPostId) {
+      await buildParentChain(currentPost.value.parentPostId)
+    }
 
     // 加载回复
     await loadReplies(postId)
-    // 如果是reply帖子，加载parentPost
-    await loadParentPost(postId)
   }
 
-  // 加载parentPost， 如果是reply的话
-  async function loadParentPost(postId: string) {
-    if (!currentPost.value || currentPost.value.postType !== 'reply') return
+  // 构建父帖子链（从当前帖子往上追溯到根帖子）
+  async function buildParentChain(startParentId: string) {
+    const chain: RecievePostPayload[] = []
+    let currentParentId: string | undefined = startParentId
 
-    try {
-      const response = await getReplyParentPost(postId)
-      console.log(response)
-      parentPost.value = null
-    } catch (error) {
-      throw error
+    while (currentParentId) {
+      // 首先尝试从本地缓存查找
+      let parentPost = findPostInCache(currentParentId)
+
+      if (!parentPost) {
+        // 如果本地没有，从服务器获取
+        try {
+          parentPost = await apiGetOnePost(currentParentId)
+        } catch (error) {
+          console.error(`无法获取父帖子 ${currentParentId}:`, error)
+          break
+        }
+      }
+
+      // 将父帖子添加到链的开头（这样最终的顺序是从根帖子到直接父帖子）
+      chain.unshift(parentPost)
+
+      // 继续向上查找
+      currentParentId = parentPost.postType === 'reply' ? parentPost.parentPostId : undefined
     }
+
+    // 设置父帖子链和直接父帖子
+    parentChain.value = chain
+    parentPost.value = chain.length > 0 ? chain[chain.length - 1] : null
   }
+
+  // 在缓存中查找帖子（postStore.posts 和 replies）
+  function findPostInCache(postId: string): RecievePostPayload | undefined {
+    // 在主帖子列表中查找
+    const foundInPosts = postStore.posts.find((post) => post._id === postId)
+    if (foundInPosts) return foundInPosts
+
+    // 在当前回复列表中查找
+    const foundInReplies = replies.value.find((reply) => reply._id === postId)
+    if (foundInReplies) return foundInReplies
+
+    // 在父帖子链中查找
+    const foundInChain = parentChain.value.find((post) => post._id === postId)
+    if (foundInChain) return foundInChain
+
+    return undefined
+  }
+
+  // 设置父帖子（无需重新fetch，从现有数据中查找）
+  function setParentPost(parentPostId: string) {
+    const foundPost = findPostInCache(parentPostId)
+    if (foundPost) {
+      parentPost.value = foundPost
+      return true
+    }
+
+    // 如果都没找到，parentPost保持为null
+    parentPost.value = null
+    return false
+  }
+
+  // 手动设置父帖子数据（用于从API获取后设置）
+  function setParentPostData(post: RecievePostPayload) {
+    parentPost.value = post
+  }
+
+  // 重置所有状态
+  function resetState() {
+    currentPost.value = null
+    parentPost.value = null
+    parentChain.value = []
+    replies.value = []
+    repliesCursor.value = null
+    hasMoreReplies.value = true
+    isLoadingReplies.value = false
+    isReplying.value = false
+  }
+
+  // 检查当前是否为回复详情页（有父帖子的情况）
+  const isReplyDetailView = computed(() => {
+    return currentPost.value?.postType === 'reply' && parentChain.value.length > 0
+  })
+
+  // 获取根帖子（对话的起始帖子）
+  const rootPost = computed(() => {
+    return parentChain.value.length > 0 ? parentChain.value[0] : null
+  })
+
+  // 获取完整的对话链（从根帖子到当前帖子）
+  const fullConversationChain = computed(() => {
+    if (!currentPost.value) return []
+    return [...parentChain.value, currentPost.value]
+  })
 
   // 加载回复
   async function loadReplies(postId: string) {
@@ -79,7 +167,7 @@ const useReplyStore = defineStore('reply', () => {
       // 如果没有找到当前帖子，使用返回的parentPost
       // 这个挺重要的，就是在回复的回复发送reply时，更新currentPost的repliesCounts
       if (response.parentPost) {
-        currentPost.value = response.parentPost
+        currentPost.value!.stats = response.parentPost.stats
       }
       // 追加回复到列表
       replies.value.push(...response.replies)
@@ -176,14 +264,27 @@ const useReplyStore = defineStore('reply', () => {
   }
 
   return {
+    // 状态
     currentPost,
+    parentPost,
+    parentChain,
     replies,
     isLoadingReplies,
     isReplying,
     repliesCursor,
     hasMoreReplies,
+    // 计算属性
+    isReplyDetailView,
+    rootPost,
+    fullConversationChain,
+    // 方法
     loadPostDetail,
     loadReplies,
+    buildParentChain,
+    findPostInCache,
+    setParentPost,
+    setParentPostData,
+    resetState,
     createReply,
     likeReply,
     likeCurrentPost,

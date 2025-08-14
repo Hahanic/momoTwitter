@@ -16,7 +16,6 @@
         <div class="block sm:hidden">
           <button
             @click="handlePosting"
-            :disabled="postStore.isPosting"
             :class="{
               'bg-black text-white hover:cursor-pointer dark:bg-white': !!messageContent,
               'bg-[#87898c] dark:bg-[#787a7a]': !messageContent,
@@ -44,7 +43,6 @@
             ref="textareaRef"
             v-model="messageContent"
             maxlength="301"
-            :disabled="postStore.isPosting"
             class="textareaEl mt-3 w-full resize-none overflow-y-hidden bg-transparent pr-2 text-xl break-all placeholder-[#808080] focus:outline-none"
             placeholder="有什么新鲜事?"
           ></textarea>
@@ -77,7 +75,7 @@
         <div :class="{ 'hidden sm:block': isCompose }">
           <button
             @click="handlePosting"
-            :disabled="postStore.isPosting"
+            :disabled="postInteractionStore.isCreatingPost()"
             :class="{
               'bg-black text-white hover:cursor-pointer dark:bg-white': !!messageContent,
               'bg-[#87898c] dark:bg-[#787a7a]': !messageContent,
@@ -107,11 +105,12 @@ import {
 import { NScrollbar, useMessage } from 'naive-ui'
 import { onMounted, ref, watch } from 'vue'
 
-import usePostStore from '@/stores/post'
+import { usePostFeedStore, usePostInteractionStore } from '@/stores'
 import useUserStore from '@/stores/user'
 
-const postStore = usePostStore()
 const userStore = useUserStore()
+const postFeedStore = usePostFeedStore()
+const postInteractionStore = usePostInteractionStore()
 const message = useMessage()
 
 interface Props {
@@ -162,10 +161,11 @@ const handlePosting = async () => {
   }
   // 发帖
   try {
-    await postStore.createPost({
+    await postFeedStore.createAndAddPost({
       content: messageContent.value,
       postType: 'standard',
     })
+
     message.success('发帖成功！')
     // 清空输入框
     messageContent.value = ''
@@ -174,6 +174,28 @@ const handlePosting = async () => {
     console.error(error.message || '发帖失败:')
   }
 }
+// const handlePosting = async () => {
+//   // 内容为空直接返回
+//   if (!messageContent.value) return
+//   // 是否已登陆
+//   if (!userStore.isAuthenticated) {
+//     message.warning('请先登录！')
+//     return
+//   }
+//   // 发帖
+//   try {
+//     await postStore.createPost({
+//       content: messageContent.value,
+//       postType: 'standard',
+//     })
+//     message.success('发帖成功！')
+//     // 清空输入框
+//     messageContent.value = ''
+//   } catch (error: any) {
+//     message.error(error.message || '发帖失败，请稍后再试')
+//     console.error(error.message || '发帖失败:')
+//   }
+// }
 
 onMounted(() => {
   // 加载本地缓存的内容

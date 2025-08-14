@@ -8,10 +8,16 @@
     >
       <n-form ref="formRef" :model="formValue" :rules="rules" label-placement="left" label-align="left" size="large">
         <n-form-item path="email" label="账号">
-          <n-input v-model:value="formValue.email" placeholder="请输入邮箱" clearable />
+          <n-input
+            :input-props="{ autocomplete: 'username', name: 'username' }"
+            v-model:value="formValue.email"
+            placeholder="请输入邮箱"
+            clearable
+          />
         </n-form-item>
         <n-form-item path="password" label="密码">
           <n-input
+            :input-props="{ autocomplete: 'current-password', name: 'current-password' }"
             v-model:value="formValue.password"
             type="password"
             show-password-on="click"

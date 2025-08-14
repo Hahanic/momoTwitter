@@ -18,29 +18,53 @@
     </div>
 
     <div class="w-full">
+      <!-- 内容区域 -->
+
+      <!-- 父帖子链 -->
+      <div v-if="parentPosts.length > 0 && showParentPosts">
+        <div v-for="(parent, _index) in parentPosts" :key="parent._id">
+          <Post :post="parent" :type="'parent'" />
+        </div>
+      </div>
+
       <!-- 主帖子 -->
-      <div v-if="currentPost" class="dark:border-borderDark border-borderWhite border-b p-4">
-        <div class="flex">
-          <!-- 头像 -->
-          <div class="mr-3">
-            <img class="max-h-12 max-w-12 rounded-full" :src="currentPost.authorInfo.avatarUrl || '/myAvatar.jpg'" />
-          </div>
-          <!-- 内容 -->
-          <div class="flex-1">
-            <!-- 作者信息 -->
-            <div class="mb-2 flex flex-wrap items-center">
-              <span class="font-bold">{{ currentPost.authorInfo.displayName }}</span>
-              <span class="ml-2 text-gray-500">@{{ currentPost.authorInfo.username }}</span>
-              <span class="mx-1 text-gray-500">·</span>
-              <span class="text-gray-500">{{ formatDate(currentPost.createdAt) }}</span>
+      <div
+        v-if="currentPost"
+        ref="currentPostRef"
+        style="scroll-margin-top: 3.67rem"
+        class="dark:border-borderDark border-borderWhite mt-2 border-b px-2"
+      >
+        <div class="flex flex-col">
+          <!-- 头像和name -->
+          <div class="flex gap-2">
+            <div class="h-12 w-12">
+              <img class="max-h-12 max-w-12 rounded-full" :src="currentPost.authorInfo.avatarUrl || '/myAvatar.jpg'" />
             </div>
-            <!-- 帖子内容 -->
-            <div class="mb-2 text-lg">
+            <div class="flex w-full items-center justify-between text-[0.9rem]">
+              <!-- userName -->
+              <div class="flex h-full flex-col items-center">
+                <span class="font-bold">{{ currentPost.authorInfo.displayName }}</span>
+                <span class="text-center text-gray-500">@{{ currentPost.authorInfo.username }}</span>
+              </div>
+              <!-- setting -->
+              <div class="flex h-full items-center justify-center text-gray-500">
+                <MoreHorizontalIcon :size="20" />
+              </div>
+            </div>
+          </div>
+          <div class="flex-1">
+            <!-- 内容 -->
+            <div class="mx-2 text-[1rem]">
               <span class="break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
+            </div>
+            <!-- 日期 -->
+            <div class="mb-2 w-full">
+              <span class="text-gray-500">下午1:32 · 2025年8月14日 · 5,413 查看</span>
+              <!-- <span class="text-gray-500">{{ formatDate(currentPost.createdAt) }}</span> -->
             </div>
             <!-- 统计信息 -->
             <div class="dark:border-borderDark border-borderWhite border-y py-3 text-gray-500">
-              <PostAction :post="currentPost" variant="full" @like="replyStore.likeCurrentPost" />
+              <PostAction :post="currentPost" variant="full" @like="handleLikeCurrentPost" />
             </div>
           </div>
         </div>
@@ -75,6 +99,9 @@
       <div v-else-if="!isLoadingReplies && replies.length === 0" class="flex h-20 w-full items-center justify-center">
         <span>暂无回复</span>
       </div>
+
+      <!-- 底部空白空间，确保有足够的滚动空间让currentPost位于顶部 -->
+      <div class="h-[calc(100dvh-8rem)]"></div>
     </div>
   </main>
 
@@ -102,43 +129,127 @@
 
 <script setup lang="ts">
 import { SearchIcon, ArrowLeft } from 'lucide-vue-next'
+import { MoreHorizontalIcon } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
 import { storeToRefs } from 'pinia'
-import { watch } from 'vue'
+import { watch, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import Post from '@/components/post/index.vue'
 import PostAction from '@/components/postAction/index.vue'
 import PostReply from '@/components/postReply/index.vue'
-import useReplyStore from '@/stores/reply'
-import useWindowStore from '@/stores/window'
-import { formatDate } from '@/utils'
+import { usePostDetailStore, usePostInteractionStore, useWindowStore } from '@/stores'
+// import { formatDate } from '@/utils'
 
 const route = useRoute()
 const router = useRouter()
-const replyStore = useReplyStore()
+const detailStore = usePostDetailStore()
+const interactionStore = usePostInteractionStore()
 const windowStore = useWindowStore()
 
-const { currentPost, replies, isLoadingReplies, hasMoreReplies } = storeToRefs(replyStore)
+// 添加ref用于引用currentPost元素
+const currentPostRef = ref<HTMLElement | null>(null)
+// 标记是否需要保持currentPost在顶部
+const shouldMaintainPosition = ref(false)
+// 控制父帖子的显示时机
+const showParentPosts = ref(false)
 
-const postId = route.params.postId as string
+const { currentPost, replies, isLoadingReplies, hasMoreReplies, parentPosts } = storeToRefs(detailStore)
 
 // 加载更多回复
 const loadMoreReplies = async () => {
-  await replyStore.loadReplies(postId)
+  try {
+    await detailStore.loadReplies()
+  } catch (error) {
+    console.error('加载更多回复失败:', error)
+  }
 }
 
-// 组件挂载时加载原帖子数据
-// onMounted(() => {
-//   replyStore.loadPostDetail(postId)
-// })
+// 点赞当前帖子
+const handleLikeCurrentPost = async () => {
+  if (!currentPost.value) return
+
+  try {
+    await interactionStore.toggleLike(currentPost.value._id)
+  } catch (error) {
+    console.error('点赞失败:', error)
+  }
+}
+
+// 滚动到当前帖子的函数
+const scrollToCurrentPost = async (behavior: ScrollBehavior = 'smooth') => {
+  await nextTick()
+  if (currentPostRef.value) {
+    currentPostRef.value.scrollIntoView({
+      behavior,
+      block: 'start',
+    })
+  }
+}
+
+// 保持当前帖子在顶部位置的函数
+const maintainCurrentPostPosition = async () => {
+  if (shouldMaintainPosition.value && currentPostRef.value) {
+    await nextTick()
+    // 使用instant行为以避免闪烁
+    currentPostRef.value.scrollIntoView({
+      behavior: 'instant',
+      block: 'start',
+    })
+  }
+}
+
+// 监听路由变化，加载帖子详情
 watch(
   () => route.params.postId,
-  (newPostId) => {
+  async (newPostId) => {
     if (newPostId) {
-      replyStore.loadPostDetail(newPostId as string)
+      // 重置状态
+      shouldMaintainPosition.value = false
+      showParentPosts.value = false
+
+      await detailStore.loadPostDetail(newPostId as string)
+
+      // 等待currentPost渲染完成并进行初始定位
+      await nextTick()
+
+      // 确保currentPost已经存在并且可以获取到DOM元素
+      if (currentPost.value && currentPostRef.value) {
+        // 初始滚动到当前帖子，使用smooth行为
+        await scrollToCurrentPost('smooth')
+
+        // 等待滚动完成后再显示父帖子
+        setTimeout(async () => {
+          if (parentPosts.value.length > 0) {
+            showParentPosts.value = true
+            // 等待父帖子渲染完成
+            await nextTick()
+            // 父帖子显示后重新调整位置
+            await maintainCurrentPostPosition()
+          }
+          // 启用持续的位置维护
+          shouldMaintainPosition.value = true
+        }, 500) // 500ms延迟，确保currentPost滚动和定位完成
+      } else {
+        // 如果没有currentPost，直接显示父帖子
+        showParentPosts.value = true
+        shouldMaintainPosition.value = true
+      }
     }
   },
   { immediate: true } // 立即执行一次
+)
+
+// 监听showParentPosts变化，当父帖子开始显示时调整位置
+watch(
+  showParentPosts,
+  async (shouldShow) => {
+    if (shouldShow && currentPost.value && currentPostRef.value) {
+      // 父帖子显示时，确保currentPost保持在顶部
+      await nextTick()
+      await maintainCurrentPostPosition()
+    }
+  },
+  { flush: 'post' } // 在DOM更新后执行
 )
 </script>

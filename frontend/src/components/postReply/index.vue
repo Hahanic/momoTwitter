@@ -2,7 +2,7 @@
   <div class="dark:border-borderDark border-borderWhite w-full border-b">
     <div class="flex">
       <!-- 头像 -->
-      <div class="mt-2 mr-2 ml-4 flex max-h-[3rem] max-w-[3rem] items-center justify-center rounded-full">
+      <div class="mt-2 mr-2 ml-2 flex max-h-[3rem] max-w-[3rem] items-center justify-center rounded-full">
         <img v-if="userStore.isAuthenticated" class="rounded-full select-none" src="/myAvatar.jpg" />
         <UserCircle2Icon v-else :size="44" class="text-[#71767b]" />
       </div>
@@ -13,7 +13,6 @@
             ref="textareaRef"
             v-model="messageContent"
             maxlength="301"
-            :disabled="replyStore.isReplying"
             @focus="handleTextareaFocus"
             class="textareaEl mt-3 h-[2rem] w-full resize-none overflow-y-hidden bg-transparent pr-2 text-xl break-all placeholder-[#808080] focus:outline-none"
             placeholder="发布你的回复"
@@ -63,7 +62,6 @@
         </div>
         <button
           @click="handlePosting"
-          :disabled="replyStore.isReplying"
           :class="{
             'bg-black text-white hover:cursor-pointer dark:bg-white': !!messageContent,
             'bg-[#87898c] dark:bg-[#787a7a]': !messageContent,
@@ -91,12 +89,12 @@ import {
 import { NScrollbar, useMessage } from 'naive-ui'
 import { ref, watch } from 'vue'
 
-import useReplyStore from '@/stores/reply'
+import { usePostDetailStore } from '@/stores'
 import useUserStore from '@/stores/user'
 import useWindowStore from '@/stores/window'
 
+const postDetailStore = usePostDetailStore()
 const userStore = useUserStore()
-const replyStore = useReplyStore()
 const windowStore = useWindowStore()
 const message = useMessage()
 
@@ -141,7 +139,7 @@ const handlePosting = async () => {
   }
   // 发帖
   try {
-    await replyStore.createReply(messageContent.value)
+    await postDetailStore.createReply(messageContent.value)
     message.success('回复成功！')
     // 清空输入框
     messageContent.value = ''
@@ -150,6 +148,25 @@ const handlePosting = async () => {
     console.error(error.message || '回复失败:')
   }
 }
+// const handlePosting = async () => {
+//   // 内容为空直接返回
+//   if (!messageContent.value) return
+//   // 是否已登陆
+//   if (!userStore.isAuthenticated) {
+//     message.warning('请先登录！')
+//     return
+//   }
+//   // 发帖
+//   try {
+//     await replyStore.createReply(messageContent.value)
+//     message.success('回复成功！')
+//     // 清空输入框
+//     messageContent.value = ''
+//   } catch (error: any) {
+//     message.error(error.message || '回复失败，请稍后再试')
+//     console.error(error.message || '回复失败:')
+//   }
+// }
 </script>
 
 <style scoped></style>

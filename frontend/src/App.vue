@@ -23,16 +23,16 @@ const route = useRoute()
 // 恢复滚动位置
 const scrollbarRef = ref<ScrollbarInst | null>(null)
 const handleScroll = (e: Event) => {
-  if (route.name === 'Home') {
+  if (route.path === '/home') {
     const target = e.target as HTMLElement
     windowStore.setHomeScrollTop(target.scrollTop)
   }
 }
 watch(
-  () => route.name,
-  (routeName) => {
+  () => route.path,
+  (routePath) => {
     setTimeout(() => {
-      if (routeName === 'Home') {
+      if (routePath === '/home') {
         scrollbarRef.value?.scrollTo({
           top: windowStore.homeScrollTop,
           behavior: 'auto',

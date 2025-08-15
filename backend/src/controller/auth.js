@@ -18,11 +18,6 @@ export const getCurrentUser = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body
 
-  // 检查输入
-  if (!email || !password) {
-    return sendResponse(res, 400, '邮箱和密码不能为空')
-  }
-
   // 查找用户并验证密码
   const user = await User.findOne({ email }).select('+password')
   const isPasswordCorrect = user && user.password === password

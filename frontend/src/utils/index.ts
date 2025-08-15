@@ -40,3 +40,15 @@ export const formatDate = (dateStr: string) => {
     day: 'numeric',
   })
 }
+
+export const formatDatePostDetail = (dateStr: string) => {
+  const date = new Date(dateStr)
+
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  const ampm = hours > 12 ? '下午' : '上午'
+  const formatDateHours = hours % 12 || 12 // 转换为12小时制
+  const formatDateMinutes = minutes < 10 ? '0' + minutes : minutes
+
+  return `${ampm}${formatDateHours}:${formatDateMinutes} · ${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}

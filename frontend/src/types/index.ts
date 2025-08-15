@@ -61,9 +61,10 @@ export interface RecievePostPayload {
   stats: {
     likesCount: number
     repliesCount: number
-    quotesCount: number
     bookmarksCount: number
     viewsCount: number
+    retweetsCount: number
+    quotesCount: number
   }
 
   authorInfo: {

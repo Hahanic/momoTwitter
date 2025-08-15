@@ -14,7 +14,7 @@
             v-model="messageContent"
             maxlength="301"
             @focus="handleTextareaFocus"
-            class="textareaEl mt-3 h-[2rem] w-full resize-none overflow-y-hidden bg-transparent pr-2 text-xl break-all placeholder-[#808080] focus:outline-none"
+            class="textareaEl mt-3 h-[2rem] w-full resize-none overflow-y-hidden bg-transparent pr-2 text-[1rem] break-all placeholder-[#808080] placeholder:text-[1.2rem] focus:outline-none"
             placeholder="发布你的回复"
           ></textarea>
         </n-scrollbar>

@@ -62,7 +62,8 @@ const postSchema = new mongoose.Schema(
     stats: {
       likesCount: { type: Number, default: 0 },
       repliesCount: { type: Number, default: 0 },
-      quotesAndRetwCount: { type: Number, default: 0 },
+      retweetsCount: { type: Number, default: 0 },
+      quotesCount: { type: Number, default: 0 },
       bookmarksCount: { type: Number, default: 0 },
       viewsCount: { type: Number, default: 0 },
     },

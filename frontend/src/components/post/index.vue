@@ -1,7 +1,7 @@
 <template>
   <div
     :class="{ 'dark:border-borderDark border-borderWhite border-b-1': type !== 'parent' }"
-    class="shover:bg-[#f7f7f7] flex w-full transition-all hover:cursor-pointer dark:hover:bg-transparent"
+    class="flex w-full transition-all hover:cursor-pointer hover:bg-[#f7f7f7] dark:hover:bg-transparent"
     @click="handlePostClick(post)"
   >
     <!-- 头像 -->
@@ -17,13 +17,13 @@
       <!-- parentPost向下的线程 -->
       <div
         v-if="type === 'parent'"
-        class="absolute left-[2rem] h-[calc(100%-3rem)] rounded-2xl border-[1.5px] border-[#333639]"
+        class="absolute left-[2rem] h-[calc(100%-3rem)] rounded-2xl border-[1.5px] border-[#a8b1bb] dark:border-[#333639]"
       ></div>
     </div>
     <!-- 内容 -->
-    <div class="w-full text-[1rem]">
+    <div class="w-full">
       <!-- 名字/用户id/日期 -->
-      <div class="mt-2.5 flex">
+      <div class="mt-2.5 flex text-[0.9rem]">
         <span @click.stop="() => console.log('displayname点击')" class="font-semibold hover:underline">{{
           post.authorInfo.displayName
         }}</span>
@@ -34,7 +34,7 @@
         </div>
       </div>
       <!-- 文本 -->
-      <div class="mr-4">
+      <div class="mr-4 text-[1rem]">
         <n-scrollbar style="max-height: 400px">
           <span class="break-all whitespace-pre-wrap">{{ post.content }}</span>
         </n-scrollbar>

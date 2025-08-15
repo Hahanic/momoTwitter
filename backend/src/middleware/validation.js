@@ -33,8 +33,8 @@ export const validateLogin = (req, res, next) => {
     return res.status(400).json({ message: '邮箱格式不正确' })
   }
 
-  if (password.length < 6) {
-    return res.status(400).json({ message: '密码长度不能少于6位' })
+  if (password.length < 4) {
+    return res.status(400).json({ message: '密码长度不能少于4位' })
   }
 
   next()
@@ -53,8 +53,8 @@ export const validateRegister = (req, res, next) => {
     return res.status(400).json({ message: '邮箱格式不正确' })
   }
 
-  if (password.length < 6) {
-    return res.status(400).json({ message: '密码长度不能少于6位' })
+  if (password.length < 4) {
+    return res.status(400).json({ message: '密码长度不能少于4位' })
   }
 
   next()

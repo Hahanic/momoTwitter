@@ -28,12 +28,7 @@
       </div>
 
       <!-- 主帖子 -->
-      <div
-        v-if="currentPost"
-        ref="currentPostRef"
-        style="scroll-margin-top: 3.67rem"
-        class="dark:border-borderDark border-borderWhite mt-2 border-b px-2"
-      >
+      <div v-if="currentPost" ref="currentPostRef" style="scroll-margin-top: 3.67rem" class="mt-2 px-2">
         <div class="flex flex-col">
           <!-- 头像和name -->
           <div class="flex gap-2">
@@ -43,7 +38,7 @@
             <div class="flex w-full items-center justify-between text-[0.9rem]">
               <!-- userName -->
               <div class="flex h-full flex-col items-center">
-                <span class="font-bold">{{ currentPost.authorInfo.displayName }}</span>
+                <span class="font-bold hover:underline">{{ currentPost.authorInfo.displayName }}</span>
                 <span class="text-center text-gray-500">@{{ currentPost.authorInfo.username }}</span>
               </div>
               <!-- setting -->
@@ -58,13 +53,32 @@
               <span class="break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
             </div>
             <!-- 日期 -->
-            <div class="mb-2 w-full">
-              <span class="text-gray-500">下午1:32 · 2025年8月14日 · 5,413 查看</span>
-              <!-- <span class="text-gray-500">{{ formatDate(currentPost.createdAt) }}</span> -->
+            <div class="mx-2 mt-2 w-full text-[0.85rem]">
+              <span class="text-gray-500">
+                {{ formatDatePostDetail(currentPost.createdAt)
+                }}<span v-if="currentPost.stats.viewsCount >= 10"
+                  ><span class="px-1">&middot;</span
+                  ><span class="font-bold text-white">{{ currentPost.stats.viewsCount }}</span
+                  >&nbsp;查看</span
+                >
+              </span>
+            </div>
+            <!-- 移动设备显示stats而不是在postACtion -->
+            <div v-if="windowStore.isMobile" class="h-10 w-full">
+              <div class="ml-2 flex h-10 items-center text-[0.95rem] text-white">
+                <span
+                  >{{ currentPost.stats.quotesCount + currentPost.stats.retweetsCount
+                  }}<span class="text-gray-500">&nbsp;转推&nbsp;&nbsp;</span></span
+                >
+                <span>{{ currentPost.stats.likesCount }}<span class="text-gray-500">&nbsp;喜欢&nbsp;&nbsp;</span></span>
+                <span
+                  >{{ currentPost.stats.bookmarksCount }}<span class="text-gray-500">&nbsp;书签&nbsp;&nbsp;</span></span
+                >
+              </div>
             </div>
             <!-- 统计信息 -->
-            <div class="dark:border-borderDark border-borderWhite border-y py-3 text-gray-500">
-              <PostAction :post="currentPost" variant="full" @like="handleLikeCurrentPost" />
+            <div class="dark:border-borderDark border-borderWhite mx-2 border-y py-3 text-gray-500">
+              <PostAction :post="currentPost" type="detail" @like="handleLikeCurrentPost" />
             </div>
           </div>
         </div>
@@ -139,7 +153,7 @@ import Post from '@/components/post/index.vue'
 import PostAction from '@/components/postAction/index.vue'
 import PostReply from '@/components/postReply/index.vue'
 import { usePostDetailStore, usePostInteractionStore, useWindowStore } from '@/stores'
-// import { formatDate } from '@/utils'
+import { formatDatePostDetail } from '@/utils'
 
 const route = useRoute()
 const router = useRouter()

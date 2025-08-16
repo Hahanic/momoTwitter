@@ -1,9 +1,11 @@
 <template>
-  <main class="dark:border-borderDark border-borderWhite w-[100vw] border-x-1 sm:min-h-screen sm:w-[38rem]">
+  <MainContainer>
     <p>profile</p>
-  </main>
-
-  <aside class="sticky top-0 ml-7 hidden h-screen w-[15rem] transition-all md:block lg:w-[25rem]"></aside>
+  </MainContainer>
+  <StickyAside></StickyAside>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import MainContainer from '@/components/layout/ScrollContainer.vue'
+import StickyAside from '@/components/layout/StickyAside.vue'
+</script>

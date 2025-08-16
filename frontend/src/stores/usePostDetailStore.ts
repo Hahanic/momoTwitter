@@ -187,7 +187,6 @@ const usePostDetailStore = defineStore('postDetail', () => {
 
       return newReply
     } catch (error) {
-      console.error('发送回复失败:', error)
       throw error
     }
   }

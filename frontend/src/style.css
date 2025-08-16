@@ -38,3 +38,7 @@ body {
   color: white;
   overflow: hidden;
 }
+
+.hide-scrollbar > .n-scrollbar-rail {
+  display: none;
+}

@@ -1,12 +1,7 @@
 <template>
-  <main
-    :class="{ 'dark:border-borderDark border-borderWhite border-x-1': !windowStore.isMobile }"
-    class="w-[100vw] sm:min-h-screen sm:w-[38rem]"
-  >
-    <div
-      class="dark:border-borderDark border-borderWhite sticky top-0 z-10 grid h-[3.2rem] w-full grid-cols-2 border-b-1 bg-[#ffffff]/80 backdrop-blur-lg dark:bg-[#000]/80 dark:backdrop-blur-sm"
-    >
-      <div class="flex items-center">
+  <MainContainer>
+    <StickyHead>
+      <div class="flex h-[3.2rem] items-center">
         <button
           @click="router.back()"
           class="ml-4 rounded-full p-2 transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -15,11 +10,9 @@
         </button>
         <span class="ml-4 text-xl font-bold">推文</span>
       </div>
-    </div>
+    </StickyHead>
 
     <div class="w-full">
-      <!-- 内容区域 -->
-
       <!-- 父帖子链 -->
       <div v-if="parentPosts.length > 0 && showParentPosts">
         <div v-for="(parent, _index) in parentPosts" :key="parent._id">
@@ -32,10 +25,12 @@
         <div class="flex flex-col">
           <!-- 头像和name -->
           <div class="flex gap-2">
-            <div class="h-12 w-12">
-              <img class="max-h-12 max-w-12 rounded-full" :src="currentPost.authorInfo.avatarUrl || '/myAvatar.jpg'" />
-            </div>
-            <div class="flex w-full items-center justify-between text-[0.9rem]">
+            <Avatar
+              :src="currentPost.authorInfo.avatarUrl"
+              :alt="currentPost.authorInfo.displayName"
+              container-class="h-12 w-12"
+            />
+            <div class="flex w-full flex-1 items-center justify-between text-[0.9rem]">
               <!-- userName -->
               <div class="flex h-full flex-col items-center">
                 <span class="font-bold hover:underline">{{ currentPost.authorInfo.displayName }}</span>
@@ -50,7 +45,7 @@
           <div class="flex-1">
             <!-- 内容 -->
             <div class="mx-2 text-[1rem]">
-              <span class="break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
+              <span class="tracking-tight break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
             </div>
             <!-- 日期 -->
             <div class="mx-2 mt-2 w-full text-[0.85rem]">
@@ -117,20 +112,11 @@
       <!-- 底部空白空间，确保有足够的滚动空间让currentPost位于顶部 -->
       <div class="h-[calc(100dvh-8rem)]"></div>
     </div>
-  </main>
+  </MainContainer>
 
-  <aside class="sticky top-0 ml-7 hidden h-screen w-[15rem] transition-all md:block lg:w-[25rem]">
+  <StickyAside>
     <!-- 搜索框 -->
-    <div class="z-10 flex h-[3.2rem] items-center">
-      <div class="dark:border-borderDark relative flex w-full items-center rounded-2xl">
-        <SearchIcon :size="17.6" class="absolute left-3" />
-        <input
-          type="text"
-          placeholder="搜索"
-          class="h-[2.4rem] w-full rounded-2xl bg-[#f5f5f5] pr-4 pl-9 text-amber-950 outline-none focus:ring-1 focus:ring-blue-300 dark:bg-[#181818] dark:text-white"
-        />
-      </div>
-    </div>
+    <SearchInput />
     <!-- 推送 -->
     <n-scrollbar :trigger="'hover'" style="max-height: 90vh">
       <div class="mt-[0.8rem] flex w-full flex-col gap-[1.2rem]">
@@ -138,20 +124,25 @@
         <div class="dark:border-borderDark border-borderWhite h-[35rem] rounded-xl border-1"></div>
       </div>
     </n-scrollbar>
-  </aside>
+  </StickyAside>
 </template>
 
 <script setup lang="ts">
-import { SearchIcon, ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft } from 'lucide-vue-next'
 import { MoreHorizontalIcon } from 'lucide-vue-next'
-import { NScrollbar } from 'naive-ui'
+import { NScrollbar, useMessage } from 'naive-ui'
 import { storeToRefs } from 'pinia'
 import { watch, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import MainContainer from '@/components/layout/ScrollContainer.vue'
+import StickyAside from '@/components/layout/StickyAside.vue'
+import StickyHead from '@/components/layout/StickyHead.vue'
 import Post from '@/components/post/index.vue'
 import PostAction from '@/components/postAction/index.vue'
 import PostReply from '@/components/postReply/index.vue'
+import SearchInput from '@/components/ui/SearchInput/SearchInput.vue'
+import Avatar from '@/components/ui/User/Avatar.vue'
 import { usePostDetailStore, usePostInteractionStore, useWindowStore } from '@/stores'
 import { formatDatePostDetail } from '@/utils'
 
@@ -160,6 +151,7 @@ const router = useRouter()
 const detailStore = usePostDetailStore()
 const interactionStore = usePostInteractionStore()
 const windowStore = useWindowStore()
+const message = useMessage()
 
 // 添加ref用于引用currentPost元素
 const currentPostRef = ref<HTMLElement | null>(null)
@@ -185,8 +177,9 @@ const handleLikeCurrentPost = async () => {
 
   try {
     await interactionStore.toggleLike(currentPost.value._id)
-  } catch (error) {
-    console.error('点赞失败:', error)
+  } catch (error: any) {
+    message.error('点赞失败')
+    console.error(error.message || error)
   }
 }
 

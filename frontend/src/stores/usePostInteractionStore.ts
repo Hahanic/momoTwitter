@@ -162,7 +162,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     }
 
     if (replyingInProgress.value.has(parentPostId)) {
-      throw new Error('正在进行回复操作，请稍后再试')
+      throw new Error('正在回复中，请稍后再试')
     }
 
     const parentPost = postCacheStore.getPost(parentPostId)

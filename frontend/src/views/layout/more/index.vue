@@ -4,9 +4,10 @@
     :class="{
       'w-[15rem] lg:w-[25rem]': isLargeScreen,
       'w-[38rem]': !isLargeScreen && !isMobile,
+      'dark:border-borderDark border-borderWhite border-x-1': !isMobile,
       'w-[100vw]': isMobile,
     }"
-    class="dark:border-borderDark border-borderWhite border-x-1 transition-all"
+    class="transition-all"
   >
     <div class="flex w-full flex-col">
       <div class="mx-2 my-3 flex w-full items-center">
@@ -35,9 +36,10 @@
     :class="{
       'w-[38rem]': isLargeScreen || (!isLargeScreen && !isMobile && isChildRouteActive),
       'w-[100vw]': isMobile && isChildRouteActive,
+      'dark:border-borderDark border-borderWhite border-r-1': !isMobile,
       'ml-7 pr-7': isLargeScreen,
     }"
-    class="dark:border-borderDark border-borderWhite sticky top-0 h-screen border-r-1 transition-all md:min-h-screen"
+    class="h-screentransition-all sticky top-0 md:min-h-screen"
   >
     <RouterView />
   </aside>

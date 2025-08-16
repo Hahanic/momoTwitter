@@ -6,13 +6,8 @@
   >
     <!-- 头像 -->
     <div class="relative">
-      <div @click.stop="() => console.log('头像点击')" class="relative mx-2 mt-2 h-[3rem] w-[3rem]">
-        <!-- 边框 -->
-        <div
-          class="absolute inset-0 rounded-full border-2 border-transparent transition-all hover:border-blue-500"
-        ></div>
-        <!-- 头像 -->
-        <img class="rounded-full select-none" src="/myAvatar.jpg" />
+      <div class="mx-2 mt-2 h-[3rem] w-[3rem]">
+        <Avatar :src="post.authorInfo.avatarUrl" container-class="h-[3rem] w-[3rem]" @click.stop="handleAvatarClick" />
       </div>
       <!-- parentPost向下的线程 -->
       <div
@@ -36,7 +31,7 @@
       <!-- 文本 -->
       <div class="mr-4 text-[1rem]">
         <n-scrollbar style="max-height: 400px">
-          <span class="break-all whitespace-pre-wrap">{{ post.content }}</span>
+          <span class="tracking-tight break-all whitespace-pre-wrap">{{ post.content }}</span>
         </n-scrollbar>
       </div>
       <!-- 图片/视频 -->
@@ -53,28 +48,36 @@
 </template>
 
 <script lang="ts" setup>
-import { NScrollbar } from 'naive-ui'
+import { NScrollbar, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
 import PostAction from '@/components/postAction/index.vue'
+import Avatar from '@/components/ui/User/Avatar.vue'
 import { usePostInteractionStore } from '@/stores'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
 
 const router = useRouter()
 const postInteractionStore = usePostInteractionStore()
+const message = useMessage()
 
 const props = defineProps<{
   post: RecievePostPayload
   type: 'post' | 'reply' | 'parent'
 }>()
 
+// 头像点击
+const handleAvatarClick = () => {
+  console.log('头像点击')
+}
+
 // 点赞
 const handlePostLike = async () => {
   try {
     await postInteractionStore.toggleLike(props.post._id)
   } catch (error: any) {
-    console.log(error.message || error)
+    message.error('点赞失败')
+    console.error(error.message || error)
   }
 }
 

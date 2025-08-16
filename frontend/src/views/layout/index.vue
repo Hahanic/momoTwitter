@@ -4,16 +4,15 @@
       <header
         class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center transition-all sm:flex xl:w-[17rem] xl:items-start"
       >
+        <div class="relative z-10 flex h-[3.2rem] w-full items-center">
+          <img
+            @click="themeStore.toggleTheme()"
+            class="absolute left-[24px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
+            src="/warp.svg"
+          />
+        </div>
         <n-scrollbar style="max-height: 100%">
-          <!-- <menuList /> -->
-          <div class="relative z-10 flex h-[3.2rem] w-full items-center">
-            <img
-              @click="themeStore.toggleTheme()"
-              class="absolute left-[24px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
-              src="/warp.svg"
-            />
-          </div>
-          <GooeyNav
+          <SideBar
             :items="menuLists"
             :animation-time="600"
             :particle-count="15"
@@ -55,7 +54,7 @@ import { NScrollbar } from 'naive-ui'
 import { defineAsyncComponent, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
-import GooeyNav from '@/components/menuList/index.vue'
+import SideBar from '@/components/layout/SideBar.vue'
 import useThemeStore from '@/stores/theme'
 
 const themeStore = useThemeStore()

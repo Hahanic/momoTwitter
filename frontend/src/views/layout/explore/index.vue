@@ -1,20 +1,14 @@
 <template>
-  <main class="dark:border-borderDark border-borderWhite w-[100vw] border-x-1 sm:min-h-screen sm:w-[38rem]">
-    <div
-      class="dark:border-borderDark border-borderWhite sticky top-0 z-10 min-h-[3.2rem] w-full border-b-1 bg-[#ffffff]/80 backdrop-blur-lg dark:bg-[#000]/80 dark:backdrop-blur-sm"
-    >
+  <MainContainer>
+    <StickyHead>
       <!-- 搜索及设置 -->
-      <div class="flex h-[3.2rem] w-full items-center justify-center">
-        <div class="dark:border-borderDark relative ml-5 flex w-full items-center rounded-2xl">
-          <SearchIcon :size="17.6" class="absolute left-3" />
-          <input
-            type="text"
-            placeholder="搜索"
-            class="h-[2.4rem] w-[95%] rounded-2xl bg-[#f5f5f5] pr-4 pl-9 text-amber-950 outline-none focus:ring-1 focus:ring-blue-300 dark:bg-[#181818] dark:text-white"
-          />
+      <div class="ml-5 flex w-[95%] items-center justify-center">
+        <SearchInput />
+        <div class="relative">
+          <SettingsIcon :size="20" class="mx-4" />
         </div>
-        <SettingsIcon :size="24" class="mr-4" />
       </div>
+
       <!-- 标签 -->
       <div class="flex h-[3.2rem] w-full">
         <RouterLink
@@ -26,29 +20,34 @@
           <div class="active-underline absolute bottom-0 hidden w-[60%] rounded-2xl border-2 border-[#1d9bf0]"></div>
         </RouterLink>
       </div>
-    </div>
+    </StickyHead>
 
     <div class="w-full">
       <RouterView />
     </div>
-  </main>
+  </MainContainer>
 
-  <aside class="sticky top-0 ml-7 hidden h-screen w-[15rem] transition-all md:block lg:w-[25rem]">
+  <StickyAside>
     <div class="dark:border-borderDark border-borderWhite mt-4 border-t-1"></div>
     <!-- 推送 -->
-    <n-scrollbar :trigger="'hover'" style="max-height: 90vh">
+    <n-scrollbar class="hide-scrollbar" style="height: calc(100dvh - 40px)">
       <div class="mt-[0.8rem] flex w-full flex-col gap-[1.2rem]">
         <div class="dark:border-borderDark border-borderWhite h-[9rem] rounded-xl border-1"></div>
         <div class="dark:border-borderDark border-borderWhite h-[35rem] rounded-xl border-1"></div>
       </div>
     </n-scrollbar>
-  </aside>
+  </StickyAside>
 </template>
 
 <script setup lang="ts">
-import { SearchIcon, SettingsIcon } from 'lucide-vue-next'
+import { SettingsIcon } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
 import { ref } from 'vue'
+
+import MainContainer from '@/components/layout/ScrollContainer.vue'
+import StickyAside from '@/components/layout/StickyAside.vue'
+import StickyHead from '@/components/layout/StickyHead.vue'
+import SearchInput from '@/components/ui/SearchInput/SearchInput.vue'
 
 const tagList = ref([
   { name: '为你推荐', path: 'for_you' },

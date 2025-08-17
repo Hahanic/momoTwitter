@@ -18,7 +18,7 @@
 
     <div class="w-full">
       <!-- user -->
-      <UserSendCard />
+      <PostCreate />
       <!-- posts -->
       <Posts v-for="post in feedStore.posts" :post="post" :type="'post'" :key="post._id" />
       <!-- TODO 这里可以降低CLS -->
@@ -50,7 +50,7 @@ import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import Posts from '@/components/post/index.vue'
-import UserSendCard from '@/components/post/PostCreate.vue'
+import PostCreate from '@/components/post/PostCreate.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import { usePostFeedStore } from '@/stores'
 

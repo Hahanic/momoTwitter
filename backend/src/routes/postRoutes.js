@@ -3,7 +3,6 @@ const router = express.Router()
 
 import {
   createPost,
-  createPostReply,
   getPost,
   getPostReplies,
   likePost,
@@ -25,10 +24,10 @@ router.get('/:postId/get', asyncHandler(getOnePost))
 router.get('/:postId/replies', asyncHandler(getPostReplies))
 // 获取父帖子
 router.get('/:postId/parent', asyncHandler(getReplyParentPost))
-// 新建帖子
+// 新建帖子和回复
 router.post('/create', protectAuthRoute, asyncHandler(createPost))
 // 新建回复
-router.post('/:postId/replies', protectAuthRoute, asyncHandler(createPostReply))
+// router.post('/:postId/replies', protectAuthRoute, asyncHandler(createPostReply))
 // 点赞帖子/回复
 router.post('/:postId/like', protectAuthRoute, asyncHandler(likePost))
 // 收藏帖子/回复

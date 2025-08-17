@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import useUserStore from './user.ts'
 
-import { apiLikePost, apiBookmarkPost, apiCreateReply, createPost as apiCreatePost, apiViewPost } from '@/api/index.ts'
+import { apiLikePost, apiBookmarkPost, apiCreatePost, apiViewPost } from '@/api/index.ts'
 import type { CreatePostPayload } from '@/types'
 
 const usePostInteractionStore = defineStore('postInteraction', () => {
@@ -99,8 +99,6 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
 
     try {
       await apiBookmarkPost(postId)
-      // const res = await apiBookmarkPost(postId)
-      // console.log(res)
     } catch (error) {
       // 失败回滚
       postCacheStore.updatePost(postId, {
@@ -182,12 +180,11 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     })
 
     try {
-      const newReply = await apiCreateReply(parentPostId, content)
-
+      const newReply = await apiCreatePost({ content, postType: 'reply', parentPostId })
       // 将新回复添加到缓存
-      postCacheStore.addPost(newReply)
+      postCacheStore.addPost(newReply.newPost)
 
-      return newReply
+      return newReply.newPost
     } catch (error) {
       // 失败回滚
       postCacheStore.updatePost(parentPostId, {
@@ -213,12 +210,12 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     postingInProgress.value = true
 
     try {
-      const newPost = await apiCreatePost(payload)
+      const res = await apiCreatePost(payload)
 
       // 将新帖子添加到缓存
-      postCacheStore.addPost(newPost)
+      postCacheStore.addPost(res.newPost)
 
-      return newPost
+      return res.newPost
     } catch (error) {
       throw error
     } finally {

@@ -10,53 +10,18 @@ const postSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      trim: true,
-      maxLength: 1000, // 类似推特的字数限制
+      trim: false,
+      maxLength: 301,
     },
-    media: [
-      {
-        type: { type: String, enum: ['image', 'video', 'gif'], required: true },
-        url: { type: String, required: true },
-      },
-    ],
     postType: {
       type: String,
       enum: ['standard', 'reply', 'quote', 'retweet'],
       default: 'standard',
     },
-    // 回复
-    parentPostId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Post',
-    },
-    // 引用
-    quotedPostId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Post',
-    },
-    // 转推
-    retweetedPostId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Post',
-    },
-    // @的用户 ID列表
-    mentions: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
-    // #话题 标签列表
-    hashtags: [
-      {
-        type: String,
-        index: true,
-      },
-    ],
     // 可见性
     visibility: {
       type: String,
-      enum: ['public', 'circle'],
+      enum: ['public', 'circle', 'private'],
       default: 'public',
     },
     stats: {
@@ -74,6 +39,41 @@ const postSchema = new mongoose.Schema(
       avatarUrl: String,
       isVerified: Boolean,
     },
+    // 回复
+    parentPostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
+    // 引用
+    quotedPostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
+    // 转推
+    retweetedPostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Post',
+    },
+    media: [
+      {
+        type: { type: String, enum: ['image', 'video', 'gif'], required: true },
+        url: { type: String, required: true },
+      },
+    ],
+    // @的用户 ID列表
+    mentions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    // #话题 标签列表
+    hashtags: [
+      {
+        type: String,
+        index: true,
+      },
+    ],
   },
   { timestamps: true }
 )

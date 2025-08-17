@@ -27,6 +27,7 @@ export const userLogout = () => {
   return axiosInstance.post('/user/logout')
 }
 
+// 登录验证码
 export const getIdentifyingCode = (): Promise<recieveCode> => {
   return axiosInstance.get('/user/getIdentifyingCode')
 }
@@ -37,7 +38,9 @@ export const userRegister = (userRegisterData: userRegisterData) => {
 }
 
 // 用户发帖
-export const createPost = (payload: CreatePostPayload): Promise<RecievePostPayload> => {
+export const apiCreatePost = (
+  payload: CreatePostPayload
+): Promise<{ message: string; newPost: RecievePostPayload }> => {
   return axiosInstance.post('/post/create', payload)
 }
 
@@ -75,11 +78,6 @@ export const getReplyParentPost = (
   replyId: string
 ): Promise<{ message: string; resultParentPosts: RecievePostPayload[] }> => {
   return axiosInstance.get(`/post/${replyId}/parent`)
-}
-
-// 发送帖子回复
-export const apiCreateReply = (postId: string, content: string): Promise<RecievePostPayload> => {
-  return axiosInstance.post(`/post/${postId}/replies`, { content })
 }
 
 // 点赞帖子

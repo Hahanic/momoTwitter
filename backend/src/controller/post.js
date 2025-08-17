@@ -7,7 +7,7 @@ import { verifyUserToken, parseCursor, sendResponse } from '../utils/index.js'
 // 发送帖子
 export const createPost = async (req, res) => {
   const authorId = req.user.id
-  const { content, postType, media, parentPostId, quotedPostId, poll, visibility } = req.body
+  const { content, postType, media, parentPostId, quotedPostId, visibility } = req.body
 
   // 数据验证
   if (!content?.trim() || !postType) {
@@ -34,6 +34,13 @@ export const createPost = async (req, res) => {
       if (!parentPostId) {
         return sendResponse(res, 400, '回复帖必须提供 parentPostId')
       }
+
+      // 验证父帖子是否存在
+      const parentPost = await Post.findById(parentPostId)
+      if (!parentPost) {
+        return sendResponse(res, 404, '父帖子不存在')
+      }
+
       postData.parentPostId = parentPostId
       await PostService.updateAncestorRepliesCount(parentPostId, 1)
       break
@@ -54,13 +61,7 @@ export const createPost = async (req, res) => {
 
   // 返回给前端的新帖子
   const responsePayload = {
-    _id: newPost._id.toString(),
-    content: newPost.content,
-    postType: newPost.postType,
-    media: newPost.media || [],
-    createdAt: newPost.createdAt.toISOString(),
-    authorInfo: newPost.authorInfo,
-    stats: newPost.stats,
+    ...newPost.toObject(),
     currentUserInteraction: {
       isLiked: false,
       isBookmarked: false,
@@ -68,7 +69,7 @@ export const createPost = async (req, res) => {
     },
   }
 
-  sendResponse(res, 201, '帖子创建成功', responsePayload)
+  sendResponse(res, 201, '成功', { newPost: responsePayload })
 }
 
 // 获取单条帖子
@@ -250,52 +251,6 @@ export const getReplyParentPost = async (req, res) => {
   }
 
   sendResponse(res, 200, '获取父帖子成功', { resultParentPosts })
-}
-
-// 发送帖子回复
-export const createPostReply = async (req, res) => {
-  const { postId } = req.params
-  const { content } = req.body
-  const currentUserId = req.user.id
-
-  // 验证帖子是否存在
-  const parentPost = await Post.findById(postId)
-  if (!parentPost) {
-    return sendResponse(res, 404, '帖子不存在')
-  }
-
-  // 获取作者信息
-  const author = await PostService.getUserInfo(currentUserId)
-
-  // 创建回复
-  const newReply = new Post({
-    content,
-    postType: 'reply',
-    parentPostId: postId,
-    authorId: currentUserId,
-    authorInfo: {
-      username: author.username,
-      displayName: author.displayName,
-      avatarUrl: author.avatarUrl,
-      isVerified: author.isVerified,
-    },
-  })
-
-  await newReply.save()
-
-  // 更新所有祖先帖子的回复统计（包括直接父帖子）
-  await PostService.updateAncestorRepliesCount(postId, 1)
-
-  const responseData = {
-    ...newReply.toObject(),
-    currentUserInteraction: {
-      isLiked: false,
-      isBookmarked: false,
-      isRetweeted: false,
-    },
-  }
-
-  sendResponse(res, 201, '回复成功', responseData)
 }
 
 // 点赞

@@ -7,9 +7,8 @@ export interface userLoginData {
 
 // 用户登录时获取验证码
 export interface recieveCode {
-  status: string
   code: string
-  message?: string
+  message: string
 }
 
 // 用户注册
@@ -39,7 +38,7 @@ export interface UserProfile {
   pinnedPostId?: string
 }
 
-// 帖子状态
+// 帖子统计信息
 export interface PostStats {
   likesCount: number
   repliesCount: number
@@ -49,7 +48,7 @@ export interface PostStats {
   quotesCount: number
 }
 
-// 前端接收帖子
+// 帖子
 export interface RecievePostPayload {
   _id: string
   authorId: string
@@ -60,12 +59,12 @@ export interface RecievePostPayload {
   }[]
 
   postType: 'standard' | 'reply' | 'quote' | 'retweet'
+  visibility: 'public' | 'circle' | 'private'
   parentPostId?: string
   quotedPostId?: string
   retweetedPostId?: string
   mentions?: string[]
   hashtags?: string[]
-  visibility?: string
   createdAt: string
 
   stats: PostStats
@@ -101,25 +100,13 @@ export interface getPostReply {
 export interface CreatePostPayload {
   content: string
 
-  postType: 'standard' | 'reply' | 'quote'
+  postType: 'standard' | 'reply' | 'quote' | 'retweet'
 
   media?: {
     type: 'image' | 'video' | 'gif'
     url: string
   }[]
-
-  // 条件必需：当 postType 为 'reply' 时，必须提供父帖子的 ID
   parentPostId?: string
-  // 条件必需：当 postType 为 'quote' 时，必须提供被引用帖子的 ID
   quotedPostId?: string
-  // 可选字段：投票信息
-  poll?: {
-    question: string
-    // 前端只需要传递选项的文本即可
-    options: string[]
-    // 投票持续时间，比如 '1d', '3h', '30m'
-    duration: string
-  }
-  // 可选字段：可见性设置
-  visibility?: 'public' | 'circle'
+  visibility?: 'public' | 'circle' | 'private'
 }

@@ -88,4 +88,18 @@ export class PostService {
 
     return ancestorIds
   }
+
+  // 更新用户统计信息
+  static async updateUserStats(userId, updates) {
+    const result = await User.findByIdAndUpdate(
+      userId,
+      { $inc: updates },
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
+
+    return result
+  }
 }

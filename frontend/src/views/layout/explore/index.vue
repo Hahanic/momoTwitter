@@ -50,8 +50,8 @@ import StickyHead from '@/components/layout/StickyHead.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 
 const tagList = ref([
-  { name: '为你推荐', path: 'for_you' },
-  { name: '当前趋势', path: 'trending' },
+  { name: '推荐', path: 'for_you' },
+  { name: '趋势', path: 'trending' },
   { name: '新闻', path: 'news' },
   { name: '体育', path: 'sports' },
   { name: '娱乐', path: 'entertainment' },

@@ -1,7 +1,8 @@
 <template>
-  <div class="flex h-full w-full justify-center bg-white text-amber-950 dark:bg-[#000] dark:text-white">
+  <div class="flex w-full justify-center bg-white text-amber-950 dark:bg-[#000] dark:text-white">
     <div class="flex transition-all">
       <header
+        v-if="!windowStore.isMobile"
         class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center transition-all sm:flex xl:w-[17rem] xl:items-start"
       >
         <div class="relative z-10 flex h-[64px] w-full items-center">
@@ -10,9 +11,6 @@
             class="absolute left-[24px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
             src="/warp.svg"
           />
-          <!-- <div @click="themeStore.toggleTheme()" class="absolute left-[-10px] hover:cursor-pointer xl:left-[40px]">
-            <Logo :size="48" />
-          </div> -->
         </div>
         <n-scrollbar style="max-height: 100%">
           <SideBar
@@ -24,16 +22,26 @@
             :time-variance="300"
             :colors="[1, 2, 3, 1, 2, 3, 1, 4]"
             :initial-active-index="0"
+            @action="handleSidebarAction"
           />
         </n-scrollbar>
       </header>
+      <!-- 移动端的底部菜单导航 -->
+      <transition name="slide-up">
+        <header
+          v-if="windowStore.isMobile && windowStore.showBottomNav"
+          class="fixed right-0 bottom-0 left-0 z-50 w-full"
+        >
+          <BottomNavigation />
+        </header>
+      </transition>
 
-      <div class="flex transition-all">
+      <div class="flex" :class="{ 'pb-16': windowStore.isMobile }">
         <RouterView> </RouterView>
       </div>
     </div>
     <transition name="fade">
-      <ComposeModal v-if="showModal"></ComposeModal>
+      <ComposeModal v-if="showModal" @close="closeModal"></ComposeModal>
     </transition>
   </div>
 </template>
@@ -55,30 +63,55 @@ import {
 } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
 import { defineAsyncComponent, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 import SideBar from '@/components/layout/SideBar.vue'
+import { useWindowStore } from '@/stores'
 import useThemeStore from '@/stores/theme'
 
+const windowStore = useWindowStore()
 const themeStore = useThemeStore()
 const route = useRoute()
+const router = useRouter()
 
 // 模态框
-const ComposeModal = defineAsyncComponent(() => import('@/components/ComposeModal/index.vue'))
-const showModal = ref(true)
+const ComposeModal = defineAsyncComponent(() => import('@/components/composeModal/index.vue'))
+const showModal = ref(false)
+
 watch(
-  () => route.path,
-  (newPath) => {
-    if (newPath === '/compose/post') {
+  () => ({ query: route.query }),
+  ({ query }) => {
+    // 通过查询参数 ?modal=compose 来控制模态框显示
+    if (query.modal === 'compose') {
       showModal.value = true
     } else {
       showModal.value = false
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 )
 
-// 帖子列表
+// 关闭模态框
+const closeModal = () => {
+  showModal.value = false
+  // 如果是通过查询参数显示的模态框，移除查询参数
+  if (route.query.modal === 'compose') {
+    const query = { ...route.query }
+    delete query.modal
+    router.replace({ path: route.path, query })
+  }
+}
+
+// 处理侧边栏动作
+const handleSidebarAction = (actionType: string) => {
+  if (actionType === 'compose') {
+    // 通过查询参数打开模态框
+    router.push({ path: route.path, query: { ...route.query, modal: 'compose' } })
+  }
+}
+
+// SideBar列表
 const menuLists = [
   {
     icon: HomeIcon,
@@ -138,7 +171,8 @@ const menuLists = [
   {
     icon: Send,
     label: '发帖',
-    href: '/compose/post',
+    href: null, // 使用 null 表示这是一个特殊处理的按钮
+    action: 'compose',
   },
 ]
 </script>
@@ -155,5 +189,19 @@ const menuLists = [
 .fade-enter-to,
 .fade-leave-from {
   opacity: 1;
+}
+
+/* 底部导航滑动动画 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.3s ease-out;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+}
+.slide-up-enter-to,
+.slide-up-leave-from {
+  transform: translateY(0);
 }
 </style>

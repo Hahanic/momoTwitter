@@ -1,8 +1,8 @@
 <template>
-  <div class="flex" :class="{ 'min-h-0': fullHeight }">
+  <div class="flex">
     <!-- 头像 -->
     <div class="mx-2 mt-2 flex h-[3rem] w-[3rem] items-center justify-center">
-      <Avatar src="/myAvatar.jpg" :require-auth="true" container-class="h-[3rem] w-[3rem]" />
+      <Avatar src="/myAvatar.jpg" container-class="h-[3rem] w-[3rem]" />
     </div>
 
     <!-- 输入框区域 -->
@@ -35,16 +35,13 @@ const message = useMessage()
 interface Props {
   modelValue: string
   placeholder?: string
-  fullHeight?: boolean
   scrollbarClass?: string
   textareaClass?: string
-  enableLocalStorage?: boolean
   localStorageKey?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: '有什么新鲜事?',
-  fullHeight: false,
   scrollbarClass: 'sm:max-h-[600px]',
   textareaClass: '',
   enableLocalStorage: false,
@@ -74,7 +71,7 @@ watch(
     // 提交变空
     if (newValue === '') {
       textareaRef.value.style.height = 'auto'
-      if (props.enableLocalStorage && props.localStorageKey) {
+      if (props.localStorageKey) {
         localStorage.removeItem(props.localStorageKey)
       }
       return
@@ -91,7 +88,7 @@ watch(
     textareaRef.value.style.height = `${textareaRef.value.scrollHeight}px`
 
     // 本地存储
-    if (props.enableLocalStorage && props.localStorageKey) {
+    if (props.localStorageKey) {
       localStorage.setItem(props.localStorageKey, internalContent.value)
     }
   }
@@ -99,7 +96,7 @@ watch(
 
 // 加载本地缓存内容
 const loadFromLocalStorage = () => {
-  if (props.enableLocalStorage && props.localStorageKey) {
+  if (props.localStorageKey) {
     const savedContent = localStorage.getItem(props.localStorageKey)
     if (savedContent) {
       internalContent.value = savedContent

@@ -1,34 +1,8 @@
 <template>
-  <div
-    :class="{
-      'border-b-1': !isCompose,
-      'flex h-full max-h-[100vh] flex-col': isCompose,
-    }"
-    class="dark:border-borderDark border-borderWhite w-full"
-  >
-    <!-- 头部导航 (仅在compose模式下显示) -->
-    <div v-if="isCompose" class="flex items-center justify-between px-2 pt-2 pb-3">
-      <RouterLink to="/">
-        <ArrowLeft class="block sm:hidden" :size="26" />
-        <XIcon class="hidden sm:block" :size="26" />
-      </RouterLink>
-      <div class="flex items-center gap-4 text-[#1eaafe]">
-        <span>草稿</span>
-        <div class="block sm:hidden">
-          <SubmitButton
-            :disabled="!canSubmitPost || postInteractionStore.isCreatingPost()"
-            @click="handlePosting"
-            text="发帖"
-          />
-        </div>
-      </div>
-    </div>
-
+  <div class="dark:border-borderDark border-borderWhite w-full border-b-1">
     <!-- 编辑器区域 -->
     <PostEditor
       v-model="messageContent"
-      :full-height="isCompose"
-      :enable-local-storage="isCompose"
       local-storage-key="messsageContent"
       placeholder="有什么新鲜事?"
       ref="editorRef"
@@ -38,7 +12,7 @@
     <div class="flex min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]">
       <div class="dark:border-borderDark border-borderWhite flex w-full items-center justify-between border-t-1">
         <MediaToolbar @image="handleMediaAction" @emoji="handleMediaAction" />
-        <div :class="{ 'hidden sm:block': isCompose }">
+        <div>
           <SubmitButton
             :disabled="!canSubmitPost || postInteractionStore.isCreatingPost()"
             @click="handlePosting"
@@ -51,9 +25,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ArrowLeft, XIcon } from 'lucide-vue-next'
 import { useMessage } from 'naive-ui'
-import { onMounted, ref, computed } from 'vue'
+import { ref, computed } from 'vue'
 
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
@@ -65,13 +38,6 @@ const message = useMessage()
 const postFeedStore = usePostFeedStore()
 const postInteractionStore = usePostInteractionStore()
 const userStore = useUserStore()
-
-interface Props {
-  isCompose?: boolean
-}
-const props = withDefaults(defineProps<Props>(), {
-  isCompose: false,
-})
 
 const editorRef = ref<InstanceType<typeof PostEditor> | null>(null)
 const messageContent = ref<string>('')
@@ -112,13 +78,6 @@ const handleMediaAction = () => {
   // TODO: 实现媒体功能
   console.log('媒体功能待实现')
 }
-
-onMounted(() => {
-  // 加载本地缓存的内容
-  if (props.isCompose && editorRef.value) {
-    editorRef.value.loadFromLocalStorage()
-  }
-})
 </script>
 
 <style scoped></style>

@@ -12,12 +12,21 @@
             ]"
           >
             <RouterLink
-              :to="item.href || '#'"
+              v-if="item.href"
+              :to="item.href"
               class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
             >
               <span class="relative left-6 hidden xl:block">{{ item.label }}</span>
               <component :is="item.icon" :size="'1.7rem'" class="left-[4rem] xl:absolute" />
             </RouterLink>
+            <button
+              v-else
+              @click="handleAction(item.action)"
+              class="relative z-10 flex h-[3.2rem] w-full items-center px-3 text-left outline-none xl:px-[4.6rem]"
+            >
+              <span class="relative left-6 hidden xl:block">{{ item.label }}</span>
+              <component :is="item.icon" :size="'1.7rem'" class="left-[4rem] xl:absolute" />
+            </button>
           </li>
         </ul>
       </nav>
@@ -33,6 +42,7 @@ interface NavItem {
   icon: Component
   label: string
   href: string | null
+  action?: string
 }
 
 interface NavProps {
@@ -44,7 +54,19 @@ const props = withDefaults(defineProps<NavProps>(), {
   initialActiveIndex: -1,
 })
 
+// 定义 emit 事件
+const emit = defineEmits<{
+  action: [actionType: string]
+}>()
+
 const route = useRoute()
+
+// 处理特殊动作
+const handleAction = (actionType?: string) => {
+  if (actionType) {
+    emit('action', actionType)
+  }
+}
 
 const activeIndex = computed(() => {
   const index = props.items.findIndex(

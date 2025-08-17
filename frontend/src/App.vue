@@ -23,9 +23,16 @@ const route = useRoute()
 // 恢复滚动位置
 const scrollbarRef = ref<ScrollbarInst | null>(null)
 const handleScroll = (e: Event) => {
+  const target = e.target as HTMLElement
+  const scrollTop = target.scrollTop
+
   if (route.path === '/home') {
-    const target = e.target as HTMLElement
-    windowStore.setHomeScrollTop(target.scrollTop)
+    windowStore.setHomeScrollTop(scrollTop)
+  }
+
+  // 处理移动端底部菜单的显示/隐藏
+  if (windowStore.isMobile) {
+    windowStore.handleScrollDirection(scrollTop)
   }
 }
 watch(
@@ -55,7 +62,7 @@ onMounted(() => {
 
 <template>
   <NMessageProvider>
-    <n-config-provider :theme="themeStore.isDarkTheme ? darkTheme : lightTheme">
+    <n-config-provider :theme="themeStore.isDarkTheme ? darkTheme : lightTheme" class="h-full w-full">
       <n-loading-bar-provider>
         <n-scrollbar
           :class="{ 'hide-scrollbar': windowStore.isMobile }"

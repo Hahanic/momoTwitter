@@ -59,6 +59,9 @@ export const createPost = async (req, res) => {
   const newPost = new Post(postData)
   await newPost.save()
 
+  // 用户postCount++
+  await PostService.updateUserStats(authorId, { 'stats.postsCount': 1 })
+
   // 返回给前端的新帖子
   const responsePayload = {
     ...newPost.toObject(),

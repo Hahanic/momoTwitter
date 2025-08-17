@@ -64,12 +64,6 @@ const layoutRoutes: Array<RouteRecordRaw> = [
           },
         ],
       },
-
-      {
-        path: '/compose/post',
-        name: 'ComposePost',
-        component: Home,
-      },
       {
         path: ':pathMatch(.*)*',
         name: 'GlobalNotFound',

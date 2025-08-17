@@ -4,12 +4,15 @@
       <header
         class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center transition-all sm:flex xl:w-[17rem] xl:items-start"
       >
-        <div class="relative z-10 flex h-[3.2rem] w-full items-center">
+        <div class="relative z-10 flex h-[64px] w-full items-center">
           <img
             @click="themeStore.toggleTheme()"
             class="absolute left-[24px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
             src="/warp.svg"
           />
+          <!-- <div @click="themeStore.toggleTheme()" class="absolute left-[-10px] hover:cursor-pointer xl:left-[40px]">
+            <Logo :size="48" />
+          </div> -->
         </div>
         <n-scrollbar style="max-height: 100%">
           <SideBar

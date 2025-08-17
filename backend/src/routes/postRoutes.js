@@ -7,6 +7,8 @@ import {
   getPost,
   getPostReplies,
   likePost,
+  bookmarkPost,
+  viewPost,
   getOnePost,
   getReplyParentPost,
 } from '../controller/post.js'
@@ -29,5 +31,9 @@ router.post('/create', protectAuthRoute, asyncHandler(createPost))
 router.post('/:postId/replies', protectAuthRoute, asyncHandler(createPostReply))
 // 点赞帖子/回复
 router.post('/:postId/like', protectAuthRoute, asyncHandler(likePost))
+// 收藏帖子/回复
+router.post('/:postId/bookmark', protectAuthRoute, asyncHandler(bookmarkPost))
+// 增加帖子浏览数
+router.post('/:postId/view', viewPost)
 
 export default router

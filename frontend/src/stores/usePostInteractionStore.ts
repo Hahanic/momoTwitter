@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import useUserStore from './user.ts'
 
-import { apiLikePost, apiCreateReply, createPost as apiCreatePost } from '@/api/index.ts'
+import { apiLikePost, apiBookmarkPost, apiCreateReply, createPost as apiCreatePost, apiViewPost } from '@/api/index.ts'
 import type { CreatePostPayload } from '@/types'
 
 const usePostInteractionStore = defineStore('postInteraction', () => {
@@ -24,7 +24,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     }
 
     if (likingInProgress.value.has(postId)) {
-      throw new Error('正在进行点赞操作，请稍后再试')
+      throw new Error('点赞进行中，请稍后再试')
     }
 
     const post = postCacheStore.getPost(postId)
@@ -72,7 +72,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     }
 
     if (bookmarkingInProgress.value.has(postId)) {
-      throw new Error('正在进行收藏操作，请稍后再试')
+      throw new Error('收藏进行中，请稍后再试')
     }
 
     const post = postCacheStore.getPost(postId)
@@ -98,9 +98,9 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     })
 
     try {
-      // TODO: 等待后端实现书签API
-      // await apiBookmarkPost(postId)
-      console.log('书签功能待实现')
+      await apiBookmarkPost(postId)
+      // const res = await apiBookmarkPost(postId)
+      // console.log(res)
     } catch (error) {
       // 失败回滚
       postCacheStore.updatePost(postId, {
@@ -226,6 +226,16 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     }
   }
 
+  // 浏览帖子
+  async function viewPost(postId: string) {
+    // if (!userStore.isAuthenticated) return
+    const res = await apiViewPost(postId)
+    postCacheStore.updatePost(postId, {
+      stats: { ...res.stats },
+    })
+    return
+  }
+
   // 检查是否正在进行某个操作
   function isLikingPost(postId: string): boolean {
     return likingInProgress.value.has(postId)
@@ -268,6 +278,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     toggleRetweet,
     createReply,
     createPost,
+    viewPost,
 
     // 状态检查方法
     isLikingPost,

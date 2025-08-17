@@ -55,9 +55,9 @@ import { ArrowLeft, XIcon } from 'lucide-vue-next'
 import { useMessage } from 'naive-ui'
 import { onMounted, ref, computed } from 'vue'
 
-import MediaToolbar from '@/components/ui/MediaToolbar/index.vue'
-import PostEditor from '@/components/ui/PostEditor/index.vue'
-import SubmitButton from '@/components/ui/SubmitButton/index.vue'
+import MediaToolbar from '@/components/post/MediaToolbar.vue'
+import PostEditor from '@/components/post/PostEditor.vue'
+import SubmitButton from '@/components/post/SubmitButton.vue'
 import { usePostFeedStore, usePostInteractionStore } from '@/stores'
 import useUserStore from '@/stores/user'
 

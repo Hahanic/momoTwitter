@@ -50,8 +50,8 @@ import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import Posts from '@/components/post/index.vue'
-import UserSendCard from '@/components/postCreate/index.vue'
-import SearchInput from '@/components/ui/SearchInput/SearchInput.vue'
+import UserSendCard from '@/components/post/PostCreate.vue'
+import SearchInput from '@/components/ui/SearchInput.vue'
 import { usePostFeedStore } from '@/stores'
 
 const feedStore = usePostFeedStore()

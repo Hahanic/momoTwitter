@@ -29,7 +29,7 @@
 import { NScrollbar, useMessage } from 'naive-ui'
 import { ref, watch, computed, nextTick } from 'vue'
 
-import Avatar from '@/components/ui/User/Avatar.vue'
+import Avatar from '@/components/post/Avatar.vue'
 const message = useMessage()
 
 interface Props {

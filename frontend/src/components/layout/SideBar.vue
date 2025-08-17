@@ -1,32 +1,16 @@
 <template>
   <div>
-    <div class="relative" ref="containerRef">
-      <nav
-        class="relative z-10 mr-3 flex justify-end xl:justify-start"
-        :style="{ transform: 'translate3d(0,0,0.01px)' }"
-      >
-        <ul
-          ref="navRef"
-          class="relative z-[3] flex flex-col gap-1"
-          :style="{
-            color: 'white',
-            textShadow: '0 1px 1px hsl(205deg 30% 10% / 0.2)',
-          }"
-        >
+    <div class="relative">
+      <nav class="relative z-10 mr-3 flex justify-end xl:justify-start">
+        <ul class="relative z-[3] flex flex-col gap-1">
           <li
             v-for="(item, index) in items"
             :key="index"
             :class="[
-              'ease relative cursor-pointer rounded-full text-amber-950 shadow-[0_0_0.5px_1.5px_transparent] transition-[background-color_color_box-shadow] duration-300 dark:text-white',
+              'relative cursor-pointer rounded-full text-amber-950 dark:text-white',
               { active: activeIndex === index },
             ]"
           >
-            <!-- <RouterLink
-              :to="item.href || '#'"
-              @click="e=> handleClick(e, index)"
-              @keydown="e => handleKeyDown(e, index)"
-              class="outline-none xl:px-[4.6rem] px-3 h-[3.2rem] flex items-center relative z-10"
-            > -->
             <RouterLink
               :to="item.href || '#'"
               class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
@@ -37,410 +21,49 @@
           </li>
         </ul>
       </nav>
-
-      <span class="effect filter" ref="filterRef" />
-      <span class="effect text" ref="textRef" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch, useTemplateRef, type Component, computed } from 'vue'
+import { type Component, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
-interface GooeyNavItem {
+interface NavItem {
   icon: Component
   label: string
   href: string | null
 }
 
-interface GooeyNavProps {
-  items: GooeyNavItem[]
-  animationTime?: number
-  particleCount?: number
-  particleDistances?: [number, number]
-  particleR?: number
-  timeVariance?: number
-  colors?: number[]
+interface NavProps {
+  items: NavItem[]
   initialActiveIndex?: number
 }
 
-const props = withDefaults(defineProps<GooeyNavProps>(), {
-  animationTime: 600,
-  particleCount: 15,
-  particleDistances: () => [90, 10],
-  particleR: 100,
-  timeVariance: 300,
-  colors: () => [1, 2, 3, 1, 2, 3, 1, 4],
-  initialActiveIndex: 0,
+const props = withDefaults(defineProps<NavProps>(), {
+  initialActiveIndex: -1,
 })
 
-const containerRef = useTemplateRef<HTMLDivElement>('containerRef')
-const navRef = useTemplateRef<HTMLUListElement>('navRef')
-const filterRef = useTemplateRef<HTMLSpanElement>('filterRef')
-const textRef = useTemplateRef<HTMLSpanElement>('textRef')
-// const activeIndex = ref<number>(props.initialActiveIndex);
 const route = useRoute()
 
 const activeIndex = computed(() => {
-  const index = props.items.findIndex((item) => route.path.includes(item.href || '#'))
+  const index = props.items.findIndex(
+    // 确保 item.href 存在，避免在 null 上调用 .includes 方法
+    (item) => item.href && route.path.includes(item.href)
+  )
   return index !== -1 ? index : props.initialActiveIndex
-})
-
-let resizeObserver: ResizeObserver | null = null
-
-const noise = (n = 1) => n / 2 - Math.random() * n
-
-const getXY = (distance: number, pointIndex: number, totalPoints: number): [number, number] => {
-  const angle = ((360 + noise(8)) / totalPoints) * pointIndex * (Math.PI / 180)
-  return [distance * Math.cos(angle), distance * Math.sin(angle)]
-}
-
-const createParticle = (i: number, t: number, d: [number, number], r: number) => {
-  const rotate = noise(r / 10)
-  return {
-    start: getXY(d[0], props.particleCount - i, props.particleCount),
-    end: getXY(d[1] + noise(7), props.particleCount - i, props.particleCount),
-    time: t,
-    scale: 1 + noise(0.2),
-    color: props.colors[Math.floor(Math.random() * props.colors.length)],
-    rotate: rotate > 0 ? (rotate + r / 20) * 10 : (rotate - r / 20) * 10,
-  }
-}
-
-const makeParticles = (element: HTMLElement) => {
-  const d: [number, number] = props.particleDistances
-  const r = props.particleR
-  const bubbleTime = props.animationTime * 2 + props.timeVariance
-  element.style.setProperty('--time', `${bubbleTime}ms`)
-  for (let i = 0; i < props.particleCount; i++) {
-    const t = props.animationTime * 2 + noise(props.timeVariance * 2)
-    const p = createParticle(i, t, d, r)
-    element.classList.remove('active')
-    setTimeout(() => {
-      const particle = document.createElement('span')
-      const point = document.createElement('span')
-      particle.classList.add('particle')
-      particle.style.setProperty('--start-x', `${p.start[0]}px`)
-      particle.style.setProperty('--start-y', `${p.start[1]}px`)
-      particle.style.setProperty('--end-x', `${p.end[0]}px`)
-      particle.style.setProperty('--end-y', `${p.end[1]}px`)
-      particle.style.setProperty('--time', `${p.time}ms`)
-      particle.style.setProperty('--scale', `${p.scale}`)
-      particle.style.setProperty('--color', `var(--color-${p.color}, white)`)
-      particle.style.setProperty('--rotate', `${p.rotate}deg`)
-      point.classList.add('point')
-      particle.appendChild(point)
-      element.appendChild(particle)
-      requestAnimationFrame(() => {
-        element.classList.add('active')
-      })
-      setTimeout(() => {
-        try {
-          element.removeChild(particle)
-        } catch {}
-      }, t)
-    }, 30)
-  }
-}
-
-const updateEffectPosition = (element: HTMLElement) => {
-  if (!containerRef.value || !filterRef.value || !textRef.value) return
-  const containerRect = containerRef.value.getBoundingClientRect()
-  const pos = element.getBoundingClientRect()
-  const styles = {
-    left: `${pos.x - containerRect.x}px`,
-    top: `${pos.y - containerRect.y}px`,
-    width: `${pos.width}px`,
-    height: `${pos.height}px`,
-  }
-  Object.assign(filterRef.value.style, styles)
-  Object.assign(textRef.value.style, styles)
-  textRef.value.innerText = element.innerText
-}
-
-// const handleClick = (e: Event, index: number) => {
-//   console.log('click', index);
-//   const liEl = (e.currentTarget as HTMLElement).parentElement as HTMLElement;
-//   if (activeIndex.value === index) return;
-//   activeIndex.value = index;
-//   updateEffectPosition(liEl);
-//   if (filterRef.value) {
-//     const particles = filterRef.value.querySelectorAll('.particle');
-//     particles.forEach(p => filterRef.value!.removeChild(p));
-//   }
-//   if (textRef.value) {
-//     textRef.value.classList.remove('active');
-//     void textRef.value.offsetWidth;
-//     textRef.value.classList.add('active');
-//   }
-//   if (filterRef.value) {
-//     makeParticles(filterRef.value);
-//   }
-// };
-
-// const handleKeyDown = (e: KeyboardEvent, index: number) => {
-//   if (e.key === 'Enter' || e.key === ' ') {
-//     e.preventDefault();
-//     const liEl = (e.currentTarget as HTMLElement).parentElement;
-//     if (liEl) {
-//       handleClick(
-//         {
-//           currentTarget: liEl
-//         } as unknown as Event,
-//         index
-//       );
-//     }
-//   }
-// };
-watch(activeIndex, (newIndex, oldIndex) => {
-  // 如果索引没有变化，或者组件还没准备好，则不执行
-  if (newIndex === oldIndex || !navRef.value) return
-
-  const activeLi = navRef.value.querySelectorAll('li')[newIndex] as HTMLElement
-  if (activeLi) {
-    // 1. 更新效果元素的位置
-    updateEffectPosition(activeLi)
-
-    // 2. 触发粒子和文本动画（这部分逻辑是从旧的 handleClick 移过来的）
-    if (filterRef.value) {
-      const particles = filterRef.value.querySelectorAll('.particle')
-      particles.forEach((p) => filterRef.value!.removeChild(p))
-      makeParticles(filterRef.value)
-    }
-    if (textRef.value) {
-      textRef.value.classList.remove('active')
-      void textRef.value.offsetWidth // 强制浏览器重绘
-      textRef.value.classList.add('active')
-    }
-  }
-})
-
-// watch(activeIndex, () => {
-//   if (!navRef.value || !containerRef.value) return;
-//   const activeLi = navRef.value.querySelectorAll('li')[activeIndex.value] as HTMLElement;
-//   if (activeLi) {
-//     updateEffectPosition(activeLi);
-//     textRef.value?.classList.add('active');
-//   }
-// });
-
-onMounted(() => {
-  if (!navRef.value || !containerRef.value) return
-  const activeLi = navRef.value.querySelectorAll('li')[activeIndex.value] as HTMLElement
-  if (activeLi) {
-    updateEffectPosition(activeLi)
-    textRef.value?.classList.add('active')
-  }
-  resizeObserver = new ResizeObserver(() => {
-    const currentActiveLi = navRef.value?.querySelectorAll('li')[activeIndex.value] as HTMLElement
-    if (currentActiveLi) {
-      updateEffectPosition(currentActiveLi)
-    }
-  })
-  resizeObserver.observe(containerRef.value)
-})
-
-onUnmounted(() => {
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-  }
 })
 </script>
 
 <style>
-:root {
-  --linear-ease: linear(
-    0,
-    0.068,
-    0.19 2.7%,
-    0.804 8.1%,
-    1.037,
-    1.199 13.2%,
-    1.245,
-    1.27 15.8%,
-    1.274,
-    1.272 17.4%,
-    1.249 19.1%,
-    0.996 28%,
-    0.949,
-    0.928 33.3%,
-    0.926,
-    0.933 36.8%,
-    1.001 45.6%,
-    1.013,
-    1.019 50.8%,
-    1.018 54.4%,
-    1 63.1%,
-    0.995 68%,
-    1.001 85%,
-    1
-  );
-}
-
-.effect {
-  position: absolute;
-  opacity: 1;
-  pointer-events: none;
-  display: grid;
-  place-items: center;
-  z-index: -1;
-}
-
-.dark .effect.text {
-  color: white;
-  transition: color 0.3s ease;
-}
-
-.dark .effect.text.active {
-  color: black;
-}
-.effect.text {
-  color: white;
-  color: black;
-  transition: color 0.3s ease;
-}
-
-.effect.text.active {
-  color: white;
-}
-
-.dark .effect.filter {
-  filter: blur(7px) contrast(100) blur(0);
-  mix-blend-mode: lighten;
-}
-
-/* 光侧 */
-.effect.filter {
-  filter: blur(70px) contrast(100) blur(0);
-  mix-blend-mode: lighten;
-}
-
-.effect.filter::before {
-  content: '';
-  position: absolute;
-  inset: -75px;
-  z-index: -2;
-}
-.dark .effect.filter::before {
-  background: black;
-}
-.effect.filter::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: white;
-  transform: scale(0);
-  opacity: 0;
-  z-index: -1;
-  border-radius: 9999px;
-}
-
-.effect.active::after {
-  animation: pill 0.3s ease both;
-}
-
-@keyframes pill {
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.particle,
-.point {
-  display: block;
-  opacity: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 9999px;
-  transform-origin: center;
-}
-
-.particle {
-  --time: 5s;
-  position: absolute;
-  top: calc(50% - 8px);
-  left: calc(50% - 8px);
-  animation: particle calc(var(--time)) ease 1 -350ms;
-}
-
-.point {
-  background: var(--color);
-  opacity: 1;
-  animation: point calc(var(--time)) ease 1 -350ms;
-}
-
-@keyframes particle {
-  0% {
-    transform: rotate(0deg) translate(calc(var(--start-x)), calc(var(--start-y)));
-    opacity: 1;
-    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
-  }
-  70% {
-    transform: rotate(calc(var(--rotate) * 0.5)) translate(calc(var(--end-x) * 1.2), calc(var(--end-y) * 1.2));
-    opacity: 1;
-    animation-timing-function: ease;
-  }
-  85% {
-    transform: rotate(calc(var(--rotate) * 0.66)) translate(calc(var(--end-x)), calc(var(--end-y)));
-    opacity: 1;
-  }
-  100% {
-    transform: rotate(calc(var(--rotate) * 1.2)) translate(calc(var(--end-x) * 0.5), calc(var(--end-y) * 0.5));
-    opacity: 1;
-  }
-}
-
-@keyframes point {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
-  }
-  25% {
-    transform: scale(calc(var(--scale) * 0.25));
-  }
-  38% {
-    opacity: 1;
-  }
-  65% {
-    transform: scale(var(--scale));
-    opacity: 1;
-    animation-timing-function: ease;
-  }
-  85% {
-    transform: scale(var(--scale));
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0);
-    opacity: 0;
-  }
-}
-
-li.active {
+/* li.active {
   color: black;
   text-shadow: none;
+  background-color: rgb(239, 199, 199);
 }
 
-li.active::after {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* active的li的背景 */
-.dark li::after {
-  background: white;
-}
-li::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  background: rgb(239, 199, 199);
-  opacity: 0;
-  transform: scale(0);
-  transition: all 0.3s ease;
-}
+.dark li.active {
+  color: black;
+  background-color: white;
+} */
 </style>

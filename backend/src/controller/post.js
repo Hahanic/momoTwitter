@@ -1,3 +1,4 @@
+import Bookmark from '../db/model/Bookmark.js'
 import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
 import { PostService } from '../services/postService.js'
@@ -331,4 +332,54 @@ export const likePost = async (req, res) => {
       likesCount: post.stats.likesCount + 1,
     })
   }
+}
+
+// 收藏帖子
+export const bookmarkPost = async (req, res) => {
+  const { postId } = req.params
+  const currentUserId = req.user.id
+
+  // 验证帖子是否存在
+  const post = await Post.findById(postId)
+  if (!post) {
+    return sendResponse(res, 404, '帖子不存在')
+  }
+
+  // 检查用户是否已经收藏过这个帖子
+  const existingBookmark = await Bookmark.findOne({ userId: currentUserId, postId })
+
+  if (existingBookmark) {
+    // 取消收藏
+    await Bookmark.deleteOne({ userId: currentUserId, postId })
+    await PostService.updatePostStats(postId, { 'stats.bookmarksCount': -1 })
+
+    sendResponse(res, 200, '取消收藏成功', {
+      isBookmarked: false,
+      bookmarksCount: post.stats.bookmarksCount - 1,
+    })
+  } else {
+    // 添加收藏
+    const newBookmark = new Bookmark({ userId: currentUserId, postId })
+    await newBookmark.save()
+    await PostService.updatePostStats(postId, { 'stats.bookmarksCount': 1 })
+
+    sendResponse(res, 200, '收藏成功', {
+      isBookmarked: true,
+      bookmarksCount: post.stats.bookmarksCount + 1,
+    })
+  }
+}
+
+// 浏览数
+export const viewPost = async (req, res) => {
+  const { postId } = req.params
+
+  // 验证帖子是否存在
+  const post = await Post.findById(postId)
+  if (!post) return
+
+  // 增加浏览数
+  const currentPost = await PostService.updatePostStats(postId, { 'stats.viewsCount': 1 })
+  const stats = currentPost.stats
+  sendResponse(res, 200, 'true', { stats })
 }

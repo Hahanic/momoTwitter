@@ -9,6 +9,7 @@ import {
   type getPost,
   type getPostReply,
   type UserProfile,
+  type PostStats,
 } from '@/types'
 
 // 检查用户登录状态，靠自动发送的cookie
@@ -84,4 +85,21 @@ export const apiCreateReply = (postId: string, content: string): Promise<Recieve
 // 点赞帖子
 export const apiLikePost = (postId: string): Promise<{ message: string; isLiked: boolean; likesCount: number }> => {
   return axiosInstance.post(`/post/${postId}/like`)
+}
+
+// 收藏帖子
+export const apiBookmarkPost = (
+  postId: string
+): Promise<{ message: string; isBookmarked: boolean; bookmarksCount: number }> => {
+  return axiosInstance.post(`/post/${postId}/bookmark`)
+}
+
+// 浏览帖子
+export const apiViewPost = (
+  postId: string
+): Promise<{
+  message: string
+  stats: PostStats
+}> => {
+  return axiosInstance.post(`/post/${postId}/view`)
 }

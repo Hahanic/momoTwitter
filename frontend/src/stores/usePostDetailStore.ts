@@ -75,7 +75,6 @@ const usePostDetailStore = defineStore('postDetail', () => {
     if (currentPostId.value === postId) {
       return // 已经加载了同一个帖子
     }
-
     isLoading.value = true
 
     try {

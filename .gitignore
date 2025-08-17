@@ -1,4 +1,5 @@
 node_modules
+template
 ESLINT_RULES_GUIDE.md
 SIMPLE_ESLINT_TEMPLATE.md
 Vue组件化开发改进建议.md

@@ -25,8 +25,17 @@
     </button>
 
     <div v-if="type !== 'detail'" class="flex items-center justify-center gap-3">
-      <button v-if="!windowStore.isMobile" type="button" class="flex items-center hover:cursor-pointer">
-        <Bookmark :color="'#71767b'" :size="iconSize" />
+      <button
+        @click.stop="emit('bookmark')"
+        v-if="!windowStore.isMobile"
+        type="button"
+        class="flex items-center hover:cursor-pointer"
+      >
+        <Bookmark
+          :class="{ 'text-[#f91880]': props.post.currentUserInteraction?.isBookmarked }"
+          :fill="props.post.currentUserInteraction?.isBookmarked ? '#f91880' : 'none'"
+          :size="iconSize"
+        />
       </button>
       <button type="button" class="flex items-center hover:cursor-pointer">
         <Share :color="'#71767b'" :size="iconSize" />
@@ -35,11 +44,16 @@
 
     <template v-else>
       <button
+        @click.stop="emit('bookmark')"
         v-if="!windowStore.isMobile || type === 'detail'"
         type="button"
         class="flex items-center hover:cursor-pointer"
       >
-        <Bookmark :color="'#71767b'" :size="iconSize" />
+        <Bookmark
+          :class="{ 'text-[#f91880]': props.post.currentUserInteraction?.isBookmarked }"
+          :fill="props.post.currentUserInteraction?.isBookmarked ? '#f91880' : 'none'"
+          :size="iconSize"
+        />
       </button>
       <button type="button" class="flex items-center hover:cursor-pointer">
         <Share :color="'#71767b'" :size="iconSize" />
@@ -67,6 +81,7 @@ interface PostData {
   }
   currentUserInteraction?: {
     isLiked?: boolean
+    isBookmarked?: boolean
   }
 }
 
@@ -82,7 +97,7 @@ const props = withDefaults(
 )
 
 // 组件发出的事件
-const emit = defineEmits(['like'])
+const emit = defineEmits(['like', 'bookmark'])
 
 // 移动端postDetail不显示文字
 const showStatsText = computed((): boolean => {

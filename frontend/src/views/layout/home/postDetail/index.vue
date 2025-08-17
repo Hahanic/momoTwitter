@@ -53,7 +53,7 @@
                 {{ formatDatePostDetail(currentPost.createdAt)
                 }}<span v-if="currentPost.stats.viewsCount >= 10"
                   ><span class="px-1">&middot;</span
-                  ><span class="font-bold text-white">{{ currentPost.stats.viewsCount }}</span
+                  ><span class="font-bold text-black dark:text-white">{{ currentPost.stats.viewsCount }}</span
                   >&nbsp;查看</span
                 >
               </span>
@@ -61,19 +61,26 @@
             <!-- 移动设备显示stats而不是在postACtion -->
             <div v-if="windowStore.isMobile" class="h-10 w-full">
               <div class="ml-2 flex h-10 items-center text-[0.95rem] text-white">
-                <span
+                <span class="text-black dark:text-white"
                   >{{ currentPost.stats.quotesCount + currentPost.stats.retweetsCount
                   }}<span class="text-gray-500">&nbsp;转推&nbsp;&nbsp;</span></span
                 >
-                <span>{{ currentPost.stats.likesCount }}<span class="text-gray-500">&nbsp;喜欢&nbsp;&nbsp;</span></span>
-                <span
+                <span class="text-black dark:text-white"
+                  >{{ currentPost.stats.likesCount }}<span class="text-gray-500">&nbsp;喜欢&nbsp;&nbsp;</span></span
+                >
+                <span class="text-black dark:text-white"
                   >{{ currentPost.stats.bookmarksCount }}<span class="text-gray-500">&nbsp;书签&nbsp;&nbsp;</span></span
                 >
               </div>
             </div>
             <!-- 统计信息 -->
             <div class="dark:border-borderDark border-borderWhite mx-2 border-y py-3 text-gray-500">
-              <PostAction :post="currentPost" type="detail" @like="handleLikeCurrentPost" />
+              <PostAction
+                :post="currentPost"
+                type="detail"
+                @like="handleLikeCurrentPost"
+                @bookmark="handlePostBookmark"
+              />
             </div>
           </div>
         </div>
@@ -138,11 +145,11 @@ import { useRoute, useRouter } from 'vue-router'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
+import Avatar from '@/components/post/Avatar.vue'
 import Post from '@/components/post/index.vue'
-import PostAction from '@/components/postAction/index.vue'
-import PostReply from '@/components/postReply/index.vue'
-import SearchInput from '@/components/ui/SearchInput/SearchInput.vue'
-import Avatar from '@/components/ui/User/Avatar.vue'
+import PostAction from '@/components/post/PostAction.vue'
+import PostReply from '@/components/post/PostReply.vue'
+import SearchInput from '@/components/ui/SearchInput.vue'
 import { usePostDetailStore, usePostInteractionStore, useWindowStore } from '@/stores'
 import { formatDatePostDetail } from '@/utils'
 
@@ -179,6 +186,17 @@ const handleLikeCurrentPost = async () => {
     await interactionStore.toggleLike(currentPost.value._id)
   } catch (error: any) {
     message.error('点赞失败')
+    console.error(error.message || error)
+  }
+}
+// 收藏
+const handlePostBookmark = async () => {
+  if (!currentPost.value) return
+
+  try {
+    await interactionStore.toggleBookmark(currentPost.value._id)
+  } catch (error: any) {
+    message.error('收藏失败')
     console.error(error.message || error)
   }
 }

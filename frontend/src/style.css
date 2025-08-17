@@ -16,11 +16,24 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* 默认样式 */
 :root {
   --color-1: #ff6b6b;
   --color-2: #4ecdc4;
   --color-3: #45b7d1;
   --color-4: #f9ca24;
+  /* logo */
+  /* --color-primary: #d4237a; 主色 */
+  --color-primary: #5a6772; /* 主色 */
+  --color-accent: #f5b9c0; /* 耳朵内侧 */
+  --color-background: #ffffff; /* 眼睛背景 */
+  --color-chart-1: #e74c3c; /* 鼻子 */
+
+  --color-chart-1: oklch(0.488 0.243 264.376);
+  --color-chart-2: oklch(0.696 0.17 162.48);
+  --color-chart-3: oklch(0.769 0.188 70.08);
+  --color-chart-4: oklch(0.627 0.265 303.9);
+  --color-chart-5: oklch(0.645 0.246 16.439);
 }
 
 ol,
@@ -39,6 +52,15 @@ body {
   overflow: hidden;
 }
 
+/* 2. 暗黑主题 */
+.dark {
+  --color-primary: #ecf0f1;
+  --color-accent: #9b59b6;
+  --color-background: #34495e;
+  --color-chart-1: #f1c40f;
+}
+
+/* 加上类名用于隐藏滚动条 */
 .hide-scrollbar > .n-scrollbar-rail {
   display: none;
 }

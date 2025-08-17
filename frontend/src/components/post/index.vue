@@ -41,7 +41,7 @@
         </div>
       </div> -->
       <div class="mt-2 mr-4 mb-4 text-[#71767b]">
-        <PostAction :post="post" variant="full" @like="handlePostLike" />
+        <PostAction :post="post" variant="full" @like="handlePostLike" @bookmark="handlePostBookmark" />
       </div>
     </div>
   </div>
@@ -51,8 +51,8 @@
 import { NScrollbar, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
-import PostAction from '@/components/postAction/index.vue'
-import Avatar from '@/components/ui/User/Avatar.vue'
+import Avatar from '@/components/post/Avatar.vue'
+import PostAction from '@/components/post/PostAction.vue'
 import { usePostInteractionStore } from '@/stores'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
@@ -76,13 +76,23 @@ const handlePostLike = async () => {
   try {
     await postInteractionStore.toggleLike(props.post._id)
   } catch (error: any) {
-    message.error('点赞失败')
+    message.error(error.message || '点赞失败')
+    console.error(error.message || error)
+  }
+}
+// 收藏
+const handlePostBookmark = async () => {
+  try {
+    await postInteractionStore.toggleBookmark(props.post._id)
+  } catch (error: any) {
+    message.error(error.message || '收藏失败')
     console.error(error.message || error)
   }
 }
 
 // 处理帖子点击事件
 const handlePostClick = (post: RecievePostPayload) => {
+  postInteractionStore.viewPost(post._id)
   router.push({
     name: 'PostDetail',
     params: { postId: post._id },

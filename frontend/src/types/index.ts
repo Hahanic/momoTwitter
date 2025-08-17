@@ -39,6 +39,16 @@ export interface UserProfile {
   pinnedPostId?: string
 }
 
+// 帖子状态
+export interface PostStats {
+  likesCount: number
+  repliesCount: number
+  bookmarksCount: number
+  viewsCount: number
+  retweetsCount: number
+  quotesCount: number
+}
+
 // 前端接收帖子
 export interface RecievePostPayload {
   _id: string
@@ -58,14 +68,7 @@ export interface RecievePostPayload {
   visibility?: string
   createdAt: string
 
-  stats: {
-    likesCount: number
-    repliesCount: number
-    bookmarksCount: number
-    viewsCount: number
-    retweetsCount: number
-    quotesCount: number
-  }
+  stats: PostStats
 
   authorInfo: {
     username: string

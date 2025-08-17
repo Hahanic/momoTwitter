@@ -47,7 +47,7 @@ import { ref } from 'vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
-import SearchInput from '@/components/ui/SearchInput/SearchInput.vue'
+import SearchInput from '@/components/ui/SearchInput.vue'
 
 const tagList = ref([
   { name: '为你推荐', path: 'for_you' },

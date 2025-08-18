@@ -20,21 +20,23 @@ const windowStore = useWindowStore()
 const userStore = useUserStore()
 const route = useRoute()
 
-// 恢复滚动位置
 const scrollbarRef = ref<ScrollbarInst | null>(null)
+// 滚动事件
 const handleScroll = (e: Event) => {
   const target = e.target as HTMLElement
   const scrollTop = target.scrollTop
 
+  // Home页
   if (route.path === '/home') {
+    // 记忆Home页的滚动位置
     windowStore.setHomeScrollTop(scrollTop)
-  }
-
-  // 处理移动端底部菜单的显示/隐藏
-  if (windowStore.isMobile) {
-    windowStore.handleScrollDirection(scrollTop)
+    // 处理移动端底部菜单的显示/隐藏
+    if (windowStore.isMobile) {
+      windowStore.handleScrollDirection(scrollTop)
+    }
   }
 }
+// 恢复Home页的滚动位置
 watch(
   () => route.path,
   (routePath) => {

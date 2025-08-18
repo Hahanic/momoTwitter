@@ -1,6 +1,6 @@
 <template>
-  <nav class="border-t border-gray-200 bg-white px-4 dark:border-gray-800 dark:bg-[#000]">
-    <div class="flex h-full items-center justify-around">
+  <nav class="border-t border-gray-200 bg-white dark:border-gray-800 dark:bg-[#000]">
+    <div class="relative flex h-full items-center justify-around">
       <RouterLink
         v-for="item in mobileMenuItems"
         :key="item.href"
@@ -11,19 +11,17 @@
         <component :is="item.icon" :size="24" />
         <span class="mt-1 text-xs">{{ item.label }}</span>
       </RouterLink>
-      <!-- <button
-        @click="handleCompose"
-        class="flex flex-col items-center justify-center px-3 py-2 text-gray-600 transition-colors hover:text-amber-950 dark:text-gray-400 dark:hover:text-white"
+      <button
+        class="floating-send-button absolute right-4 bottom-[5rem] flex h-[3.6rem] w-[3.6rem] cursor-pointer items-center justify-center rounded-full bg-blue-400 text-white shadow-lg hover:bg-blue-500"
       >
         <component :is="Send" :size="24" />
-        <span class="mt-1 text-xs">发帖</span>
-      </button> -->
+      </button>
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
-import { HomeIcon, Search, Bell, Mail, User2, CircleEllipsis } from 'lucide-vue-next'
+import { HomeIcon, Search, Bell, Mail, Users2, Send } from 'lucide-vue-next'
 
 // 移动端显示的主要菜单项
 const mobileMenuItems = [
@@ -38,6 +36,11 @@ const mobileMenuItems = [
     href: '/explore',
   },
   {
+    icon: Users2,
+    label: '群组',
+    href: '/groups',
+  },
+  {
     icon: Bell,
     label: '通知',
     href: '/notifications',
@@ -47,15 +50,7 @@ const mobileMenuItems = [
     label: '私信',
     href: '/messages',
   },
-  {
-    icon: User2,
-    label: '我的',
-    href: '/profile',
-  },
-  {
-    icon: CircleEllipsis,
-    label: '设置',
-    href: '/more',
-  },
 ]
 </script>
+
+<style scoped></style>

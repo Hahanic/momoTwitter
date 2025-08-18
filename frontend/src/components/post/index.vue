@@ -30,9 +30,9 @@
       </div>
       <!-- 文本 -->
       <div class="mr-4 text-[1rem]">
-        <n-scrollbar style="max-height: 400px">
-          <span class="tracking-tight break-all whitespace-pre-wrap">{{ post.content }}</span>
-        </n-scrollbar>
+        <!-- <n-scrollbar style="max-height: 400px"> -->
+        <span class="tracking-tight break-all whitespace-pre-wrap">{{ post.content }}</span>
+        <!-- </n-scrollbar> -->
       </div>
       <!-- 图片/视频 -->
       <!-- <div class="flex w-full justify-center">

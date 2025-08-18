@@ -6,10 +6,7 @@
           <li
             v-for="(item, index) in items"
             :key="index"
-            :class="[
-              'relative cursor-pointer rounded-full text-amber-950 dark:text-white',
-              { active: activeIndex === index },
-            ]"
+            class="relative cursor-pointer rounded-full text-amber-950 transition-all dark:text-white"
           >
             <RouterLink
               v-if="item.href"
@@ -17,15 +14,26 @@
               class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
             >
               <span class="relative left-6 hidden xl:block">{{ item.label }}</span>
-              <component :is="item.icon" :size="'1.7rem'" class="left-[4rem] xl:absolute" />
+              <component
+                :is="item.icon"
+                :size="'1.7rem'"
+                :class="['left-[4rem] transition-all xl:absolute', { 'active-icon': activeIndex === index }]"
+              />
             </RouterLink>
             <button
               v-else
               @click="handleAction(item.action)"
-              class="relative z-10 flex h-[3.2rem] w-full items-center px-3 text-left outline-none xl:px-[4.6rem]"
+              class="relative z-10 flex h-[3.2rem] w-full cursor-pointer items-center px-3 text-left outline-none xl:px-[4.6rem]"
             >
               <span class="relative left-6 hidden xl:block">{{ item.label }}</span>
-              <component :is="item.icon" :size="'1.7rem'" class="left-[4rem] xl:absolute" />
+              <component
+                :is="item.icon"
+                :size="'1.7rem'"
+                :class="[
+                  'left-[4rem] transition-all xl:absolute',
+                  { 'active-icon': activeIndex === initialActiveIndex },
+                ]"
+              />
             </button>
           </li>
         </ul>
@@ -69,23 +77,17 @@ const handleAction = (actionType?: string) => {
 }
 
 const activeIndex = computed(() => {
-  const index = props.items.findIndex(
-    // 确保 item.href 存在，避免在 null 上调用 .includes 方法
-    (item) => item.href && route.path.includes(item.href)
-  )
+  const index = props.items.findIndex((item) => item.href && route.path.includes(item.href))
   return index !== -1 ? index : props.initialActiveIndex
 })
 </script>
 
 <style>
-/* li.active {
-  color: black;
-  text-shadow: none;
-  background-color: rgb(239, 199, 199);
+.active-icon {
+  transform: scale(1.3);
+  filter: drop-shadow(0 2px 4px rgba(102, 212, 228, 0.1));
 }
-
-.dark li.active {
-  color: black;
-  background-color: white;
-} */
+.dark .active-icon {
+  filter: drop-shadow(0 2px 4px rgba(139, 181, 88, 0.1));
+}
 </style>

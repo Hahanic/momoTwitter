@@ -3,27 +3,31 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 const useWindowStore = defineStore('window', () => {
-  // home的滚动
+  // Home的滚动记忆
   let homeScrollTop = ref<number>(0)
   function setHomeScrollTop(position: number) {
     homeScrollTop.value = position
   }
 
-  // 移动端底部菜单显示状态
-  const showBottomNav = ref<boolean>(true)
+  // 移动端顶部和底部菜单显示状态
+  const showNav = ref<boolean>(true)
   let lastScrollTop = ref<number>(0)
-  const scrollThreshold = 5 // 滚动阈值
+  let accumulatedScroll = ref<number>(0) // 累计滚动距离
+  const scrollThreshold = 120 // 滚动阈值
 
   function handleScrollDirection(scrollTop: number) {
+    // 计算滚动差值
     const scrollDifference = scrollTop - lastScrollTop.value
 
-    // 向下滚动且超过阈值时隐藏菜单
-    if (scrollDifference > scrollThreshold && scrollTop > scrollThreshold) {
-      showBottomNav.value = false
-    }
-    // 向上滚动时显示菜单
-    else if (scrollDifference < -10) {
-      showBottomNav.value = true
+    // 累计滚动距离
+    accumulatedScroll.value += scrollDifference
+
+    if (accumulatedScroll.value > scrollThreshold) {
+      showNav.value = false
+      accumulatedScroll.value = 0
+    } else if (accumulatedScroll.value < -scrollThreshold) {
+      showNav.value = true
+      accumulatedScroll.value = 0
     }
 
     lastScrollTop.value = scrollTop
@@ -42,7 +46,7 @@ const useWindowStore = defineStore('window', () => {
   return {
     homeScrollTop,
     setHomeScrollTop,
-    showBottomNav,
+    showNav,
     handleScrollDirection,
     isMobile,
     isLargeScreen,

@@ -1,6 +1,7 @@
 <template>
   <div class="flex w-full justify-center bg-white text-amber-950 dark:bg-[#000] dark:text-white">
     <div class="flex transition-all">
+      <!-- 桌面端菜单 -->
       <header
         v-if="!windowStore.isMobile"
         class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center transition-all sm:flex xl:w-[17rem] xl:items-start"
@@ -13,25 +14,12 @@
           />
         </div>
         <n-scrollbar style="max-height: 100%">
-          <SideBar
-            :items="menuLists"
-            :animation-time="600"
-            :particle-count="15"
-            :particle-distances="[90, 10]"
-            :particle-r="100"
-            :time-variance="300"
-            :colors="[1, 2, 3, 1, 2, 3, 1, 4]"
-            :initial-active-index="0"
-            @action="handleSidebarAction"
-          />
+          <SideBar :items="menuLists" @action="handleSidebarAction" />
         </n-scrollbar>
       </header>
-      <!-- 移动端的底部菜单导航 -->
+      <!-- 移动端菜单 -->
       <transition name="slide-up">
-        <header
-          v-if="windowStore.isMobile && windowStore.showBottomNav"
-          class="fixed right-0 bottom-0 left-0 z-50 w-full"
-        >
+        <header v-if="windowStore.isMobile && windowStore.showNav" class="fixed right-0 bottom-0 left-0 z-50 w-full">
           <BottomNavigation />
         </header>
       </transition>
@@ -40,7 +28,7 @@
         <RouterView> </RouterView>
       </div>
     </div>
-    <transition name="fade">
+    <transition name="fade-modal">
       <ComposeModal v-if="showModal" @close="closeModal"></ComposeModal>
     </transition>
   </div>
@@ -177,21 +165,20 @@ const menuLists = [
 ]
 </script>
 
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
+<style>
+.fade-modal-enter-active,
+.fade-modal-leave-active {
   transition: opacity 0.3s ease;
 }
-.fade-enter-from,
-.fade-leave-to {
+.fade-modal-enter-from,
+.fade-modal-leave-to {
   opacity: 0;
 }
-.fade-enter-to,
-.fade-leave-from {
+.fade-modal-enter-to,
+.fade-modal-leave-from {
   opacity: 1;
 }
 
-/* 底部导航滑动动画 */
 .slide-up-enter-active,
 .slide-up-leave-active {
   transition: transform 0.3s ease-out;
@@ -203,5 +190,25 @@ const menuLists = [
 .slide-up-enter-to,
 .slide-up-leave-from {
   transform: translateY(0);
+}
+
+.floating-send-button {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.slide-up-enter-from .floating-send-button {
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+}
+.slide-up-enter-active .floating-send-button {
+  transition-delay: 0.15s;
+}
+.slide-up-leave-to .floating-send-button {
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+}
+.slide-up-leave-active .floating-send-button {
+  transition-delay: 0s;
 }
 </style>

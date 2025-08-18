@@ -13,7 +13,7 @@ import {
 } from '@/types'
 
 // 检查用户登录状态，靠自动发送的cookie
-export const getCurrentUser = (): Promise<UserProfile> => {
+export const getCurrentUser = (): Promise<{ message: string; userProfile: UserProfile }> => {
   return axiosInstance.get('/user/getCurrentUser')
 }
 

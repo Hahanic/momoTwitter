@@ -57,7 +57,7 @@ watch(
   { immediate: true }
 )
 
-onMounted(() => {
+onMounted(async () => {
   userStore.checkCurrentUser()
 })
 </script>

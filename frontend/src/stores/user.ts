@@ -27,11 +27,11 @@ const useUserStore = defineStore('user', () => {
   // 检查/更新用户登录信息
   async function checkCurrentUser() {
     try {
-      const res: UserProfile = await getCurrentUser()
+      const res = await getCurrentUser()
       if (!res) {
         throw new Error('从服务器返回的数据格式不正确')
       }
-      setUser(res)
+      setUser(res.userProfile)
     } catch (err) {
       setUser(null)
       throw err

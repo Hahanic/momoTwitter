@@ -12,7 +12,7 @@ export const getCurrentUser = async (req, res) => {
   const userToReturn = user.toObject()
   delete userToReturn.password
 
-  sendResponse(res, 200, '获取用户信息成功', userToReturn)
+  sendResponse(res, 200, '获取用户信息成功', { userProfile: userToReturn })
 }
 
 export const login = async (req, res) => {

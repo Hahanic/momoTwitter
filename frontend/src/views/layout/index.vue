@@ -26,7 +26,7 @@
 
       <div class="flex" :class="{ 'pb-16': windowStore.isMobile }">
         <router-view v-slot="{ Component, route }">
-          <keep-alive include="Home PostDetail">
+          <keep-alive include="Home">
             <component :is="Component" :key="route.name" />
           </keep-alive>
         </router-view>
@@ -74,7 +74,6 @@ const showModal = ref(false)
 watch(
   () => ({ query: route.query }),
   ({ query }) => {
-    console.log(query)
     // 通过查询参数 ?modal=compose 来控制模态框显示
     if (query.modal === 'compose') {
       showModal.value = true

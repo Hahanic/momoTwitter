@@ -9,6 +9,32 @@ const useWindowStore = defineStore('window', () => {
     homeScrollTop.value = position
   }
 
+  // 是否是通过回退移动的路由，如router.back()
+  const isBackNavigation = ref<boolean>(false)
+  function setBackNavigation(value: boolean) {
+    isBackNavigation.value = value
+  }
+
+  // 帖子详情页滚动记忆：key 为 postId
+  const postDetailScrollMap = ref<Record<string, number>>({})
+  function setPostDetailScroll(postId: string, position: number) {
+    postDetailScrollMap.value[postId] = position
+  }
+  function getPostDetailScroll(postId: string): number {
+    const val = postDetailScrollMap.value[postId] ?? 0
+    if (postId in postDetailScrollMap.value) {
+      delete postDetailScrollMap.value[postId]
+    }
+    return val
+  }
+  function clearPostDetailScroll(postId?: string) {
+    if (postId) {
+      delete postDetailScrollMap.value[postId]
+    } else {
+      postDetailScrollMap.value = {}
+    }
+  }
+
   // 移动端顶部和底部菜单显示状态
   const showNav = ref<boolean>(true)
   let lastScrollTop = ref<number>(0)
@@ -46,6 +72,14 @@ const useWindowStore = defineStore('window', () => {
   return {
     homeScrollTop,
     setHomeScrollTop,
+    postDetailScrollMap,
+    setPostDetailScroll,
+    getPostDetailScroll,
+    clearPostDetailScroll,
+
+    isBackNavigation,
+    setBackNavigation,
+
     showNav,
     handleScrollDirection,
     isMobile,

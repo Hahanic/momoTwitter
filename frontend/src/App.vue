@@ -1,3 +1,20 @@
+<template>
+  <NMessageProvider>
+    <n-config-provider :theme="themeStore.isDarkTheme ? darkTheme : lightTheme" class="h-full w-full">
+      <n-loading-bar-provider>
+        <n-scrollbar
+          :class="{ 'hide-scrollbar': windowStore.isMobile }"
+          ref="scrollbarRef"
+          style="max-height: 100dvh"
+          @scroll="handleScroll"
+        >
+          <RouterView />
+        </n-scrollbar>
+      </n-loading-bar-provider>
+    </n-config-provider>
+  </NMessageProvider>
+</template>
+
 <script setup lang="ts">
 import {
   NConfigProvider,
@@ -65,22 +82,5 @@ onMounted(async () => {
   userStore.checkCurrentUser()
 })
 </script>
-
-<template>
-  <NMessageProvider>
-    <n-config-provider :theme="themeStore.isDarkTheme ? darkTheme : lightTheme" class="h-full w-full">
-      <n-loading-bar-provider>
-        <n-scrollbar
-          :class="{ 'hide-scrollbar': windowStore.isMobile }"
-          ref="scrollbarRef"
-          style="max-height: 100dvh"
-          @scroll="handleScroll"
-        >
-          <RouterView />
-        </n-scrollbar>
-      </n-loading-bar-provider>
-    </n-config-provider>
-  </NMessageProvider>
-</template>
 
 <style></style>

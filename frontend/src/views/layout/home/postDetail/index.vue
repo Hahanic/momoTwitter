@@ -226,12 +226,36 @@ const handlePostBookmark = async () => {
 // 监听路由变化，加载帖子详情
 watch(
   () => route.params.postId,
-  async (newPostId) => {
+  async (newPostId, oldPostId) => {
+    // 若 param 未变化（某些情况下触发，比如刷新响应式）则直接返回
+    if (newPostId === oldPostId) return
+
+    // 旧帖子的滚动
+    if (oldPostId && typeof oldPostId === 'string') {
+      const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
+      if (scrollbarDom) {
+        windowStore.setPostDetailScroll(oldPostId, scrollbarDom.scrollTop)
+      }
+    }
+
     if (newPostId && typeof newPostId === 'string') {
       // 这是等待父帖子链和回复列表全都加载完成 //不包括图片的获取时间
       await detailStore.loadPostDetail(newPostId)
 
       await nextTick()
+
+      // 只有回退才恢复滚动位置
+      if (windowStore.isBackNavigation) {
+        const savedScroll = windowStore.getPostDetailScroll(newPostId)
+        if (savedScroll > 0) {
+          const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
+          if (scrollbarDom) {
+            scrollbarDom.scrollTo({ top: savedScroll, behavior: 'auto' })
+            windowStore.setBackNavigation(false) // 重置
+            return
+          }
+        }
+      }
 
       if (currentPostRef.value) {
         currentPostRef.value.scrollIntoView({
@@ -239,6 +263,8 @@ watch(
           block: 'start',
         })
       }
+
+      windowStore.setBackNavigation(false)
     }
   },
   { immediate: true }

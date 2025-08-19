@@ -14,14 +14,14 @@
 
     <div class="w-full">
       <!-- 父帖子链 -->
-      <div v-if="parentPosts.length > 0 && showParentPosts">
+      <div v-if="parentPosts.length > 0">
         <div v-for="(parent, _index) in parentPosts" :key="parent._id">
           <Post :post="parent" :type="'parent'" />
         </div>
       </div>
 
       <!-- 主帖子 -->
-      <div v-if="currentPost" ref="currentPostRef" style="scroll-margin-top: 3.67rem" class="mt-2 px-2">
+      <div v-if="currentPost" ref="currentPostRef" style="scroll-margin-top: 3.7rem" class="mt-2 px-2">
         <div class="flex flex-col">
           <!-- 头像和name -->
           <div class="flex gap-2">
@@ -47,6 +47,8 @@
             <div class="mx-2 text-[1rem]">
               <span class="tracking-tight break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
             </div>
+            <!-- 图片/视频/媒体 -->
+            <PostImage :post="currentPost" />
             <!-- 日期 -->
             <div class="mx-2 mt-2 w-full text-[0.85rem]">
               <span class="text-gray-500">
@@ -126,9 +128,30 @@
     <SearchInput />
     <!-- 推送 -->
     <n-scrollbar :trigger="'hover'" style="max-height: 90vh">
-      <div class="mt-[0.8rem] flex w-full flex-col gap-[1.2rem]">
+      <!-- <div class="mt-[0.8rem] flex w-full flex-col gap-[1.2rem]">
         <div class="dark:border-borderDark border-borderWhite h-[9rem] rounded-xl border-1"></div>
         <div class="dark:border-borderDark border-borderWhite h-[35rem] rounded-xl border-1"></div>
+      </div> -->
+      <div class="flex w-full flex-col gap-4 pt-4">
+        <AsideContent>
+          <div class="p-4">
+            <div class="font-bold">订阅Premium</div>
+            <div class="mt-2">订阅以解锁新功能，若符合条件，还可获得收入分成。</div>
+            <button class="mt-2 h-[2.5rem] w-[5rem] rounded-4xl bg-blue-400 font-bold">订阅</button>
+          </div>
+        </AsideContent>
+        <AsideContent>
+          <div class="p-4">
+            <div class="mb-4 font-bold">有什么新鲜事</div>
+            <ul class="flex flex-col gap-4">
+              <RankItem />
+              <RankItem />
+              <RankItem />
+              <RankItem />
+              <RankItem />
+            </ul>
+          </div>
+        </AsideContent>
       </div>
     </n-scrollbar>
   </StickyAside>
@@ -142,12 +165,15 @@ import { storeToRefs } from 'pinia'
 import { watch, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import AsideContent from '@/components/layout/AsideContent.vue'
+import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import Avatar from '@/components/post/Avatar.vue'
 import Post from '@/components/post/index.vue'
 import PostAction from '@/components/post/PostAction.vue'
+import PostImage from '@/components/post/PostImage.vue'
 import PostReply from '@/components/post/PostReply.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import { usePostDetailStore, usePostInteractionStore, useWindowStore } from '@/stores'
@@ -162,10 +188,6 @@ const message = useMessage()
 
 // 添加ref用于引用currentPost元素
 const currentPostRef = ref<HTMLElement | null>(null)
-// 标记是否需要保持currentPost在顶部
-const shouldMaintainPosition = ref(false)
-// 控制父帖子的显示时机
-const showParentPosts = ref(false)
 
 const { currentPost, replies, isLoadingReplies, hasMoreReplies, parentPosts } = storeToRefs(detailStore)
 
@@ -201,80 +223,24 @@ const handlePostBookmark = async () => {
   }
 }
 
-// 滚动到当前帖子的函数
-const scrollToCurrentPost = async (behavior: ScrollBehavior = 'smooth') => {
-  await nextTick()
-  if (currentPostRef.value) {
-    currentPostRef.value.scrollIntoView({
-      behavior,
-      block: 'start',
-    })
-  }
-}
-
-// 保持当前帖子在顶部位置的函数
-const maintainCurrentPostPosition = async () => {
-  if (shouldMaintainPosition.value && currentPostRef.value) {
-    await nextTick()
-    // 使用instant行为以避免闪烁
-    currentPostRef.value.scrollIntoView({
-      behavior: 'instant',
-      block: 'start',
-    })
-  }
-}
-
 // 监听路由变化，加载帖子详情
 watch(
   () => route.params.postId,
   async (newPostId) => {
-    if (newPostId) {
-      // 重置状态
-      shouldMaintainPosition.value = false
-      showParentPosts.value = false
+    if (newPostId && typeof newPostId === 'string') {
+      // 这是等待父帖子链和回复列表全都加载完成 //不包括图片的获取时间
+      await detailStore.loadPostDetail(newPostId)
 
-      await detailStore.loadPostDetail(newPostId as string)
-
-      // 等待currentPost渲染完成并进行初始定位
       await nextTick()
 
-      // 确保currentPost已经存在并且可以获取到DOM元素
-      if (currentPost.value && currentPostRef.value) {
-        // 初始滚动到当前帖子，使用smooth行为
-        await scrollToCurrentPost('smooth')
-
-        // 等待滚动完成后再显示父帖子
-        setTimeout(async () => {
-          if (parentPosts.value.length > 0) {
-            showParentPosts.value = true
-            // 等待父帖子渲染完成
-            await nextTick()
-            // 父帖子显示后重新调整位置
-            await maintainCurrentPostPosition()
-          }
-          // 启用持续的位置维护
-          shouldMaintainPosition.value = true
-        }, 500) // 500ms延迟，确保currentPost滚动和定位完成
-      } else {
-        // 如果没有currentPost，直接显示父帖子
-        showParentPosts.value = true
-        shouldMaintainPosition.value = true
+      if (currentPostRef.value) {
+        currentPostRef.value.scrollIntoView({
+          behavior: 'auto',
+          block: 'start',
+        })
       }
     }
   },
-  { immediate: true } // 立即执行一次
-)
-
-// 监听showParentPosts变化，当父帖子开始显示时调整位置
-watch(
-  showParentPosts,
-  async (shouldShow) => {
-    if (shouldShow && currentPost.value && currentPostRef.value) {
-      // 父帖子显示时，确保currentPost保持在顶部
-      await nextTick()
-      await maintainCurrentPostPosition()
-    }
-  },
-  { flush: 'post' } // 在DOM更新后执行
+  { immediate: true }
 )
 </script>

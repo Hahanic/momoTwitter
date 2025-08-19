@@ -34,25 +34,34 @@
         <span class="tracking-tight break-all whitespace-pre-wrap">{{ post.content }}</span>
         <!-- </n-scrollbar> -->
       </div>
-      <!-- 图片/视频 -->
-      <!-- <div class="flex w-full justify-center">
-        <div class="my-4 mr-2 max-h-[32rem] rounded-xl">
-          <img class="h-full max-w-full rounded-xl" :src="post.src" />
-        </div>
-      </div> -->
+      <!-- 图片/视频/媒体 -->
+      <PostImage :post="post" class="mt-3" />
+      <!-- 互动按钮 -->
       <div class="mt-2 mr-4 mb-4 text-[#71767b]">
         <PostAction :post="post" variant="full" @like="handlePostLike" @bookmark="handlePostBookmark" />
       </div>
     </div>
   </div>
+
+  <!-- 图片预览组件 -->
+  <!-- <ImagePreview
+    :visible="showImagePreview"
+    :images="post.media.map((m) => m.url)"
+    :initial-index="previewIndex"
+    @close="showImagePreview = false"
+  /> -->
 </template>
 
 <script lang="ts" setup>
-import { NScrollbar, useMessage } from 'naive-ui'
+import { useMessage } from 'naive-ui'
+// import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+import PostImage from './PostImage.vue'
 
 import Avatar from '@/components/post/Avatar.vue'
 import PostAction from '@/components/post/PostAction.vue'
+// import ImagePreview from '@/components/ui/ImagePreview.vue'
 import { usePostInteractionStore } from '@/stores'
 import { type RecievePostPayload } from '@/types'
 import { formatDate } from '@/utils'
@@ -90,7 +99,7 @@ const handlePostBookmark = async () => {
   }
 }
 
-// 处理帖子点击事件
+// 点击帖子进入详情页
 const handlePostClick = (post: RecievePostPayload) => {
   postInteractionStore.viewPost(post._id)
   router.push({

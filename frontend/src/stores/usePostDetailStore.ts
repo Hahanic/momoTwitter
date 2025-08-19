@@ -90,18 +90,22 @@ const usePostDetailStore = defineStore('postDetail', () => {
         throw new Error('无法加载帖子')
       }
 
-      // 如果是回复帖子，构建父帖子链
-      if (post.postType === 'reply' && post.parentPostId) {
-        await buildParentChain(post.parentPostId)
-      }
+      // 主帖子加载完成后立即设置 isLoading = false，让主帖子先渲染
+      isLoading.value = false
 
-      // 加载回复
-      await loadReplies()
+      // 异步加载父帖子链和回复，不阻塞主帖子的渲染
+      Promise.all([
+        // 如果是回复帖子，构建父帖子链
+        post.postType === 'reply' && post.parentPostId ? buildParentChain(post.parentPostId) : Promise.resolve(),
+        // 加载回复
+        loadReplies(),
+      ]).catch((error) => {
+        console.error('加载父帖子链或回复失败:', error)
+      })
     } catch (error) {
       console.error('加载帖子详情失败:', error)
-      throw error
-    } finally {
       isLoading.value = false
+      throw error
     }
   }
 

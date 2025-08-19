@@ -25,7 +25,11 @@
       </transition>
 
       <div class="flex" :class="{ 'pb-16': windowStore.isMobile }">
-        <RouterView> </RouterView>
+        <router-view v-slot="{ Component, route }">
+          <keep-alive include="Home PostDetail">
+            <component :is="Component" :key="route.name" />
+          </keep-alive>
+        </router-view>
       </div>
     </div>
     <transition name="fade-modal">
@@ -70,6 +74,7 @@ const showModal = ref(false)
 watch(
   () => ({ query: route.query }),
   ({ query }) => {
+    console.log(query)
     // 通过查询参数 ?modal=compose 来控制模态框显示
     if (query.modal === 'compose') {
       showModal.value = true

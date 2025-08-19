@@ -8,7 +8,7 @@ import {
   lightTheme,
   type ScrollbarInst,
 } from 'naive-ui'
-import { onMounted, ref, watch } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import usethemeStore from './stores/theme.ts'
@@ -40,7 +40,11 @@ const handleScroll = (e: Event) => {
 watch(
   () => route.path,
   (routePath) => {
-    setTimeout(() => {
+    // 若不在主页帖子流，则移动端底部菜单一直保持显示
+    if (routePath !== '/home') {
+      windowStore.showNav = true
+    }
+    nextTick(() => {
       if (routePath === '/home') {
         scrollbarRef.value?.scrollTo({
           top: windowStore.homeScrollTop,
@@ -52,7 +56,7 @@ watch(
           behavior: 'auto',
         })
       }
-    }, 0)
+    })
   },
   { immediate: true }
 )

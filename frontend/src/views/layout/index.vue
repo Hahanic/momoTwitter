@@ -26,7 +26,11 @@
 
       <div class="flex" :class="{ 'pb-16': windowStore.isMobile }">
         <router-view v-slot="{ Component, route }">
-          <keep-alive include="Home">
+          <transition v-if="windowStore.isMobile && route.name === 'PostDetail'" name="slide-right" mode="out-in">
+            <component :is="Component" :key="route.fullPath" />
+          </transition>
+          <!-- 其它页面保留 keep-alive 缓存 -->
+          <keep-alive v-else include="Home PostDetail">
             <component :is="Component" :key="route.name" />
           </keep-alive>
         </router-view>
@@ -170,6 +174,7 @@ const menuLists = [
 </script>
 
 <style>
+/* 模态框组件从右边进入和离开的动画 */
 .fade-modal-enter-active,
 .fade-modal-leave-active {
   transition: opacity 0.3s ease;
@@ -195,7 +200,7 @@ const menuLists = [
 .slide-up-leave-from {
   transform: translateY(0);
 }
-
+/* 浮动按钮组件从右边进入和离开的动画 */
 .floating-send-button {
   transition:
     opacity 0.3s ease,
@@ -214,5 +219,31 @@ const menuLists = [
 }
 .slide-up-leave-active .floating-send-button {
   transition-delay: 0s;
+}
+
+/* PostDetail 组件从右边进入和离开的动画 */
+.slide-right-enter-active {
+  transition:
+    transform 0.3s cubic-bezier(0, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.slide-right-leave-active {
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 1, 1);
+}
+.slide-right-enter-from {
+  transform: translateX(40%);
+  opacity: 0;
+}
+.slide-right-leave-to {
+  transform: translateX(40%);
+  opacity: 0;
+}
+.slide-right-enter-to,
+.slide-right-leave-from {
+  transform: translateX(0);
+  opacity: 1;
 }
 </style>

@@ -68,10 +68,10 @@ watch(
           behavior: 'auto',
         })
       } else {
-        scrollbarRef.value?.scrollTo({
-          top: 0,
-          behavior: 'auto',
-        })
+        // scrollbarRef.value?.scrollTo({
+        //   top: 0,
+        //   behavior: 'auto',
+        // })
       }
     })
   },

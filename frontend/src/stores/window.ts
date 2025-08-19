@@ -17,15 +17,18 @@ const useWindowStore = defineStore('window', () => {
 
   // 帖子详情页滚动记忆：key 为 postId
   const postDetailScrollMap = ref<Record<string, number>>({})
+
   function setPostDetailScroll(postId: string, position: number) {
     postDetailScrollMap.value[postId] = position
+    // 如果记录超过限制，删除最旧的记录
+    const keys = Object.keys(postDetailScrollMap.value)
+    if (keys.length > 10) {
+      const oldestKey = keys[0]
+      delete postDetailScrollMap.value[oldestKey]
+    }
   }
   function getPostDetailScroll(postId: string): number {
-    const val = postDetailScrollMap.value[postId] ?? 0
-    if (postId in postDetailScrollMap.value) {
-      delete postDetailScrollMap.value[postId]
-    }
-    return val
+    return postDetailScrollMap.value[postId] ?? 0
   }
   function clearPostDetailScroll(postId?: string) {
     if (postId) {

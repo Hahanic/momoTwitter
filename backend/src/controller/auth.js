@@ -1,5 +1,6 @@
+import Relationship from '../db/model/Relationship.js'
 import User from '../db/model/User.js'
-import { sendResponse, generateToken, setTokenCookie } from '../utils/index.js'
+import { sendResponse, generateToken, setTokenCookie, verifyUserToken } from '../utils/index.js'
 
 export const getCurrentUser = async (req, res) => {
   const userId = req.user.id
@@ -13,6 +14,37 @@ export const getCurrentUser = async (req, res) => {
   delete userToReturn.password
 
   sendResponse(res, 200, '获取用户信息成功', { userProfile: userToReturn })
+}
+
+export const getUserProfile = async (req, res) => {
+  const { username } = req.params
+  const user = await User.findOne({ username })
+
+  if (!user) {
+    return sendResponse(res, 404, '用户未找到')
+  }
+
+  const userToReturn = user.toObject()
+  delete userToReturn.password
+
+  // 如果用户登录了 则附带是否关注的信息
+  const token = req.cookies.token
+  if (token) {
+    try {
+      const currentUserId = verifyUserToken(token)
+      if (currentUserId && currentUserId.toString() === user._id.toString()) {
+        return sendResponse(res, 200, '获取用户信息成功', { userProfile: userToReturn })
+      }
+      if (currentUserId && currentUserId.toString() !== user._id.toString()) {
+        const rel = await Relationship.exists({ follower: currentUserId, following: user._id })
+        userToReturn.isFollowing = !!rel
+      }
+    } catch (e) {
+      // 无效 token 忽略
+    }
+  }
+
+  return sendResponse(res, 200, '获取用户信息成功', { userProfile: userToReturn })
 }
 
 export const login = async (req, res) => {

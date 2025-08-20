@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { userRegister, userLogin, userLogout, getCurrentUser } from '@/api/index.ts'
+import { userRegister, userLogin, userLogout, getCurrentUser, getUserProfile } from '@/api/index.ts'
 import { type UserProfile, type userLoginData, type userRegisterData } from '@/types'
 
 const USER_STORAGE_KEY = 'user_profile'
@@ -82,10 +82,33 @@ const useUserStore = defineStore('user', () => {
     }
   }
   // 在 store 初始化时，尝试从 localStorage 恢复状态
-  // 这确保了用户刷新页面后，登录状态不会丢失
+  // 保证用户刷新页面后，登录状态不会丢失
   const storedUser = localStorage.getItem(USER_STORAGE_KEY)
   if (storedUser) {
     user.value = JSON.parse(storedUser)
+  }
+
+  // profile页面用户信息的状态
+  const currentUserProfile = ref<UserProfile | null>(null)
+  const isFollowing = ref<boolean>(false)
+  const isSelf = computed(() => {
+    return currentUserProfile.value?.username === user.value?.username
+  })
+  const isLoading = ref(false)
+
+  // 获取用户信息
+  async function fetchUserProfile(username: string) {
+    isLoading.value = true
+    try {
+      const res = await getUserProfile(username)
+      currentUserProfile.value = res.userProfile
+      isFollowing.value = !!res.userProfile.isFollowing
+      console.log(res)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      isLoading.value = false
+    }
   }
 
   return {
@@ -93,6 +116,11 @@ const useUserStore = defineStore('user', () => {
     isAuthenticated,
     isLogining,
     checkCurrentUser,
+    fetchUserProfile,
+    currentUserProfile,
+    isFollowing,
+    isSelf,
+    isLoading,
     setUser,
     login,
     register,

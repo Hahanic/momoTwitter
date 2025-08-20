@@ -18,7 +18,7 @@ export interface userRegisterData {
   emailCode: string
 }
 
-// 保存在本地的用户数据
+// 用户数据
 export interface UserProfile {
   _id: string
   username: string
@@ -29,8 +29,8 @@ export interface UserProfile {
     followingCount: number
     postsCount: number
   }
-  avatarUrl?: string
-  isVerified?: boolean
+  avatarUrl: string
+  isVerified: boolean
   bio?: string
   bannerUrl?: string
   location?: string

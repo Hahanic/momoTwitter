@@ -9,7 +9,7 @@ const useWindowStore = defineStore('window', () => {
     homeScrollTop.value = position
   }
 
-  // 是否是通过回退移动的路由，如router.back()
+  // 是否是通过回退移动的路由，如router.back() // 相关的使用在routers/index.ts
   const isBackNavigation = ref<boolean>(false)
   function setBackNavigation(value: boolean) {
     isBackNavigation.value = value

@@ -193,6 +193,8 @@ const message = useMessage()
 const currentPostRef = ref<HTMLElement | null>(null)
 // 用于跟踪当前显示的 postId，以便在切换时保存滚动位置
 const displayingPostId = ref<string | null>(null)
+// 当返回时若回复尚未加载完成，第一次恢复可能因为内容高度不足而失败，记录待恢复的目标 scrollTop
+const pendingScrollTop = ref<number | null>(null)
 
 const { currentPost, replies, isLoadingReplies, hasMoreReplies, parentPosts } = storeToRefs(detailStore)
 
@@ -239,7 +241,7 @@ watch(
     if (displayingPostId.value && typeof displayingPostId.value === 'string') {
       const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
       if (scrollbarDom) {
-        console.log('保存滚动位置:', displayingPostId.value, scrollbarDom.scrollTop)
+        // console.log('保存滚动位置:', displayingPostId.value, scrollbarDom.scrollTop)
         windowStore.setPostDetailScroll(displayingPostId.value, scrollbarDom.scrollTop)
       }
     }
@@ -252,32 +254,66 @@ watch(
       await detailStore.loadPostDetail(newPostId)
       await nextTick()
 
-      // 只有回退才恢复滚动位置
+      // 只有回退才恢复滚动位置（第一阶段：主帖子渲染后立即尝试）
       if (windowStore.isBackNavigation) {
         const savedScroll = windowStore.getPostDetailScroll(newPostId)
-        console.log('恢复滚动位置:', newPostId, savedScroll)
-        if (savedScroll >= 0) {
-          const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
-          if (scrollbarDom) {
-            scrollbarDom.scrollTo({ top: savedScroll, behavior: 'auto' })
+        // console.log('尝试第一阶段恢复滚动位置:', newPostId, savedScroll)
+        const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
+        if (scrollbarDom && savedScroll >= 0) {
+          // 当前容器最大可滚动位置（可能此时回复还没加载，高度不足）
+          const maxNow = scrollbarDom.scrollHeight - scrollbarDom.clientHeight
+          // 先滚动一次
+          scrollbarDom.scrollTo({ top: savedScroll, behavior: 'auto' })
+          // 如果目标位置超过当前最大值（意味着内容还没完全加载），记为待二次恢复
+          if (savedScroll > maxNow - 20) {
+            pendingScrollTop.value = savedScroll
+            // console.log('记录待二次恢复滚动位置 pendingScrollTop =', pendingScrollTop.value)
+            // 不要 scrollIntoView，保持 isBackNavigation = true，等待二阶段
+          } else {
+            pendingScrollTop.value = null
+            // 已成功恢复则无需默认 scrollIntoView
             windowStore.setBackNavigation(false)
             return
           }
         }
       }
 
-      // 默认滚动到当前帖子位置
-      if (currentPostRef.value) {
-        currentPostRef.value.scrollIntoView({
-          behavior: 'auto',
-          block: 'start',
-        })
+      // 默认滚动到当前帖子位置（仅非回退导航或回退但没有可恢复记录时），避免闪烁
+      if (!windowStore.isBackNavigation && currentPostRef.value) {
+        currentPostRef.value.scrollIntoView({ behavior: 'auto', block: 'start' })
       }
-
-      windowStore.setBackNavigation(false)
+      // 若是回退且等待二阶段，不立刻 setBackNavigation(false)
+      if (!windowStore.isBackNavigation) {
+        windowStore.setBackNavigation(false)
+      }
     }
   },
   { immediate: true }
+)
+
+// 第二阶段：等待回复/父链异步内容加载完成后再尝试恢复 pendingScrollTop
+watch(
+  () => [replies.value.length, isLoadingReplies.value, parentPosts.value.length],
+  async () => {
+    if (pendingScrollTop.value == null) return
+    // 只有不在加载回复时再尝试
+    if (isLoadingReplies.value) return
+    await nextTick()
+    const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
+    if (scrollbarDom) {
+      const target = pendingScrollTop.value
+      const maxNow = scrollbarDom.scrollHeight - scrollbarDom.clientHeight
+      if (target <= maxNow) {
+        // console.log('执行第二阶段恢复滚动位置:', target)
+        scrollbarDom.scrollTo({ top: target, behavior: 'auto' })
+        pendingScrollTop.value = null
+        windowStore.setBackNavigation(false)
+      } else {
+        // 仍未达到，继续等待（比如分页更多）
+        // console.log('仍未达到目标高度，继续等待加载。当前 maxNow =', maxNow, '目标 =', target)
+      }
+    }
+  }
 )
 
 // 其实这个销毁只在移动端需要，为什么？因为transition动画需要销毁(hhh):key="route.fullPath"
@@ -286,7 +322,7 @@ onUnmounted(() => {
   if (displayingPostId.value) {
     const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
     if (scrollbarDom) {
-      console.log('组件销毁时保存滚动位置:', displayingPostId.value, scrollbarDom.scrollTop)
+      // console.log('组件销毁时保存滚动位置:', displayingPostId.value, scrollbarDom.scrollTop)
       windowStore.setPostDetailScroll(displayingPostId.value, scrollbarDom.scrollTop)
     }
   }

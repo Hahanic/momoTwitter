@@ -1,8 +1,11 @@
 <template>
   <div class="flex">
     <!-- 头像 -->
-    <div class="mx-2 mt-2 flex h-[3rem] w-[3rem] items-center justify-center">
-      <Avatar src="/myAvatar.jpg" container-class="h-[3rem] w-[3rem]" />
+    <div
+      class="mx-2 mt-2 flex h-[3rem] w-[3rem] items-center justify-center"
+      @click="router.push(`/profile/${userStore.user?.username}`)"
+    >
+      <Avatar :src="userStore.user?.avatarUrl || '/myAvatar.jpg'" container-class="h-[3rem] w-[3rem]" />
     </div>
 
     <!-- 输入框区域 -->
@@ -28,9 +31,13 @@
 <script lang="ts" setup>
 import { NScrollbar, useMessage } from 'naive-ui'
 import { ref, watch, computed, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 
 import Avatar from '@/components/post/Avatar.vue'
+import { useUserStore } from '@/stores'
 const message = useMessage()
+const userStore = useUserStore()
+const router = useRouter()
 
 interface Props {
   modelValue: string

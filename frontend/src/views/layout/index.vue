@@ -26,12 +26,13 @@
 
       <div class="flex" :class="{ 'pb-16': windowStore.isMobile }">
         <router-view v-slot="{ Component, route }">
+          <!-- 移动端且路由为 PostDetail 时，执行特定动画 -->
           <transition v-if="windowStore.isMobile && route.name === 'PostDetail'" name="slide-right" mode="out-in">
             <component :is="Component" :key="route.fullPath" />
           </transition>
-          <!-- 其它页面保留 keep-alive 缓存 -->
-          <keep-alive v-else include="Home PostDetail">
-            <component :is="Component" :key="route.name" />
+          <!-- 其它情况保留 keep-alive 缓存 -->
+          <keep-alive v-else include="Home PostDetail Profile">
+            <component :is="Component" />
           </keep-alive>
         </router-view>
       </div>
@@ -58,15 +59,17 @@ import {
   Send,
 } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
-import { defineAsyncComponent, ref, watch } from 'vue'
+import { defineAsyncComponent, ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 import SideBar from '@/components/layout/SideBar.vue'
 import { useWindowStore } from '@/stores'
 import useThemeStore from '@/stores/theme'
+import useUserStore from '@/stores/user'
 
 const windowStore = useWindowStore()
+const userStore = useUserStore()
 const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
@@ -108,69 +111,24 @@ const handleSidebarAction = (actionType: string) => {
 }
 
 // SideBar列表
-const menuLists = [
-  {
-    icon: HomeIcon,
-    label: '主页',
-    href: '/home',
-  },
-  {
-    icon: Search,
-    label: '探索',
-    href: '/explore',
-  },
-  {
-    icon: Bell,
-    label: '通知',
-    href: '/notifications',
-  },
-  {
-    icon: Mail,
-    label: '私信',
-    href: '/messages',
-  },
-  {
-    icon: BotIcon,
-    label: '智能',
-    href: '/bot',
-  },
-  {
-    icon: Rows3,
-    label: '列表',
-    href: '/lists',
-  },
-  {
-    icon: Bookmark,
-    label: '书签',
-    href: '/bookmarks',
-  },
-  {
-    icon: BriefcaseBusiness,
-    label: '工作',
-    href: '/work',
-  },
-  {
-    icon: Users2,
-    label: '社群',
-    href: '/groups',
-  },
-  {
-    icon: User2,
-    label: '个人资料',
-    href: '/profile',
-  },
-  {
-    icon: CircleEllipsis,
-    label: '更多',
-    href: '/more',
-  },
-  {
-    icon: Send,
-    label: '发帖',
-    href: null, // 使用 null 表示这是一个特殊处理的按钮
-    action: 'compose',
-  },
-]
+// 动态生成菜单（个人资料需要带上本地用户名）
+const menuLists = computed(() => {
+  const username = userStore.user?.username
+  return [
+    { icon: HomeIcon, label: '主页', href: '/home' },
+    { icon: Search, label: '探索', href: '/explore' },
+    { icon: Bell, label: '通知', href: '/notifications' },
+    { icon: Mail, label: '私信', href: '/messages' },
+    { icon: BotIcon, label: '智能', href: '/bot' },
+    { icon: Rows3, label: '列表', href: '/lists' },
+    { icon: Bookmark, label: '书签', href: '/bookmarks' },
+    { icon: BriefcaseBusiness, label: '工作', href: '/work' },
+    { icon: Users2, label: '社群', href: '/groups' },
+    { icon: User2, label: '个人资料', href: username ? `/profile/${username}` : '/login' },
+    { icon: CircleEllipsis, label: '更多', href: '/more' },
+    { icon: Send, label: '发帖', href: null, action: 'compose' },
+  ]
+})
 </script>
 
 <style>

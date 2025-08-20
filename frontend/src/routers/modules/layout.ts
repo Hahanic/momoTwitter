@@ -22,12 +22,26 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         component: () => import('@/views/layout/home/postDetail/index.vue'),
       },
       {
-        path: '/profile',
+        path: '/profile/:username',
         name: 'Profile',
         component: Profile,
-        // meta: {
-        //   requiresAuth: true,
-        // },
+        children: [
+          {
+            path: 'replies',
+            name: 'ProfileReplies',
+            component: () => import('@/views/layout/profile/children/replies.vue'),
+          },
+          {
+            path: 'likes',
+            name: 'ProfileLikes',
+            component: () => import('@/views/layout/profile/children/likes.vue'),
+          },
+          {
+            path: 'bookmarks',
+            name: 'ProfileBookmarks',
+            component: () => import('@/views/layout/profile/children/bookMarks.vue'),
+          },
+        ],
       },
       {
         path: '/explore',

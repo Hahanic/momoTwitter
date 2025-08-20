@@ -37,6 +37,13 @@ export const userRegister = (userRegisterData: userRegisterData) => {
   return axiosInstance.post('/user/register', userRegisterData)
 }
 
+// 获取用户信息
+export const getUserProfile = (
+  username: string
+): Promise<{ message: string; userProfile: UserProfile & { isFollowing?: boolean } }> => {
+  return axiosInstance.get(`/user/profile/${username}`)
+}
+
 // 用户发帖
 export const apiCreatePost = (
   payload: CreatePostPayload

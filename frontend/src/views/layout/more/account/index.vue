@@ -41,7 +41,7 @@
 import { useLoadingBar, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
-import useUserStore from '@/stores/user'
+import useUserStore from '@/stores/userUserStore'
 
 const router = useRouter()
 const loadingBar = useLoadingBar()

@@ -25,7 +25,15 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         path: '/profile/:username',
         name: 'Profile',
         component: Profile,
+        redirect: (to) => {
+          return { name: 'ProfilePosts', params: { username: to.params.username } }
+        },
         children: [
+          {
+            path: '',
+            name: 'ProfilePosts',
+            component: () => import('@/views/layout/profile/children/posts.vue'),
+          },
           {
             path: 'replies',
             name: 'ProfileReplies',
@@ -39,7 +47,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
           {
             path: 'bookmarks',
             name: 'ProfileBookmarks',
-            component: () => import('@/views/layout/profile/children/bookMarks.vue'),
+            component: () => import('@/views/layout/profile/children/bookmarks.vue'),
           },
         ],
       },

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 import usePostCacheStore from './usePostCacheStore.ts'
-import useUserStore from './user.ts'
+import useUserStore from './userUserStore.ts'
 
 import { apiLikePost, apiBookmarkPost, apiCreatePost, apiViewPost } from '@/api/index.ts'
 import type { CreatePostPayload } from '@/types'

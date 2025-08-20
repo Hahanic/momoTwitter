@@ -10,6 +10,7 @@ import {
   viewPost,
   getOnePost,
   getReplyParentPost,
+  getUserCategoryPosts,
 } from '../controller/post.js'
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
@@ -34,5 +35,7 @@ router.post('/:postId/like', protectAuthRoute, asyncHandler(likePost))
 router.post('/:postId/bookmark', protectAuthRoute, asyncHandler(bookmarkPost))
 // 增加帖子浏览数
 router.post('/:postId/view', viewPost)
+// 获取某用户主页的帖子
+router.get('/:username/category', asyncHandler(getUserCategoryPosts))
 
 export default router

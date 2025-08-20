@@ -87,6 +87,22 @@ export const getReplyParentPost = (
   return axiosInstance.get(`/post/${replyId}/parent`)
 }
 
+// 获取某用户主页的帖子
+export const getUserCategoryPosts = (
+  category: string,
+  username: string,
+  cursor: string | null = null,
+  limit: number = 10
+): Promise<getPost> => {
+  return axiosInstance.get(`/post/${username}/category`, {
+    params: {
+      category,
+      cursor,
+      limit,
+    },
+  })
+}
+
 // 点赞帖子
 export const apiLikePost = (postId: string): Promise<{ message: string; isLiked: boolean; likesCount: number }> => {
   return axiosInstance.post(`/post/${postId}/like`)

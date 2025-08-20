@@ -2,6 +2,7 @@ import Bookmark from '../db/model/Bookmark.js'
 import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
 import User from '../db/model/User.js'
+import { verifyUserToken } from '../utils/index.js'
 
 export class PostService {
   // 获取用户交互信息
@@ -101,5 +102,76 @@ export class PostService {
     )
 
     return result
+  }
+
+  // ============ 用户主页分类流 ============
+  static async fetchUserPosts(userId, cursorDate, limit) {
+    const query = {
+      authorId: userId,
+      postType: { $in: ['standard', 'quote'] },
+      visibility: 'public',
+    }
+    if (cursorDate) query.createdAt = { $lt: cursorDate }
+    const rows = await Post.find(query).sort({ createdAt: -1 }).limit(limit).lean()
+    const nextCursor = rows.length === limit ? rows[rows.length - 1].createdAt.toISOString() : null
+    return { posts: rows, nextCursor }
+  }
+
+  static async fetchUserReplies(userId, cursorDate, limit) {
+    const query = {
+      authorId: userId,
+      postType: { $in: ['reply'] },
+      visibility: 'public',
+    }
+    if (cursorDate) query.createdAt = { $lt: cursorDate }
+    const rows = await Post.find(query).sort({ createdAt: -1 }).limit(limit).lean()
+    const nextCursor = rows.length === limit ? rows[rows.length - 1].createdAt.toISOString() : null
+    return { posts: rows, nextCursor }
+  }
+
+  static async fetchUserLikes(userId, cursorDate, limit) {
+    const likeQuery = { userId }
+    if (cursorDate) likeQuery.createdAt = { $lt: cursorDate }
+    const likes = await Like.find(likeQuery).sort({ createdAt: -1 }).limit(limit).lean()
+    const likedIds = likes.map((l) => l.postId)
+    let posts = []
+    if (likedIds.length) {
+      const likedPosts = await Post.find({ _id: { $in: likedIds }, visibility: 'public' }).lean()
+      const map = new Map(likedPosts.map((p) => [p._id.toString(), p]))
+      posts = likes.map((l) => map.get(l.postId.toString())).filter(Boolean)
+    }
+    const nextCursor = likes.length === limit ? likes[likes.length - 1].createdAt.toISOString() : null
+    return { posts, nextCursor }
+  }
+
+  static async fetchUserBookmarks(userId, cursorDate, limit) {
+    const bookmarkQuery = { userId }
+    if (cursorDate) bookmarkQuery.createdAt = { $lt: cursorDate }
+    const bookmarks = await Bookmark.find(bookmarkQuery).sort({ createdAt: -1 }).limit(limit).lean()
+    const ids = bookmarks.map((b) => b.postId)
+    let posts = []
+    if (ids.length) {
+      const rows = await Post.find({ _id: { $in: ids }, visibility: 'public' }).lean()
+      const map = new Map(rows.map((p) => [p._id.toString(), p]))
+      posts = bookmarks.map((b) => map.get(b.postId.toString())).filter(Boolean)
+    }
+    const nextCursor = bookmarks.length === limit ? bookmarks[bookmarks.length - 1].createdAt.toISOString() : null
+    return { posts, nextCursor }
+  }
+
+  static async decorateWithInteractionsIfNeeded(req, posts) {
+    if (!posts.length) return posts
+    const token = req.cookies.token
+    if (!token) return posts
+    try {
+      const currentUserId = verifyUserToken(token)
+      if (!currentUserId) return posts
+      const ids = posts.map((p) => p._id).filter(Boolean)
+      if (!ids.length) return posts
+      const interactions = await PostService.getUserInteractions(currentUserId, ids)
+      return PostService.addUserInteractions(posts, interactions)
+    } catch {
+      return posts
+    }
   }
 }

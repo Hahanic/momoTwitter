@@ -67,7 +67,7 @@ import { useRouter, useRoute } from 'vue-router'
 
 import { getIdentifyingCode } from '@/api/index.ts'
 import btnTheme from '@/components/ui/ToggleThemeBtn.vue'
-import useUserStore from '@/stores/user'
+import useUserStore from '@/stores/userUserStore'
 import { throttle } from '@/utils/index.ts'
 
 const userStore = useUserStore()

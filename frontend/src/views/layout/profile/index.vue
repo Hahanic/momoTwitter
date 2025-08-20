@@ -87,7 +87,11 @@
         </div>
         <!-- 内容 -->
         <div class="flex w-full flex-col">
-          <RouterView />
+          <router-view v-slot="{ Component }">
+            <keep-alive>
+              <component :is="Component" />
+            </keep-alive>
+          </router-view>
         </div>
       </div>
     </div>
@@ -136,11 +140,13 @@ import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
-import useUserStore from '@/stores/user'
+import { useUserPostStore, useUserStore } from '@/stores'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const userPostStore = useUserPostStore()
+
 const { currentUserProfile, isFollowing, isSelf, isLoading } = storeToRefs(userStore)
 
 async function fetchProfile() {
@@ -161,10 +167,46 @@ watch(
     fetchProfile()
   }
 )
+// 将路由名称映射到分类
+function routeNameToCategory(name?: string | symbol): 'posts' | 'replies' | 'likes' | 'bookmarks' {
+  switch (name) {
+    case 'ProfileReplies':
+      return 'replies'
+    case 'ProfileLikes':
+      return 'likes'
+    case 'ProfileBookmarks':
+      return 'bookmarks'
+    case 'ProfilePosts':
+    default:
+      return 'posts'
+  }
+}
+
+// 用户名变化：重置所有分类并加载默认posts
+watch(
+  () => route.params.username,
+  async (username) => {
+    if (!username) return
+    userPostStore.resetAll()
+    await userPostStore.loadCategory('posts', username as string)
+  },
+  { immediate: true }
+)
+
+// 分类变化：按当前分类加载（若未加载）
+watch(
+  () => route.name,
+  async (name) => {
+    const username = route.params.username as string
+    if (!username) return
+    const category = routeNameToCategory(name as string)
+    await userPostStore.loadCategory(category, username)
+  }
+)
 
 const tabList = computed(() => {
   const base = [
-    { name: '帖子', routeName: 'Profile' },
+    { name: '帖子', routeName: 'ProfilePosts' },
     { name: '回复', routeName: 'ProfileReplies' },
     { name: '喜欢', routeName: 'ProfileLikes' },
   ]

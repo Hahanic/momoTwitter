@@ -32,7 +32,7 @@ import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
 import { usePostFeedStore, usePostInteractionStore } from '@/stores'
-import useUserStore from '@/stores/user'
+import useUserStore from '@/stores/userUserStore'
 
 const message = useMessage()
 const postFeedStore = usePostFeedStore()

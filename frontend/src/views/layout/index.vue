@@ -65,8 +65,8 @@ import { useRoute, useRouter } from 'vue-router'
 import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 import SideBar from '@/components/layout/SideBar.vue'
 import { useWindowStore } from '@/stores'
-import useThemeStore from '@/stores/theme'
-import useUserStore from '@/stores/user'
+import useUserStore from '@/stores/userUserStore'
+import useThemeStore from '@/stores/useThemeStore'
 
 const windowStore = useWindowStore()
 const userStore = useUserStore()

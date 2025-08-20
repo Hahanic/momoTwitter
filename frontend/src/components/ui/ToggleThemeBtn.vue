@@ -11,7 +11,7 @@
 import { MoonIcon, SunIcon } from 'lucide-vue-next'
 import { NIcon } from 'naive-ui'
 
-import usethemeStore from '@/stores/theme'
+import usethemeStore from '@/stores/useThemeStore'
 
 const themeStore = usethemeStore()
 

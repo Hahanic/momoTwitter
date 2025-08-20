@@ -1,6 +1,7 @@
 import Bookmark from '../db/model/Bookmark.js'
 import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
+import User from '../db/model/User.js'
 import { PostService } from '../services/postService.js'
 import { verifyUserToken, parseCursor, sendResponse } from '../utils/index.js'
 
@@ -340,4 +341,32 @@ export const viewPost = async (req, res) => {
   const currentPost = await PostService.updatePostStats(postId, { 'stats.viewsCount': 1 })
   const stats = currentPost.stats
   sendResponse(res, 200, 'true', { stats })
+}
+
+// 获取某用户主页的帖子
+export const getUserCategoryPosts = async (req, res) => {
+  const { username } = req.params
+  const category = req.query.category || 'posts'
+  const limit = Math.min(parseInt(req.query.limit) || 10, 50)
+  const cursorDate = parseCursor(req.query.cursor)
+
+  const user = await User.findOne({ username })
+  if (!user) return sendResponse(res, 404, '用户不存在')
+
+  const strategy = {
+    posts: PostService.fetchUserPosts,
+    replies: PostService.fetchUserReplies,
+    likes: PostService.fetchUserLikes,
+    bookmarks: PostService.fetchUserBookmarks,
+  }
+  const fetcher = strategy[category]
+  if (!fetcher) return sendResponse(res, 400, '无效的分类')
+
+  try {
+    const { posts, nextCursor } = await fetcher(user._id, cursorDate, limit)
+    const decorated = await PostService.decorateWithInteractionsIfNeeded(req, posts)
+    return sendResponse(res, 200, '获取用户帖子成功', { posts: decorated, nextCursor })
+  } catch (e) {
+    return sendResponse(res, 500, '获取用户帖子失败', { error: e.message })
+  }
 }

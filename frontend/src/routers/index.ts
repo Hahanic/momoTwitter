@@ -3,8 +3,8 @@ import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vu
 import layoutRoutes from './modules/layout.ts'
 import userRoutes from './modules/user.ts'
 
-import useUserStore from '@/stores/user.ts'
-import useWindowStore from '@/stores/window.ts'
+import useUserStore from '@/stores/userUserStore.ts'
+import useWindowStore from '@/stores/useWindowStore.ts'
 
 const routes = [...layoutRoutes, ...userRoutes]
 

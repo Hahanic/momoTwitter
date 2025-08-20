@@ -39,35 +39,9 @@ const usePostDetailStore = defineStore('postDetail', () => {
     return parentChain.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as RecievePostPayload[]
   })
 
-  // 计算属性：直接父帖子
-  const parentPost = computed(() => {
-    const posts = parentPosts.value
-    return posts.length > 0 ? posts[posts.length - 1] : null
-  })
-
-  // 计算属性：根帖子
-  const rootPost = computed(() => {
-    const posts = parentPosts.value
-    return posts.length > 0 ? posts[0] : null
-  })
-
-  // 计算属性：完整对话链（从根帖子到当前帖子）
-  const fullConversationChain = computed(() => {
-    const conversation = [...parentPosts.value]
-    if (currentPost.value) {
-      conversation.push(currentPost.value)
-    }
-    return conversation
-  })
-
   // 计算属性：回复列表（实际的帖子对象）
   const replies = computed(() => {
     return replyIds.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as RecievePostPayload[]
-  })
-
-  // 计算属性：是否为回复详情页
-  const isReplyDetailView = computed(() => {
-    return currentPost.value?.postType === 'reply' && parentChain.value.length > 0
   })
 
   // 加载帖子详情
@@ -205,40 +179,6 @@ const usePostDetailStore = defineStore('postDetail', () => {
     isLoadingParentChain.value = false
   }
 
-  // 刷新当前帖子详情
-  async function refreshPostDetail() {
-    if (currentPostId.value) {
-      // 清除缓存中的当前帖子和回复
-      const allIds = [currentPostId.value, ...parentChain.value, ...replyIds.value]
-      postCacheStore.removePosts(allIds)
-
-      // 重新加载
-      await loadPostDetail(currentPostId.value)
-    }
-  }
-
-  // 检查帖子是否在当前对话中
-  function isPostInCurrentConversation(postId: string): boolean {
-    return currentPostId.value === postId || parentChain.value.includes(postId) || replyIds.value.includes(postId)
-  }
-
-  // 获取帖子在对话中的位置
-  function getPostPositionInConversation(postId: string): 'current' | 'parent' | 'reply' | 'none' {
-    if (currentPostId.value === postId) return 'current'
-    if (parentChain.value.includes(postId)) return 'parent'
-    if (replyIds.value.includes(postId)) return 'reply'
-    return 'none'
-  }
-
-  // 导航到对话中的其他帖子
-  async function navigateToPostInConversation(postId: string) {
-    if (isPostInCurrentConversation(postId)) {
-      await loadPostDetail(postId)
-    } else {
-      throw new Error('帖子不在当前对话中')
-    }
-  }
-
   return {
     // 状态
     currentPostId,
@@ -249,24 +189,14 @@ const usePostDetailStore = defineStore('postDetail', () => {
 
     // 计算属性
     currentPost,
-    parentPost,
-    rootPost,
     parentPosts,
     replies,
-    fullConversationChain,
-    isReplyDetailView,
 
     // 核心方法
     loadPostDetail,
     loadReplies,
     createReply,
     resetState,
-    refreshPostDetail,
-
-    // 工具方法
-    isPostInCurrentConversation,
-    getPostPositionInConversation,
-    navigateToPostInConversation,
   }
 })
 

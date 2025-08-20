@@ -53,8 +53,8 @@ import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
 import { usePostDetailStore } from '@/stores'
-import useUserStore from '@/stores/user'
-import useWindowStore from '@/stores/window'
+import useUserStore from '@/stores/userUserStore'
+import useWindowStore from '@/stores/useWindowStore'
 
 const message = useMessage()
 const postDetailStore = usePostDetailStore()

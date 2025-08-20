@@ -51,7 +51,7 @@ import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
-import useWindowStore from '@/stores/window'
+import useWindowStore from '@/stores/useWindowStore'
 
 const route = useRoute()
 const windowStore = useWindowStore()

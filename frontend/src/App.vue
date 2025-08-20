@@ -28,9 +28,9 @@ import {
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
-import usethemeStore from './stores/theme.ts'
-import useUserStore from './stores/user.ts'
-import useWindowStore from './stores/window.ts'
+import useUserStore from './stores/userUserStore.ts'
+import usethemeStore from './stores/useThemeStore.ts'
+import useWindowStore from './stores/useWindowStore.ts'
 
 const themeStore = usethemeStore()
 const windowStore = useWindowStore()

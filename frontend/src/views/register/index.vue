@@ -59,7 +59,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import btnTheme from '@/components/btnTheme/index.vue'
-import useUserStore from '@/stores/user'
+import useUserStore from '@/stores/userUserStore'
 import { throttle } from '@/utils/index.ts'
 
 const userStore = useUserStore()

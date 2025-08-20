@@ -16,11 +16,6 @@ const usePostCacheStore = defineStore('postCache', () => {
     return posts.value.get(postId)
   }
 
-  // 批量获取帖子
-  function getPosts(postIds: string[]): RecievePostPayload[] {
-    return postIds.map((id) => posts.value.get(id)).filter(Boolean) as RecievePostPayload[]
-  }
-
   // 检查帖子是否存在于缓存
   function hasPost(postId: string): boolean {
     return posts.value.has(postId)
@@ -47,23 +42,9 @@ const usePostCacheStore = defineStore('postCache', () => {
     }
   }
 
-  // 批量更新帖子
-  function updatePosts(updates: Array<{ postId: string; data: Partial<RecievePostPayload> }>) {
-    for (const { postId, data } of updates) {
-      updatePost(postId, data)
-    }
-  }
-
   // 从缓存中移除帖子
   function removePost(postId: string) {
     posts.value.delete(postId)
-  }
-
-  // 批量移除帖子
-  function removePosts(postIds: string[]) {
-    for (const id of postIds) {
-      posts.value.delete(id)
-    }
   }
 
   // 确保帖子存在并返回帖子，如果不存在则从API获取并存入缓存
@@ -76,35 +57,6 @@ const usePostCacheStore = defineStore('postCache', () => {
     const newPost = await apiGetOnePost(postId)
     addPost(newPost)
     return newPost
-  }
-
-  // 批量确保帖子存在
-  async function fetchPostsIfNotExists(postIds: string[]): Promise<RecievePostPayload[]> {
-    const results: RecievePostPayload[] = []
-    const missingIds: string[] = []
-
-    // 检查哪些帖子不在缓存中
-    for (const id of postIds) {
-      const existing = getPost(id)
-      if (existing) {
-        results.push(existing)
-      } else {
-        missingIds.push(id)
-      }
-    }
-
-    // 批量获取缺失的帖子（这里简化为单个请求，实际可以实现批量API）
-    for (const id of missingIds) {
-      try {
-        const post = await apiGetOnePost(id)
-        addPost(post)
-        results.push(post)
-      } catch (error) {
-        console.error(`Failed to fetch post ${id}:`, error)
-      }
-    }
-
-    return results
   }
 
   // 清空缓存
@@ -140,19 +92,15 @@ const usePostCacheStore = defineStore('postCache', () => {
 
     // 基础操作
     getPost,
-    getPosts,
     hasPost,
     addPost,
     addPosts,
     updatePost,
-    updatePosts,
     removePost,
-    removePosts,
     clearCache,
 
     // 高级操作
     fetchPostIfNotExists,
-    fetchPostsIfNotExists,
     findPosts,
     getAllPosts,
     getCacheStats,

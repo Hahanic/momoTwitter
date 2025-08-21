@@ -7,7 +7,11 @@
     <!-- 头像 -->
     <div class="relative">
       <div class="mx-2 mt-2 h-[3rem] w-[3rem]">
-        <Avatar :src="post.authorInfo.avatarUrl" container-class="h-[3rem] w-[3rem]" @click.stop="handleAvatarClick" />
+        <Avatar
+          :src="post.authorInfo.avatarUrl"
+          :username="post.authorInfo.username"
+          container-class="h-[3rem] w-[3rem]"
+        />
       </div>
       <!-- parentPost向下的线程 -->
       <div
@@ -74,11 +78,6 @@ const props = defineProps<{
   post: RecievePostPayload
   type: 'post' | 'reply' | 'parent'
 }>()
-
-// 头像点击
-const handleAvatarClick = () => {
-  console.log('头像点击')
-}
 
 // 点赞
 const handlePostLike = async () => {

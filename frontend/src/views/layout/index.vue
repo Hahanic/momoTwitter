@@ -31,9 +31,9 @@
             <component :is="Component" :key="route.fullPath" />
           </transition>
           <!-- 其它情况保留 keep-alive 缓存 -->
-          <keep-alive v-else include="Home PostDetail Profile">
-            <component :is="Component" />
-          </keep-alive>
+          <!-- <keep-alive v-else :include="['Profile']"> -->
+          <component v-else :is="Component" />
+          <!-- </keep-alive> -->
         </router-view>
       </div>
     </div>
@@ -192,11 +192,11 @@ const menuLists = computed(() => {
     opacity 0.3s cubic-bezier(0.4, 0, 1, 1);
 }
 .slide-right-enter-from {
-  transform: translateX(40%);
+  transform: translateX(30%);
   opacity: 0;
 }
 .slide-right-leave-to {
-  transform: translateX(40%);
+  transform: translateX(30%);
   opacity: 0;
 }
 .slide-right-enter-to,

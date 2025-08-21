@@ -33,7 +33,7 @@ axiosInstance.interceptors.response.use(
         case 401:
           // 通常是 token 失效，重定向到登录页
           userFriendlyMessage = data.message || '认证失败，请重新登录'
-          console.error('401: 重定向到登录页...')
+          console.error('401: 未登录状态')
           // window.location.href = '/login';
           break
         case 403:

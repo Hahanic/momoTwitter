@@ -64,13 +64,13 @@ const useUserPostStore = defineStore('userPost', () => {
   // 通用加载函数
   async function loadCategory(category: FeedCategory, username: string, options: { refresh?: boolean } = {}) {
     if (!username) return
-    // 收藏只允许本人查看
-    if (category === 'bookmarks' && userStore.currentUserProfile?.username !== userStore.user?.username) return
+    // 收藏只允许本人查看：使用传入的 username 对比已登录用户，避免 currentUserProfile 未加载导致误拒
+    if (category === 'bookmarks' && username !== userStore.user?.username) return
 
     // refresh: 清空后重新拉取
-    if (options.refresh) {
-      resetCategory(category)
-    }
+    // if (options.refresh) {
+    resetCategory(category)
+    // }
 
     const listRef = getListRef(category)
     if (loadingMap.value[category]) return
@@ -89,7 +89,6 @@ const useUserPostStore = defineStore('userPost', () => {
     try {
       const cursor = cursors.value[category]
       const res = await getUserCategoryPosts(category, username, cursor)
-      console.log(res)
       cache.addPosts(res.posts)
       const newIds = res.posts.map((p) => p._id)
       // 去重（可能后端变化重复返回）

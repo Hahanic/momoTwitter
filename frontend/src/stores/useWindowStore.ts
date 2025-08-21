@@ -15,6 +15,12 @@ const useWindowStore = defineStore('window', () => {
     isBackNavigation.value = value
   }
 
+  //userProfile的滚动记忆
+  const userProfileScrollTop = ref<number>(0)
+  function setUserProfileScrollTop(position: number) {
+    userProfileScrollTop.value = position
+  }
+
   // 帖子详情页滚动记忆：key 为 postId
   const postDetailScrollMap = ref<Record<string, number>>({})
 
@@ -74,7 +80,9 @@ const useWindowStore = defineStore('window', () => {
 
   return {
     homeScrollTop,
+    userProfileScrollTop,
     setHomeScrollTop,
+    setUserProfileScrollTop,
     postDetailScrollMap,
     setPostDetailScroll,
     getPostDetailScroll,

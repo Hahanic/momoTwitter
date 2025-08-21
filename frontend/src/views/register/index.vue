@@ -58,7 +58,7 @@ import {
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import btnTheme from '@/components/btnTheme/index.vue'
+import btnTheme from '@/components/ui/ToggleThemeBtn.vue'
 import useUserStore from '@/stores/userUserStore'
 import { throttle } from '@/utils/index.ts'
 

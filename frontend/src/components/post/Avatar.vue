@@ -4,6 +4,7 @@
     :class="containerClass"
   >
     <img
+      @click.stop="handleAvatarClick"
       :src="src || '/myAvatar.jpg'"
       :alt="alt"
       class="h-full w-full rounded-full object-cover transition-transform duration-300 ease-in-out select-none group-hover:scale-110 group-hover:-rotate-8"
@@ -12,17 +13,36 @@
 </template>
 
 <script lang="ts" setup>
+import { useMessage } from 'naive-ui'
+import { useRouter } from 'vue-router'
+
+const message = useMessage()
+const router = useRouter()
+
 interface Props {
   src?: string
   alt?: string
+  username?: string
   containerClass?: string
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
+  username: '',
   alt: 'Avatar',
   containerClass: '',
   imageClass: '',
 })
+
+// 头像点击
+const handleAvatarClick = () => {
+  if (!props.username) {
+    return message.warning('请先登录')
+  }
+  router.push({
+    name: 'Profile',
+    params: { username: props.username },
+  })
+}
 </script>
 
 <style scoped></style>

@@ -51,31 +51,34 @@ const handleScroll = (e: Event) => {
     if (windowStore.isMobile) {
       windowStore.handleScrollDirection(scrollTop)
     }
+  } else if (['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)) {
+    windowStore.setUserProfileScrollTop(scrollTop)
   }
 }
 // 恢复Home页的滚动位置
 watch(
   () => route.path,
-  (routePath) => {
+  async (routePath) => {
     // 若不在主页帖子流，则移动端底部菜单一直保持显示
     if (routePath !== '/home') {
       windowStore.showNav = true
     }
-    nextTick(() => {
+    await nextTick(() => {
       if (routePath === '/home') {
         scrollbarRef.value?.scrollTo({
           top: windowStore.homeScrollTop,
           behavior: 'auto',
         })
-      } else {
-        // scrollbarRef.value?.scrollTo({
-        //   top: 0,
-        //   behavior: 'auto',
-        // })
+      } else if (
+        ['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)
+      ) {
+        scrollbarRef.value?.scrollTo({
+          top: windowStore.userProfileScrollTop,
+          behavior: 'auto',
+        })
       }
     })
-  },
-  { immediate: true }
+  }
 )
 
 onMounted(async () => {

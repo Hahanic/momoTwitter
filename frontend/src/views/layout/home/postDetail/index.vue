@@ -130,10 +130,6 @@
       <SearchInput />
       <!-- 推送 -->
       <n-scrollbar :trigger="'hover'" style="max-height: 90vh">
-        <!-- <div class="mt-[0.8rem] flex w-full flex-col gap-[1.2rem]">
-        <div class="dark:border-borderDark border-borderWhite h-[9rem] rounded-xl border-1"></div>
-        <div class="dark:border-borderDark border-borderWhite h-[35rem] rounded-xl border-1"></div>
-      </div> -->
         <div class="flex w-full flex-col gap-4 pt-4">
           <AsideContent>
             <div class="p-4">

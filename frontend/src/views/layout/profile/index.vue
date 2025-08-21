@@ -1,7 +1,7 @@
 <template>
   <MainContainer>
     <StickyHead>
-      <div class="flex h-[3.2rem] w-full justify-between">
+      <div v-if="currentUserProfile" class="flex h-[3.2rem] w-full justify-between">
         <!-- 左 -->
         <div class="flex">
           <div class="flex items-center justify-center">
@@ -14,9 +14,9 @@
           </div>
           <div class="flex flex-col items-start">
             <p class="text-[1.1rem] font-bold">
-              {{ currentUserProfile?.displayName || route.params.username }}
+              {{ currentUserProfile.displayName || route.params.username }}
             </p>
-            <p class="text-[0.9rem] text-gray-500">{{ currentUserProfile?.stats?.postsCount ?? '' }} 帖子</p>
+            <p class="text-[0.9rem] text-gray-500">{{ currentUserProfile.stats.postsCount ?? '' }} 帖子</p>
           </div>
         </div>
         <!-- 右 -->
@@ -31,10 +31,10 @@
     <div class="min-h-screen w-full">
       <div v-if="isLoading" class="p-4 text-sm text-gray-500">加载中...</div>
       <div v-else-if="!currentUserProfile" class="p-4 text-sm text-gray-500">暂无数据</div>
-      <div v-else class="flex flex-col">
+      <div v-else-if="currentUserProfile" class="flex flex-col">
         <!-- 顶部banner -->
         <div class="h-40 w-full bg-gray-200 dark:bg-gray-800">
-          <img class="h-full w-full object-cover" :src="currentUserProfile?.bannerUrl || '/10.gif'" />
+          <img class="h-full w-full object-cover" :src="currentUserProfile.bannerUrl || '/10.gif'" />
         </div>
         <!-- 头像和按钮 -->
         <div class="flex w-full justify-between px-4">
@@ -43,7 +43,7 @@
           >
             <img
               class="h-full w-full rounded-full object-cover"
-              :src="currentUserProfile?.avatarUrl || '/myAvatar.jpg'"
+              :src="currentUserProfile.avatarUrl || '/myAvatar.jpg'"
             />
           </div>
           <div class="mt-2 flex items-center gap-2">
@@ -55,26 +55,29 @@
         </div>
         <!-- 姓名简介数据 -->
         <div class="my-4 flex flex-col px-4">
-          <h2 class="text-xl leading-tight font-bold">{{ currentUserProfile?.displayName }}</h2>
-          <p class="text-sm text-gray-500">@{{ currentUserProfile?.username }}</p>
+          <h2 class="text-xl leading-tight font-bold">{{ currentUserProfile.displayName }}</h2>
+          <p class="text-sm text-gray-500">@{{ currentUserProfile.username }}</p>
           <!-- 简介bio -->
-          <div class="my-2 text-[0.9rem]">{{ currentUserProfile?.bio || '这家伙很懒，什么都没有留下。' }}</div>
+          <div class="my-2 text-[0.9rem]">{{ currentUserProfile.bio || '这家伙很懒，什么都没有留下。' }}</div>
 
           <div class="flex flex-wrap gap-4 text-xs text-gray-500">
             <span
-              >关注 <b class="text-amber-950 dark:text-white">{{ currentUserProfile?.stats.followingCount }}</b></span
+              >关注 <b class="text-amber-950 dark:text-white">{{ currentUserProfile.stats.followingCount }}</b></span
             >
             <span
-              >粉丝 <b class="text-amber-950 dark:text-white">{{ currentUserProfile?.stats.followersCount }}</b></span
+              >粉丝 <b class="text-amber-950 dark:text-white">{{ currentUserProfile.stats.followersCount }}</b></span
             >
           </div>
         </div>
         <!-- 菜单 -->
-        <div class="dark:border-borderDark border-borderWhite flex h-[3.2rem] w-full border-b-1">
+        <div
+          v-if="userStore.currentUserProfile"
+          class="dark:border-borderDark border-borderWhite flex h-[3.2rem] w-full border-b-1"
+        >
           <RouterLink
             v-for="item in tabList"
             :key="item.routeName"
-            :to="{ name: item.routeName, params: { username: route.params.username } }"
+            :to="{ name: item.routeName, params: { username: userStore.currentUserProfile.username } }"
             class="relative flex h-full w-full items-center justify-center text-[#71767b] transition-[background-color] duration-300 hover:cursor-pointer hover:dark:bg-[#181818]"
             :class="{ 'font-bold text-black dark:text-white': route.name === item.routeName }"
           >
@@ -88,9 +91,9 @@
         <!-- 内容 -->
         <div class="flex w-full flex-col">
           <router-view v-slot="{ Component }">
-            <keep-alive>
-              <component :is="Component" />
-            </keep-alive>
+            <!-- <keep-alive :include="['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks']"> -->
+            <component :is="Component" />
+            <!-- </keep-alive> -->
           </router-view>
         </div>
       </div>
@@ -126,12 +129,16 @@
     </n-scrollbar>
   </StickyAside>
 </template>
-
+<script lang="ts">
+export default {
+  name: 'Profile',
+}
+</script>
 <script setup lang="ts">
 import { ArrowLeft, SearchIcon } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import AsideContent from '@/components/layout/AsideContent.vue'
@@ -140,69 +147,13 @@ import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
-import { useUserPostStore, useUserStore } from '@/stores'
+import { useUserStore } from '@/stores'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
-const userPostStore = useUserPostStore()
 
 const { currentUserProfile, isFollowing, isSelf, isLoading } = storeToRefs(userStore)
-
-async function fetchProfile() {
-  const username = route.params.username as string
-  if (!username) return
-  try {
-    await userStore.fetchUserProfile(username)
-  } catch (e: any) {
-    console.error(e.message || '获取用户信息失败')
-  }
-}
-onMounted(async () => {
-  await fetchProfile()
-})
-watch(
-  () => route.params.username,
-  () => {
-    fetchProfile()
-  }
-)
-// 将路由名称映射到分类
-function routeNameToCategory(name?: string | symbol): 'posts' | 'replies' | 'likes' | 'bookmarks' {
-  switch (name) {
-    case 'ProfileReplies':
-      return 'replies'
-    case 'ProfileLikes':
-      return 'likes'
-    case 'ProfileBookmarks':
-      return 'bookmarks'
-    case 'ProfilePosts':
-    default:
-      return 'posts'
-  }
-}
-
-// 用户名变化：重置所有分类并加载默认posts
-watch(
-  () => route.params.username,
-  async (username) => {
-    if (!username) return
-    userPostStore.resetAll()
-    await userPostStore.loadCategory('posts', username as string)
-  },
-  { immediate: true }
-)
-
-// 分类变化：按当前分类加载（若未加载）
-watch(
-  () => route.name,
-  async (name) => {
-    const username = route.params.username as string
-    if (!username) return
-    const category = routeNameToCategory(name as string)
-    await userPostStore.loadCategory(category, username)
-  }
-)
 
 const tabList = computed(() => {
   const base = [
@@ -212,5 +163,26 @@ const tabList = computed(() => {
   ]
   if (isSelf.value) base.push({ name: '收藏', routeName: 'ProfileBookmarks' })
   return base
+})
+
+async function fetchProfile(username?: string) {
+  const uname = (username || (route.params.username as string))?.trim()
+  if (!uname) return
+  try {
+    await userStore.fetchUserProfile(uname)
+  } catch (e: any) {
+    console.error(e.message || '获取用户信息失败')
+  }
+}
+
+onMounted(async () => {
+  if (route.params.username !== userStore.currentUserProfile?.username) {
+    await fetchProfile(route.params.username as string)
+  }
+  console.log(userStore.currentUserProfile)
+})
+
+onUnmounted(() => {
+  console.log('Profile onUnmounted')
 })
 </script>

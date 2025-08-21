@@ -2,11 +2,13 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 import { userRegister, userLogin, userLogout, getCurrentUser, getUserProfile } from '@/api/index.ts'
+import { useUserPostStore } from '@/stores'
 import { type UserProfile, type userLoginData, type userRegisterData } from '@/types'
 
 const USER_STORAGE_KEY = 'user_profile'
 
 const useUserStore = defineStore('user', () => {
+  const userPostStore = useUserPostStore()
   // 用户基本信息
   const user = ref<UserProfile | null>(null)
   // 用户当前状态
@@ -100,6 +102,8 @@ const useUserStore = defineStore('user', () => {
   async function fetchUserProfile(username: string) {
     isLoading.value = true
     try {
+      // 清空上一次用户帖子相关数据
+      userPostStore.resetAll()
       const res = await getUserProfile(username)
       currentUserProfile.value = res.userProfile
       isFollowing.value = !!res.userProfile.isFollowing

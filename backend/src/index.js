@@ -7,6 +7,7 @@ import express from 'express'
 
 import { connectDB } from './db/index.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
+import { cleanupOnErrorMiddleware } from './middleware/upload.js'
 import postRoutes from './routes/postRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 import userRoutes from './routes/userRoutes.js'
@@ -44,6 +45,8 @@ app.use('/api/upload', uploadRoutes)
 
 // 错误处理中间件
 app.use(notFound)
+// 先进行上传残留清理，再由统一错误处理器格式化响应
+app.use(cleanupOnErrorMiddleware)
 app.use(errorHandler)
 
 app.listen(port, () => {

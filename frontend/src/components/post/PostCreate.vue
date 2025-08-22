@@ -138,6 +138,7 @@ const handlePosting = async () => {
           formData.append('images', img.file)
         })
         try {
+          console.log(Array.from(formData.values()))
           const response = await apiUploadImages(formData)
           console.log(response)
           mediaData = response.files.map((file) => ({

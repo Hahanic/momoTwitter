@@ -67,7 +67,4 @@ const isChildRouteActive = computed(() => {
 .router-link-active {
   border-right: 2px solid #1d9bf0;
 }
-.dark .router-link-active {
-  background-color: #16181c;
-}
 </style>

@@ -8,6 +8,7 @@ import express from 'express'
 import { connectDB } from './db/index.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
 import postRoutes from './routes/postRoutes.js'
+import uploadRoutes from './routes/uploadRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 
 dotenv.config()
@@ -17,6 +18,9 @@ const port = process.env.PORT || 3000
 // 中间件
 app.use(cookieParser())
 app.use(express.json())
+
+// 静态文件服务
+app.use('/uploads', express.static('uploads'))
 
 // 跨域配置 process.env.Test_Server=用于测试的服务器地址，比如在手机上访问
 const allowedOrigins = ['http://localhost:5173', process.env.Test_Server]
@@ -36,6 +40,7 @@ app.use(
 // 路由
 app.use('/api/user', userRoutes)
 app.use('/api/post', postRoutes)
+app.use('/api/upload', uploadRoutes)
 
 // 错误处理中间件
 app.use(notFound)

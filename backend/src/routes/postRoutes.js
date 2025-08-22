@@ -27,8 +27,6 @@ router.get('/:postId/replies', asyncHandler(getPostReplies))
 router.get('/:postId/parent', asyncHandler(getReplyParentPost))
 // 新建帖子和回复
 router.post('/create', protectAuthRoute, asyncHandler(createPost))
-// 新建回复
-// router.post('/:postId/replies', protectAuthRoute, asyncHandler(createPostReply))
 // 点赞帖子/回复
 router.post('/:postId/like', protectAuthRoute, asyncHandler(likePost))
 // 收藏帖子/回复

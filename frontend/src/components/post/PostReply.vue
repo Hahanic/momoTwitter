@@ -13,6 +13,27 @@
       </template>
     </PostEditor>
 
+    <!-- 已选择图片预览（回复） -->
+    <div v-if="selectedImages.length" class="mt-2 px-4 sm:pl-[3.8rem]">
+      <div class="flex flex-wrap gap-2">
+        <div
+          v-for="(img, idx) in selectedImages"
+          :key="idx"
+          class="group relative h-24 w-24 overflow-hidden rounded-lg border border-dashed border-gray-400 dark:border-gray-600"
+        >
+          <img :src="img.preview" class="h-full w-full object-cover" />
+          <button
+            type="button"
+            class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
+            @click.stop="removeImage(idx)"
+            aria-label="移除图片"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 地点和工具栏 -->
     <div class="min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]" :class="{ 'mt-3 max-h-[6rem]': hasUserFocused }">
       <!-- 地点信息 -->
@@ -33,6 +54,10 @@
           :icon-size="20"
           @image="handleMediaAction"
           @emoji="handleMediaAction"
+          @files-selected="handleFilesSelected"
+          @file-rejected="handleFileRejected"
+          :current-count="selectedImages.length"
+          :max-count="MAX_IMAGES"
           @bot="handleMediaAction"
           @menu="handleMediaAction"
           @location="handleMediaAction"
@@ -52,6 +77,7 @@ import { ref, computed } from 'vue'
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
+import { useImageSelection } from '@/composables/useImageSelection'
 import { usePostDetailStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
 import useWindowStore from '@/stores/useWindowStore'
@@ -64,10 +90,19 @@ const windowStore = useWindowStore()
 const hasUserFocused = ref<boolean>(false)
 const messageContent = ref<string>('')
 
+// 图片选择与预览（组合式）
+const { selectedImages, count, max, addFiles, removeImage, clearAll } = useImageSelection({ max: 4 })
+const MAX_IMAGES = max
+
+const handleFilesSelected = (files: File[]) => addFiles(files)
+const handleFileRejected = (info: { file: File; reason: string }) => {
+  message.warning(info.reason)
+}
+
 // 用于提交回复按钮的disabled
 const canSubmitReply = computed(() => {
   return (
-    messageContent.value.trim() &&
+    (messageContent.value.trim() || count.value > 0) &&
     userStore.isAuthenticated &&
     postDetailStore.currentPostId &&
     !postDetailStore.isLoadingReplies
@@ -87,10 +122,12 @@ const handlePosting = async () => {
   }
 
   try {
+    // TODO: 等后端实现图片上传后，将 selectedImages 上传并传媒体数组
     await postDetailStore.createReply(messageContent.value)
     message.success('回复成功！')
     messageContent.value = '' // 清空输入框
     hasUserFocused.value = false // 收起工具栏
+    clearAll() // 释放预览并清空
   } catch (error: any) {
     message.error(error.message || '回复失败，请稍后再试')
     console.error(error.message || error)
@@ -104,8 +141,7 @@ const handleTextareaFocus = () => {
 
 // 媒体工具栏处理方法
 const handleMediaAction = () => {
-  // TODO: 实现媒体功能
-  console.log('媒体功能待实现')
+  // 选择图片逻辑在 MediaToolbar 内
 }
 </script>
 

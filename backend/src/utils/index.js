@@ -53,3 +53,27 @@ export const setTokenCookie = (res, token) => {
     maxAge: 24 * 60 * 60 * 1000, // 24小时
   })
 }
+
+// 将相对路径转换为完整URL
+export const getFullUrl = (relativePath, req) => {
+  if (!relativePath) return null
+
+  // 如果已经是完整URL，直接返回
+  if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+    return relativePath
+  }
+
+  // 构建完整URL
+  const baseUrl = process.env.FILE_BASE_URL || `${req.protocol}://${req.get('Host')}`
+  return `${baseUrl}${relativePath.startsWith('/') ? relativePath : '/' + relativePath}`
+}
+
+// 批量转换媒体URL（用于帖子数据）
+export const transformMediaUrls = (mediaArray, req) => {
+  if (!Array.isArray(mediaArray)) return mediaArray
+
+  return mediaArray.map((media) => ({
+    ...media,
+    url: getFullUrl(media.url, req),
+  }))
+}

@@ -143,34 +143,6 @@ const usePostFeedStore = defineStore('postFeed', () => {
     }
   }
 
-  // 从流中移除帖子
-  function removePostFromFeed(postId: string) {
-    const index = postIds.value.indexOf(postId)
-    if (index > -1) {
-      postIds.value.splice(index, 1)
-    }
-    // 注意：这里不从缓存中删除，因为其他地方可能还在使用
-  }
-
-  // 检查帖子是否在当前流中
-  function isPostInFeed(postId: string): boolean {
-    return postIds.value.includes(postId)
-  }
-
-  // 获取帖子在流中的位置
-  function getPostIndexInFeed(postId: string): number {
-    return postIds.value.indexOf(postId)
-  }
-
-  // 将帖子移动到流顶部（用于置顶等操作）
-  function movePostToTop(postId: string) {
-    const index = postIds.value.indexOf(postId)
-    if (index > -1) {
-      postIds.value.splice(index, 1)
-      postIds.value.unshift(postId)
-    }
-  }
-
   // 重置帖子流
   function resetFeed() {
     postIds.value = []
@@ -197,25 +169,6 @@ const usePostFeedStore = defineStore('postFeed', () => {
     }
   }
 
-  // 获取流统计信息
-  function getFeedStats() {
-    const allPosts = posts.value
-    return {
-      total: allPosts.length,
-      byType: {
-        standard: allPosts.filter((p) => p.postType === 'standard').length,
-        reply: allPosts.filter((p) => p.postType === 'reply').length,
-        quote: allPosts.filter((p) => p.postType === 'quote').length,
-        retweet: allPosts.filter((p) => p.postType === 'retweet').length,
-      },
-      interactions: {
-        totalLikes: allPosts.reduce((sum, p) => sum + p.stats.likesCount, 0),
-        totalReplies: allPosts.reduce((sum, p) => sum + p.stats.repliesCount, 0),
-        totalBookmarks: allPosts.reduce((sum, p) => sum + p.stats.bookmarksCount, 0),
-      },
-    }
-  }
-
   return {
     // 状态
     postIds,
@@ -234,15 +187,8 @@ const usePostFeedStore = defineStore('postFeed', () => {
     createAndAddPost,
     resetFeed,
 
-    // 管理方法
-    removePostFromFeed,
-    movePostToTop,
-    isPostInFeed,
-    getPostIndexInFeed,
-
     // 优化方法
     preloadPostDetails,
-    getFeedStats,
   }
 })
 

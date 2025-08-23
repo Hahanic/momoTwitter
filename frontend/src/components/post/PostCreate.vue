@@ -35,7 +35,7 @@
         />
         <div>
           <SubmitButton
-            :disabled="!canSubmitPost || postInteractionStore.isCreatingPost()"
+            :disabled="!canSubmitPost || postInteractionStore.isCreatingPost() || isUploading"
             @click="handlePosting"
             text="发帖"
           />
@@ -49,11 +49,11 @@
 import { useMessage } from 'naive-ui'
 import { ref, computed } from 'vue'
 
-import { apiUploadImage, apiUploadImages } from '@/api'
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
 import { useImageSelection } from '@/composables/useImageSelection'
+import { uploadImages } from '@/composables/useMediaUpload'
 import { usePostFeedStore, usePostInteractionStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
 
@@ -111,46 +111,19 @@ const handlePosting = async () => {
   try {
     let mediaData: Array<{ type: 'image' | 'video' | 'gif'; url: string }> = []
 
-    // 如果有图片，先上传图片
+    // 如果有图片，先上传图片（统一入口）
     if (selectedImages.value.length > 0) {
       isUploading.value = true
-
       const imageCount = selectedImages.value.length
       message.info(`正在上传${imageCount}张图片...`)
 
-      // 如果只有一张
-      if (imageCount === 1) {
-        const formatDate = new FormData()
-        formatDate.append('image', selectedImages.value[0].file)
-        try {
-          const response = await apiUploadImage(formatDate)
-          mediaData.push({
-            type: 'image',
-            url: response.relativePath,
-          })
-        } catch (error: any) {
-          message.error(`图片上传失败: ${error.message}`)
-        }
-      } else {
-        // 批量上传图片
-        const formData = new FormData()
-        selectedImages.value.forEach((img) => {
-          formData.append('images', img.file)
-        })
-        try {
-          console.log(Array.from(formData.values()))
-          const response = await apiUploadImages(formData)
-          console.log(response)
-          mediaData = response.files.map((file) => ({
-            type: 'image' as const,
-            url: file.relativePath,
-          }))
-        } catch (error) {
-          throw new Error('批量上传失败，请稍后重试')
-        }
+      try {
+        const files = selectedImages.value.map((i) => i.file)
+        mediaData = await uploadImages(files)
+      } catch (error: any) {
+        message.error(error.message || '图片上传失败')
+        throw error
       }
-
-      message.success(`成功上传 ${mediaData.length} 张图片`)
     }
 
     // 创建帖子
@@ -163,12 +136,11 @@ const handlePosting = async () => {
     message.success('发帖成功！')
     messageContent.value = '' // 清空输入框
     // 释放预览并清空
-    clearAll()
   } catch (error: any) {
-    const errorMsg = error.message || '发帖失败，请稍后再试'
-    message.error(errorMsg)
+    message.error(error.message || '发帖失败，请稍后再试')
     console.error('发帖失败:', error)
   } finally {
+    clearAll()
     isUploading.value = false
   }
 }

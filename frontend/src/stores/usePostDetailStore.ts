@@ -83,6 +83,26 @@ const usePostDetailStore = defineStore('postDetail', () => {
     }
   }
 
+  // 获取父帖子id和post列表
+  async function getParentPosts(startParentId: string) {
+    try {
+      const chain: string[] = []
+      const posts: RecievePostPayload[] = []
+      let currentParentId: string | undefined = startParentId
+
+      while (currentParentId) {
+        const parentPost = await postCacheStore.fetchPostIfNotExists(currentParentId)
+        chain.unshift(parentPost._id)
+        posts.unshift(parentPost)
+        currentParentId = parentPost.postType === 'reply' ? parentPost.parentPostId : undefined
+      }
+      return { chain, posts }
+    } catch (error) {
+      console.error('获取父帖子列表失败:', error)
+      throw error
+    }
+  }
+
   // 构建父帖子链
   async function buildParentChain(startParentId: string) {
     if (isLoadingParentChain.value) return
@@ -90,20 +110,8 @@ const usePostDetailStore = defineStore('postDetail', () => {
     isLoadingParentChain.value = true
 
     try {
-      // 从当前帖子往上追溯到根帖子
-      const chain: string[] = []
-      let currentParentId: string | undefined = startParentId
-
-      while (currentParentId) {
-        // 确保父帖子在缓存中
-        const parentPost = await postCacheStore.fetchPostIfNotExists(currentParentId)
-
-        // 将父帖子ID添加到链的开头（这样最终顺序是从根帖子到直接父帖子）
-        chain.unshift(parentPost._id)
-
-        // 继续向上查找
-        currentParentId = parentPost.postType === 'reply' ? parentPost.parentPostId : undefined
-      }
+      const { chain } = await getParentPosts(startParentId)
+      console.log(chain)
 
       parentChain.value = chain
     } catch (error) {
@@ -151,13 +159,18 @@ const usePostDetailStore = defineStore('postDetail', () => {
   }
 
   // 发送回复
-  async function createReply(content: string) {
+  async function createReply(content: string, media?: { type: 'image' | 'video' | 'gif'; url: string }[]) {
     if (!currentPostId.value) {
       throw new Error('当前帖子不存在')
     }
 
     try {
-      const newReply = await interactionStore.createReply(currentPostId.value, content)
+      const newReply = await interactionStore.createReply({
+        postType: 'reply',
+        parentPostId: currentPostId.value,
+        content,
+        media,
+      })
 
       // 将新回复添加到回复列表的开头
       replyIds.value.unshift(newReply._id)
@@ -195,6 +208,7 @@ const usePostDetailStore = defineStore('postDetail', () => {
     // 核心方法
     loadPostDetail,
     loadReplies,
+    getParentPosts,
     createReply,
     resetState,
   }

@@ -53,17 +53,12 @@
         <MediaToolbar
           :icon-size="20"
           @image="handleMediaAction"
-          @emoji="handleMediaAction"
           @files-selected="handleFilesSelected"
           @file-rejected="handleFileRejected"
           :current-count="selectedImages.length"
           :max-count="MAX_IMAGES"
-          @bot="handleMediaAction"
-          @menu="handleMediaAction"
-          @location="handleMediaAction"
-          @calendar="handleMediaAction"
         />
-        <SubmitButton :disabled="!canSubmitReply" @click="handlePosting" text="回复" />
+        <SubmitButton :disabled="!canSubmitReply || isUploading" @click="handlePosting" text="回复" />
       </div>
     </div>
   </div>
@@ -78,6 +73,7 @@ import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
 import { useImageSelection } from '@/composables/useImageSelection'
+import { uploadImages } from '@/composables/useMediaUpload'
 import { usePostDetailStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
 import useWindowStore from '@/stores/useWindowStore'
@@ -89,6 +85,8 @@ const windowStore = useWindowStore()
 
 const hasUserFocused = ref<boolean>(false)
 const messageContent = ref<string>('')
+
+const isUploading = ref(false)
 
 // 图片选择与预览（组合式）
 const { selectedImages, count, max, addFiles, removeImage, clearAll } = useImageSelection({ max: 4 })
@@ -111,8 +109,8 @@ const canSubmitReply = computed(() => {
 
 // 发送回复的方法
 const handlePosting = async () => {
-  if (!messageContent.value.trim()) {
-    message.warning('回复内容不能为空')
+  if (!messageContent.value.trim() && selectedImages.value.length === 0) {
+    message.warning('回复内容或图片不能为空')
     return
   }
 
@@ -121,16 +119,39 @@ const handlePosting = async () => {
     return
   }
 
+  if (isUploading.value) {
+    message.warning('图片正在上传，请稍后再试')
+    return
+  }
+
   try {
-    // TODO: 等后端实现图片上传后，将 selectedImages 上传并传媒体数组
-    await postDetailStore.createReply(messageContent.value)
+    let mediaData: Array<{ type: 'image' | 'video' | 'gif'; url: string }> = []
+
+    // 如果有图片，先上传图片（统一入口）
+    if (selectedImages.value.length > 0) {
+      isUploading.value = true
+      const imageCount = selectedImages.value.length
+      message.info(`正在上传${imageCount}张图片...`)
+
+      try {
+        const files = selectedImages.value.map((i) => i.file)
+        mediaData = await uploadImages(files)
+      } catch (error: any) {
+        message.error(error.message || '图片上传失败')
+        throw error
+      }
+    }
+
+    await postDetailStore.createReply(messageContent.value, mediaData.length ? mediaData : undefined)
     message.success('回复成功！')
     messageContent.value = '' // 清空输入框
     hasUserFocused.value = false // 收起工具栏
-    clearAll() // 释放预览并清空
   } catch (error: any) {
     message.error(error.message || '回复失败，请稍后再试')
-    console.error(error.message || error)
+    console.error('回复失败:', error)
+  } finally {
+    clearAll()
+    isUploading.value = false
   }
 }
 

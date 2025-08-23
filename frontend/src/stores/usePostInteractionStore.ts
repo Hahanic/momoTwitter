@@ -154,25 +154,29 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
   }
 
   // 回复
-  async function createReply(parentPostId: string, content: string) {
+  async function createReply(payload: CreatePostPayload) {
     if (!userStore.isAuthenticated) {
       throw new Error('用户未登录，无法回复')
     }
 
-    if (replyingInProgress.value.has(parentPostId)) {
+    if (!payload.parentPostId) {
+      throw new Error('缺少父帖子ID')
+    }
+
+    if (replyingInProgress.value.has(payload.parentPostId)) {
       throw new Error('正在回复中，请稍后再试')
     }
 
-    const parentPost = postCacheStore.getPost(parentPostId)
+    const parentPost = postCacheStore.getPost(payload.parentPostId)
     if (!parentPost) {
       throw new Error('父帖子不存在')
     }
 
-    replyingInProgress.value.add(parentPostId)
+    replyingInProgress.value.add(payload.parentPostId)
 
     // 乐观更新父帖子的回复数
     const originalRepliesCount = parentPost.stats.repliesCount
-    postCacheStore.updatePost(parentPostId, {
+    postCacheStore.updatePost(payload.parentPostId, {
       stats: {
         ...parentPost.stats,
         repliesCount: originalRepliesCount + 1,
@@ -180,20 +184,20 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     })
 
     try {
-      const newReply = await apiCreatePost({ content, postType: 'reply', parentPostId })
+      const newReply = await apiCreatePost({ ...payload, postType: 'reply' })
       // 将新回复添加到缓存
       postCacheStore.addPost(newReply.newPost)
 
       return newReply.newPost
     } catch (error) {
       // 失败回滚
-      postCacheStore.updatePost(parentPostId, {
+      postCacheStore.updatePost(payload.parentPostId, {
         stats: { ...parentPost.stats, repliesCount: originalRepliesCount },
       })
 
       throw error
     } finally {
-      replyingInProgress.value.delete(parentPostId)
+      replyingInProgress.value.delete(payload.parentPostId)
     }
   }
 
@@ -250,16 +254,6 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     return postingInProgress.value
   }
 
-  // 获取操作状态统计
-  function getOperationStats() {
-    return {
-      likingCount: likingInProgress.value.size,
-      bookmarkingCount: bookmarkingInProgress.value.size,
-      replyingCount: replyingInProgress.value.size,
-      isPosting: postingInProgress.value,
-    }
-  }
-
   // 清除所有操作状态（用于重置或错误恢复）
   function clearAllOperations() {
     likingInProgress.value.clear()
@@ -284,7 +278,6 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     isCreatingPost,
 
     // 工具方法
-    getOperationStats,
     clearAllOperations,
   }
 })

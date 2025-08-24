@@ -23,7 +23,7 @@
           <BottomNavigation />
         </header>
       </transition>
-
+      <!-- 主体内容 路由出口 -->
       <div class="flex" :class="{ 'pb-16': windowStore.isMobile }">
         <router-view v-slot="{ Component, route }">
           <!-- 移动端且路由为 PostDetail 时，执行特定动画 -->
@@ -37,6 +37,18 @@
         </router-view>
       </div>
     </div>
+
+    <!-- 返回顶部按钮 -->
+    <div v-if="!windowStore.isMobile" class="fixed right-4 bottom-4 z-50">
+      <button
+        @click="scrollToTop"
+        class="rounded-full bg-[#d4237a] p-2 text-white shadow-md transition-colors hover:bg-[#bf0e63]"
+      >
+        <ArrowUp />
+      </button>
+    </div>
+
+    <!-- 模态框 -->
     <transition name="fade-modal">
       <ComposeModal v-if="showModal" @close="closeModal"></ComposeModal>
     </transition>
@@ -57,9 +69,10 @@ import {
   User2,
   CircleEllipsis,
   Send,
+  ArrowUp,
 } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
-import { defineAsyncComponent, ref, watch, computed } from 'vue'
+import { defineAsyncComponent, ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import BottomNavigation from '@/components/layout/BottomNavigation.vue'
@@ -73,6 +86,7 @@ const userStore = useUserStore()
 const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
+const scrollRoot = ref<HTMLElement | null>(null)
 
 // 模态框
 const ComposeModal = defineAsyncComponent(() => import('@/components/composeModal/index.vue'))
@@ -129,6 +143,14 @@ const menuLists = computed(() => {
     { icon: Send, label: '发帖', href: null, action: 'compose' },
   ]
 })
+
+// 滚动顶部
+onMounted(() => {
+  scrollRoot.value = document.querySelector('.n-scrollbar-container')
+})
+const scrollToTop = () => {
+  scrollRoot.value?.scrollTo({ top: 0, behavior: 'smooth' })
+}
 </script>
 
 <style>

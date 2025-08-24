@@ -4,7 +4,7 @@
     <PostEditor v-model="messageContent" local-storage-key="messsageContent" placeholder="有什么新鲜事?" />
 
     <!-- 已选择图片预览区 -->
-    <PostImagePre :images="selectedImages" @remove-image="removeImage" />
+    <PostImagePre :images="selectedImages" @remove-image="removeImage" @reorder-images="handleReorderImages" />
 
     <!-- 底部工具栏 -->
     <div class="flex min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]">
@@ -122,6 +122,15 @@ const handlePosting = async () => {
     clearAll()
     isUploading.value = false
   }
+}
+
+// 拖曳排序图片
+const handleReorderImages = (payload: { from: number; to: number }) => {
+  const { from, to } = payload
+  const updatedImages = [...selectedImages.value]
+  const [movedItem] = updatedImages.splice(from, 1)
+  updatedImages.splice(to, 0, movedItem)
+  selectedImages.value = updatedImages
 }
 </script>
 

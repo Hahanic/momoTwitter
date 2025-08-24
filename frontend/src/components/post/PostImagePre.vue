@@ -5,7 +5,16 @@
       <div
         v-for="(img, idx) in images"
         :key="idx"
-        class="group relative h-28 w-28 overflow-hidden rounded-lg border border-dashed border-gray-400 dark:border-gray-600"
+        @dragstart="handleDragStart(idx)"
+        @dragover.prevent="handleDragOver(idx)"
+        @dragleave="handleDragLeave"
+        @drop="handleDrop(idx)"
+        @dragend="handleDragEnd"
+        :class="{
+          'opacity-50': draggedIndex !== null && draggedIndex !== idx,
+          'scale-105 border-blue-500 shadow-lg': dragOverIndex === idx && dragOverIndex !== draggedIndex,
+        }"
+        class="group relative h-28 w-28 cursor-grab overflow-hidden rounded-lg border border-dashed border-gray-400 dark:border-gray-600"
       >
         <img :src="img.preview" class="h-full w-full object-cover" @click="openPreview(idx)" />
         <button
@@ -21,12 +30,15 @@
   </div>
 </template>
 <script setup lang="ts">
+import { ref } from 'vue'
+
 defineProps<{
   images: Array<{ file: File; preview: string }>
 }>()
 
 const emit = defineEmits<{
   (e: 'remove-image', idx: number): void
+  (e: 'reorder-images', payload: { from: number; to: number }): void
 }>()
 
 const handleRemove = (idx: number) => {
@@ -36,5 +48,41 @@ const handleRemove = (idx: number) => {
 const openPreview = (idx: number) => {
   // 预留：可引入全局预览组件
   console.log('预览图片 index=', idx)
+}
+
+// 拖曳排序实现
+// 状态
+const draggedIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
+
+// 拖曳开始
+const handleDragStart = (idx: number) => {
+  draggedIndex.value = idx
+}
+
+// 拖曳进入某个可放置区域
+const handleDragOver = (idx: number) => {
+  dragOverIndex.value = idx
+}
+
+// 离开可放置区域
+const handleDragLeave = () => {
+  dragOverIndex.value = null
+}
+
+// 拖曳结束
+const handleDragEnd = () => {
+  draggedIndex.value = null
+  dragOverIndex.value = null
+}
+
+// 拖曳放下
+const handleDrop = (dropIndex: number) => {
+  if (draggedIndex.value === null || dragOverIndex.value === null) {
+    dragOverIndex.value = null
+    return
+  }
+
+  emit('reorder-images', { from: draggedIndex.value, to: dropIndex })
 }
 </script>

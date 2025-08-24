@@ -107,7 +107,6 @@ const useUserStore = defineStore('user', () => {
       const res = await getUserProfile(username)
       currentUserProfile.value = res.userProfile
       isFollowing.value = !!res.userProfile.isFollowing
-      console.log(res)
     } catch (err) {
       console.error(err)
     } finally {

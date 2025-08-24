@@ -111,7 +111,6 @@ const usePostDetailStore = defineStore('postDetail', () => {
 
     try {
       const { chain } = await getParentPosts(startParentId)
-      console.log(chain)
 
       parentChain.value = chain
     } catch (error) {

@@ -57,8 +57,6 @@ const usePostFeedStore = defineStore('postFeed', () => {
       // 更新分页信息
       nextCursor.value = response.nextCursor
       hasMore.value = response.nextCursor !== null
-
-      console.log('初始加载帖子:', posts.value.length, 'hasMore:', hasMore.value)
     } catch (error) {
       console.error('初始加载帖子失败:', error)
       // 出错时重置状态

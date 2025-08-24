@@ -131,7 +131,6 @@ watch([scrollRoot, observerEl], ([rootElement, targetElement]) => {
     }
     observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && feedStore.hasMore && !feedStore.isLoading) {
-        console.log('IntersectionObserver 触发 loadMorePosts')
         loadMorePosts()
       }
     }, options)

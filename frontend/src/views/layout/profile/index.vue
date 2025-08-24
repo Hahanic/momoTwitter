@@ -179,10 +179,5 @@ onMounted(async () => {
   if (route.params.username !== userStore.currentUserProfile?.username) {
     await fetchProfile(route.params.username as string)
   }
-  console.log(userStore.currentUserProfile)
-})
-
-onUnmounted(() => {
-  console.log('Profile onUnmounted')
 })
 </script>

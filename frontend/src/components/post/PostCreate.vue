@@ -4,25 +4,7 @@
     <PostEditor v-model="messageContent" local-storage-key="messsageContent" placeholder="有什么新鲜事?" />
 
     <!-- 已选择图片预览区 -->
-    <div v-if="selectedImages.length" class="mt-2 px-4 sm:pl-[3.8rem]">
-      <div class="flex flex-wrap gap-2">
-        <div
-          v-for="(img, idx) in selectedImages"
-          :key="idx"
-          class="group relative h-28 w-28 overflow-hidden rounded-lg border border-dashed border-gray-400 dark:border-gray-600"
-        >
-          <img :src="img.preview" class="h-full w-full object-cover" @click="openPreview(idx)" />
-          <button
-            type="button"
-            class="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-xs text-white opacity-0 transition group-hover:opacity-100"
-            @click.stop="removeImage(idx)"
-            aria-label="移除图片"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-    </div>
+    <PostImagePre :images="selectedImages" @remove-image="removeImage" />
 
     <!-- 底部工具栏 -->
     <div class="flex min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]">
@@ -49,6 +31,8 @@
 import { useMessage } from 'naive-ui'
 import { ref, computed } from 'vue'
 
+import PostImagePre from './PostImagePre.vue'
+
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
@@ -67,7 +51,7 @@ const messageContent = ref<string>('')
 const isUploading = ref(false)
 
 // 图片选择与预览（提取为组合式函数）
-const { selectedImages, count, max, addFiles, removeImage, clearAll } = useImageSelection({ max: 4 })
+const { selectedImages, count, max, removeImage, addFiles, clearAll } = useImageSelection({ max: 4 })
 
 const MAX_IMAGES = max
 
@@ -75,11 +59,6 @@ const handleFilesSelected = (files: File[]) => addFiles(files)
 
 const handleFileRejected = (info: { file: File; reason: string }) => {
   message.warning(info.reason)
-}
-
-const openPreview = (idx: number) => {
-  // 预留：可引入全局预览组件
-  console.log('预览图片 index=', idx)
 }
 
 // 计算属性：是否能发帖

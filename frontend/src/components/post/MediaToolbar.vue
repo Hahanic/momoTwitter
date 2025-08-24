@@ -54,7 +54,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  image: []
   emoji: []
   bot: []
   menu: []
@@ -67,7 +66,6 @@ const emit = defineEmits<{
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const triggerFilePicker = () => {
-  emit('image')
   fileInputRef.value?.click()
 }
 

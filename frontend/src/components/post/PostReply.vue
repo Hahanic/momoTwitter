@@ -14,25 +14,7 @@
     </PostEditor>
 
     <!-- 已选择图片预览（回复） -->
-    <div v-if="selectedImages.length" class="mt-2 px-4 sm:pl-[3.8rem]">
-      <div class="flex flex-wrap gap-2">
-        <div
-          v-for="(img, idx) in selectedImages"
-          :key="idx"
-          class="group relative h-24 w-24 overflow-hidden rounded-lg border border-dashed border-gray-400 dark:border-gray-600"
-        >
-          <img :src="img.preview" class="h-full w-full object-cover" />
-          <button
-            type="button"
-            class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-[10px] text-white opacity-0 transition group-hover:opacity-100"
-            @click.stop="removeImage(idx)"
-            aria-label="移除图片"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-    </div>
+    <PostImagePre :images="selectedImages" @remove-image="removeImage" />
 
     <!-- 地点和工具栏 -->
     <div class="min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]" :class="{ 'mt-3 max-h-[6rem]': hasUserFocused }">
@@ -52,7 +34,6 @@
       <div v-show="hasUserFocused" class="flex w-full items-center justify-between pt-2 pb-4 transition-all">
         <MediaToolbar
           :icon-size="20"
-          @image="handleMediaAction"
           @files-selected="handleFilesSelected"
           @file-rejected="handleFileRejected"
           :current-count="selectedImages.length"
@@ -68,6 +49,8 @@
 import { MapPin } from 'lucide-vue-next'
 import { useMessage } from 'naive-ui'
 import { ref, computed } from 'vue'
+
+import PostImagePre from './PostImagePre.vue'
 
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
@@ -158,11 +141,6 @@ const handlePosting = async () => {
 // 用户focus输入框然后显示媒体工具栏和按钮
 const handleTextareaFocus = () => {
   hasUserFocused.value = true
-}
-
-// 媒体工具栏处理方法
-const handleMediaAction = () => {
-  // 选择图片逻辑在 MediaToolbar 内
 }
 </script>
 

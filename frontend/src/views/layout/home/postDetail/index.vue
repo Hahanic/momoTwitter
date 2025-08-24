@@ -27,6 +27,7 @@
             <!-- 头像和name -->
             <div class="flex gap-2">
               <Avatar
+                :username="currentPost.authorInfo.username"
                 :src="currentPost.authorInfo.avatarUrl"
                 :alt="currentPost.authorInfo.displayName"
                 container-class="h-12 w-12"

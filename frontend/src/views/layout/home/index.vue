@@ -17,11 +17,9 @@
     </StickyHead>
 
     <div class="w-full">
-      <!-- user -->
       <PostCreate />
       <!-- posts -->
       <Posts v-for="post in feedStore.posts" :post="post" :type="'post'" :key="post._id" />
-      <!-- TODO 这里可以降低CLS -->
       <div ref="observerEl" class="my-20 flex w-full items-center justify-center">
         <LoaderIcon v-if="feedStore.isLoading" :class="{ 'animate-spin': feedStore.isLoading }" :size="26" />
       </div>

@@ -50,7 +50,13 @@
             <button v-if="!isSelf" class="border-borderDark rounded-full border px-4 py-2 text-sm font-bold">
               {{ isFollowing ? '正在关注' : '关注' }}
             </button>
-            <button v-else class="border-borderDark rounded-full border px-4 py-2 text-sm font-bold">编辑资料</button>
+            <button
+              @click="editProfile"
+              v-else
+              class="border-borderDark rounded-full border px-4 py-2 text-sm font-bold"
+            >
+              编辑资料
+            </button>
           </div>
         </div>
         <!-- 姓名简介数据 -->
@@ -138,7 +144,7 @@ export default {
 import { ArrowLeft, SearchIcon } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import AsideContent from '@/components/layout/AsideContent.vue'
@@ -180,4 +186,9 @@ onMounted(async () => {
     await fetchProfile(route.params.username as string)
   }
 })
+
+// 打开编辑资料模态框
+const editProfile = () => {
+  router.push({ path: route.path, query: { ...route.query, modal: 'editProfile' } })
+}
 </script>

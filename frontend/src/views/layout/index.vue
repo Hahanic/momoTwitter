@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full justify-center bg-white text-amber-950 dark:bg-[#000] dark:text-white">
-    <div class="flex transition-all">
+    <div class="flex transition-all" :inert="showModal">
       <!-- 桌面端菜单 -->
       <header
         v-if="!windowStore.isMobile"
@@ -39,18 +39,22 @@
     </div>
 
     <!-- 返回顶部按钮 -->
-    <div v-if="!windowStore.isMobile" class="fixed right-4 bottom-4 z-50">
+    <div v-if="!windowStore.isMobile" class="fixed right-4 bottom-4 z-11" :inert="showModal">
       <button
         @click="scrollToTop"
-        class="rounded-full bg-[#d4237a] p-2 text-white shadow-md transition-colors hover:bg-[#bf0e63]"
+        class="rounded-full bg-[#d4237a] p-2 text-white shadow-md transition-colors hover:cursor-pointer hover:bg-[#bf0e63]"
       >
         <ArrowUp />
       </button>
     </div>
 
     <!-- 模态框 -->
-    <transition name="fade-modal">
-      <ComposeModal v-if="showModal" @close="closeModal"></ComposeModal>
+    <transition name="modal-fade" mode="out-in">
+      <ComposeModal
+        v-if="showModal && currentModalType"
+        :modalType="currentModalType"
+        @close="closeModal"
+      ></ComposeModal>
     </transition>
   </div>
 </template>
@@ -89,31 +93,30 @@ const router = useRouter()
 const scrollRoot = ref<HTMLElement | null>(null)
 
 // 模态框
-const ComposeModal = defineAsyncComponent(() => import('@/components/composeModal/index.vue'))
+const ComposeModal = defineAsyncComponent(() => import('@/components/modal/index.vue'))
 const showModal = ref(false)
+const currentModalType = ref<string | null>(null)
 
+// 监听整个路由查询参数的变化
 watch(
-  () => ({ query: route.query }),
-  ({ query }) => {
-    // 通过查询参数 ?modal=compose 来控制模态框显示
-    if (query.modal === 'compose') {
+  () => route.query.modal,
+  (modalValue) => {
+    if (typeof modalValue === 'string' && modalValue) {
+      currentModalType.value = modalValue
       showModal.value = true
     } else {
       showModal.value = false
+      currentModalType.value = null
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
 
 // 关闭模态框
 const closeModal = () => {
-  showModal.value = false
-  // 如果是通过查询参数显示的模态框，移除查询参数
-  if (route.query.modal === 'compose') {
-    const query = { ...route.query }
-    delete query.modal
-    router.replace({ path: route.path, query })
-  }
+  const query = { ...route.query }
+  delete query.modal
+  router.replace({ path: route.path, query })
 }
 
 // 处理侧边栏动作
@@ -154,20 +157,23 @@ const scrollToTop = () => {
 </script>
 
 <style>
-/* 模态框组件从右边进入和离开的动画 */
-.fade-modal-enter-active,
-.fade-modal-leave-active {
+/* 模态框整体淡入淡出动画 */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
   transition: opacity 0.3s ease;
 }
-.fade-modal-enter-from,
-.fade-modal-leave-to {
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
   opacity: 0;
 }
-.fade-modal-enter-to,
-.fade-modal-leave-from {
+
+.modal-fade-enter-to,
+.modal-fade-leave-from {
   opacity: 1;
 }
 
+/* 移动端底部导航动画 */
 .slide-up-enter-active,
 .slide-up-leave-active {
   transition: transform 0.3s ease-out;

@@ -72,12 +72,10 @@ watch(
       } else if (
         ['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)
       ) {
-        setTimeout(() => {
-          scrollbarRef.value?.scrollTo({
-            top: windowStore.userProfileScrollTop,
-            behavior: 'auto',
-          })
-        }, 0)
+        scrollbarRef.value?.scrollTo({
+          top: windowStore.userProfileScrollTop,
+          behavior: 'auto',
+        })
       }
     })
   }

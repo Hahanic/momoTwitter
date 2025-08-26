@@ -1,0 +1,20 @@
+import express from 'express'
+const router = express.Router()
+
+import { getIdentifyingCode, getCurrentUser, register, login, logout } from '../controller/auth.js'
+import { protectAuthRoute } from '../middleware/authMiddleware.js'
+import { asyncHandler } from '../middleware/errorHandler.js'
+import { validateRegister, validateLogin } from '../middleware/validation.js'
+
+// 注册
+router.post('/register', validateRegister, asyncHandler(register))
+// 登录
+router.post('/login', validateLogin, asyncHandler(login))
+// 登出
+router.post('/logout', asyncHandler(logout))
+// 获取当前登录用户信息 完全靠cookie中的token
+router.get('/me', protectAuthRoute, asyncHandler(getCurrentUser))
+// 获取登录验证码
+router.get('/captcha', getIdentifyingCode)
+
+export default router

@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import useUserStore from './userUserStore.ts'
 
-import { apiLikePost, apiBookmarkPost, apiCreatePost, apiViewPost } from '@/api/index.ts'
+import { likePost, bookmarkPost, createPost, recordPostView } from '@/api/index.ts'
 import type { CreatePostPayload } from '@/types'
 
 const usePostInteractionStore = defineStore('postInteraction', () => {
@@ -51,7 +51,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     })
 
     try {
-      await apiLikePost(postId)
+      await likePost(postId)
     } catch (error) {
       // 失败回滚
       postCacheStore.updatePost(postId, {
@@ -98,7 +98,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     })
 
     try {
-      await apiBookmarkPost(postId)
+      await bookmarkPost(postId)
     } catch (error) {
       // 失败回滚
       postCacheStore.updatePost(postId, {
@@ -154,7 +154,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
   }
 
   // 回复
-  async function createReply(payload: CreatePostPayload) {
+  async function handleCreateReply(payload: CreatePostPayload) {
     if (!userStore.isAuthenticated) {
       throw new Error('用户未登录，无法回复')
     }
@@ -184,7 +184,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     })
 
     try {
-      const newReply = await apiCreatePost({ ...payload, postType: 'reply' })
+      const newReply = await createPost({ ...payload, postType: 'reply' })
       // 将新回复添加到缓存
       postCacheStore.addPost(newReply.newPost)
 
@@ -202,7 +202,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
   }
 
   // 创建新帖子
-  async function createPost(payload: CreatePostPayload) {
+  async function handleCreatePost(payload: CreatePostPayload) {
     if (!userStore.isAuthenticated) {
       throw new Error('用户未登录，无法发帖')
     }
@@ -214,7 +214,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     postingInProgress.value = true
 
     try {
-      const res = await apiCreatePost(payload)
+      const res = await createPost(payload)
 
       // 将新帖子添加到缓存
       postCacheStore.addPost(res.newPost)
@@ -230,7 +230,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
   // 浏览帖子
   async function viewPost(postId: string) {
     // if (!userStore.isAuthenticated) return
-    const res = await apiViewPost(postId)
+    const res = await recordPostView(postId)
     postCacheStore.updatePost(postId, {
       stats: { ...res.stats },
     })
@@ -267,8 +267,8 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     toggleLike,
     toggleBookmark,
     toggleRetweet,
-    createReply,
-    createPost,
+    handleCreateReply,
+    handleCreatePost,
     viewPost,
 
     // 状态检查方法

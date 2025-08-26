@@ -25,11 +25,11 @@
           />
         </n-form-item>
 
-        <n-form-item path="userInputCode" class="flex h-10">
+        <n-form-item path="recieveCode" class="flex h-10">
           <n-button size="large" style="margin-right: 10px; width: 7rem; font-size: 14px" @click="getCodethrottle">
             <span>{{ generatedCode || '获取验证码' }}</span>
           </n-button>
-          <n-input v-model:value="formValue.userInputCode" type="text" placeholder="请输入验证码" />
+          <n-input v-model:value="formValue.recieveCode" type="text" placeholder="请输入验证码" />
         </n-form-item>
         <n-form-item style="margin-top: 25px">
           <n-button type="primary" block @click="handleLogin"> 登录 </n-button>
@@ -65,7 +65,7 @@ import {
 import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
-import { getIdentifyingCode } from '@/api/index.ts'
+import { fetchCaptcha } from '@/api/index.ts'
 import btnTheme from '@/components/ui/ToggleThemeBtn.vue'
 import useUserStore from '@/stores/userUserStore'
 import { throttle } from '@/utils/index.ts'
@@ -91,7 +91,7 @@ const formRef = ref<FormInst | null>(null)
 const formValue = ref({
   email: '',
   password: '',
-  userInputCode: '',
+  recieveCode: '',
 })
 // 表单验证规则
 const rules: FormRules = {
@@ -130,7 +130,7 @@ const rules: FormRules = {
       trigger: ['blur', 'input'],
     },
   ],
-  userInputCode: [
+  recieveCode: [
     {
       required: true,
       message: '',
@@ -155,7 +155,7 @@ const generatedCode = ref<string>('')
 const btnCreateCode = async function () {
   try {
     loadingBar.start()
-    const res = await getIdentifyingCode()
+    const res = await fetchCaptcha()
     generatedCode.value = res.code
   } catch (err) {
     generatedCode.value = ''

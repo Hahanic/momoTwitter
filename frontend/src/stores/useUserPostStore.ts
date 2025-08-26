@@ -3,9 +3,9 @@ import { ref, computed } from 'vue'
 
 import usePostCacheStore from './usePostCacheStore'
 
-import { getUserCategoryPosts } from '@/api/index.ts'
+import { fetchUserPostsByCategory } from '@/api/index.ts'
 import { useUserStore } from '@/stores'
-import type { RecievePostPayload } from '@/types'
+import type { Post } from '@/types'
 
 type FeedCategory = 'posts' | 'replies' | 'likes' | 'bookmarks'
 
@@ -41,12 +41,10 @@ const useUserPostStore = defineStore('userPost', () => {
   })
 
   // 计算属性：通过缓存映射实际帖子
-  const posts = computed(() => postIds.value.map((id) => cache.getPost(id)).filter(Boolean) as RecievePostPayload[])
-  const replies = computed(() => replyIds.value.map((id) => cache.getPost(id)).filter(Boolean) as RecievePostPayload[])
-  const likes = computed(() => likeIds.value.map((id) => cache.getPost(id)).filter(Boolean) as RecievePostPayload[])
-  const bookmarks = computed(
-    () => bookmarkIds.value.map((id) => cache.getPost(id)).filter(Boolean) as RecievePostPayload[]
-  )
+  const posts = computed(() => postIds.value.map((id) => cache.getPost(id)).filter(Boolean) as Post[])
+  const replies = computed(() => replyIds.value.map((id) => cache.getPost(id)).filter(Boolean) as Post[])
+  const likes = computed(() => likeIds.value.map((id) => cache.getPost(id)).filter(Boolean) as Post[])
+  const bookmarks = computed(() => bookmarkIds.value.map((id) => cache.getPost(id)).filter(Boolean) as Post[])
 
   function getListRef(category: FeedCategory) {
     switch (category) {
@@ -88,7 +86,7 @@ const useUserPostStore = defineStore('userPost', () => {
     loadingMap.value[category] = true
     try {
       const cursor = cursors.value[category]
-      const res = await getUserCategoryPosts(category, username, cursor)
+      const res = await fetchUserPostsByCategory(category, username, cursor)
       cache.addPosts(res.posts)
       const newIds = res.posts.map((p) => p._id)
       // 去重（可能后端变化重复返回）

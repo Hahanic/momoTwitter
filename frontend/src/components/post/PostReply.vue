@@ -56,7 +56,7 @@ import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
 import { useImageSelection } from '@/composables/useImageSelection'
-import { uploadImages } from '@/composables/useMediaUpload'
+import { handleFileUpload } from '@/composables/useMediaUpload'
 import { usePostDetailStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
 import useWindowStore from '@/stores/useWindowStore'
@@ -118,14 +118,14 @@ const handlePosting = async () => {
 
       try {
         const files = selectedImages.value.map((i) => i.file)
-        mediaData = await uploadImages(files)
+        mediaData = await handleFileUpload(files)
       } catch (error: any) {
         message.error(error.message || '图片上传失败')
         throw error
       }
     }
 
-    await postDetailStore.createReply(messageContent.value, mediaData.length ? mediaData : undefined)
+    await postDetailStore.createAndAddPost(messageContent.value, mediaData.length ? mediaData : undefined)
     message.success('回复成功！')
     messageContent.value = '' // 清空输入框
     hasUserFocused.value = false // 收起工具栏

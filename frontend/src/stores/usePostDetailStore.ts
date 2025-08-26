@@ -4,8 +4,8 @@ import { ref, computed } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import usePostInteractionStore from './usePostInteractionStore.ts'
 
-import { getPostReplies as apiGetReplies } from '@/api'
-import type { RecievePostPayload } from '@/types'
+import { fetchPostReplies } from '@/api'
+import type { Post } from '@/types'
 
 const usePostDetailStore = defineStore('postDetail', () => {
   const postCacheStore = usePostCacheStore()
@@ -36,12 +36,12 @@ const usePostDetailStore = defineStore('postDetail', () => {
 
   // 计算属性：父帖子链（实际的帖子对象）
   const parentPosts = computed(() => {
-    return parentChain.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as RecievePostPayload[]
+    return parentChain.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
   })
 
   // 计算属性：回复列表（实际的帖子对象）
   const replies = computed(() => {
-    return replyIds.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as RecievePostPayload[]
+    return replyIds.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
   })
 
   // 加载帖子详情
@@ -87,7 +87,7 @@ const usePostDetailStore = defineStore('postDetail', () => {
   async function getParentPosts(startParentId: string) {
     try {
       const chain: string[] = []
-      const posts: RecievePostPayload[] = []
+      const posts: Post[] = []
       let currentParentId: string | undefined = startParentId
 
       while (currentParentId) {
@@ -130,7 +130,7 @@ const usePostDetailStore = defineStore('postDetail', () => {
     isLoadingReplies.value = true
 
     try {
-      const response = await apiGetReplies(currentPostId.value, repliesCursor.value)
+      const response = await fetchPostReplies(currentPostId.value, repliesCursor.value)
 
       // 将回复添加到缓存
       postCacheStore.addPosts(response.replies)
@@ -157,14 +157,14 @@ const usePostDetailStore = defineStore('postDetail', () => {
     }
   }
 
-  // 发送回复
-  async function createReply(content: string, media?: { type: 'image' | 'video' | 'gif'; url: string }[]) {
+  // 创建新回复并添加到回复列表顶部
+  async function createAndAddPost(content: string, media?: { type: 'image' | 'video' | 'gif'; url: string }[]) {
     if (!currentPostId.value) {
       throw new Error('当前帖子不存在')
     }
 
     try {
-      const newReply = await interactionStore.createReply({
+      const newReply = await interactionStore.handleCreateReply({
         postType: 'reply',
         parentPostId: currentPostId.value,
         content,
@@ -208,7 +208,7 @@ const usePostDetailStore = defineStore('postDetail', () => {
     loadPostDetail,
     loadReplies,
     getParentPosts,
-    createReply,
+    createAndAddPost,
     resetState,
   }
 })

@@ -8,6 +8,7 @@ import express from 'express'
 import { connectDB } from './db/index.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
 import { cleanupOnErrorMiddleware } from './middleware/upload.js'
+import authRoutes from './routes/authRoutes.js'
 import postRoutes from './routes/postRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 import userRoutes from './routes/userRoutes.js'
@@ -39,8 +40,9 @@ app.use(
 )
 
 // 路由
-app.use('/api/user', userRoutes)
-app.use('/api/post', postRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/posts', postRoutes)
 app.use('/api/upload', uploadRoutes)
 
 // 错误处理中间件

@@ -4,8 +4,8 @@ import { ref, computed } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import usePostInteractionStore from './usePostInteractionStore.ts'
 
-import { getPosts as apiGetPosts } from '@/api'
-import type { RecievePostPayload } from '@/types'
+import { fetchPosts } from '@/api'
+import type { Post } from '@/types'
 
 const usePostFeedStore = defineStore('postFeed', () => {
   const postCacheStore = usePostCacheStore()
@@ -22,7 +22,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
 
   // 计算属性：实际的帖子列表
   const posts = computed(() => {
-    return postIds.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as RecievePostPayload[]
+    return postIds.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
   })
 
   // 计算属性：加载状态统计
@@ -46,7 +46,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
       // 重置数据
       resetFeed()
 
-      const response = await apiGetPosts(null)
+      const response = await fetchPosts(null)
 
       // 将帖子添加到缓存
       postCacheStore.addPosts(response.posts)
@@ -76,7 +76,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
     isLoading.value = true
 
     try {
-      const response = await apiGetPosts(nextCursor.value)
+      const response = await fetchPosts(nextCursor.value)
 
       // 将新帖子添加到缓存
       postCacheStore.addPosts(response.posts)
@@ -103,7 +103,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
     isRefreshing.value = true
 
     try {
-      const response = await apiGetPosts(null)
+      const response = await fetchPosts(null)
 
       // 将帖子添加到缓存
       postCacheStore.addPosts(response.posts)
@@ -125,9 +125,9 @@ const usePostFeedStore = defineStore('postFeed', () => {
   }
 
   // 创建新帖子并添加到流顶部
-  async function createAndAddPost(payload: Parameters<typeof interactionStore.createPost>[0]) {
+  async function createAndAddPost(payload: Parameters<typeof interactionStore.handleCreatePost>[0]) {
     try {
-      const newPost = await interactionStore.createPost(payload)
+      const newPost = await interactionStore.handleCreatePost(payload)
 
       // 如果是标准帖子，添加到流的顶部
       if (newPost.postType === 'standard') {

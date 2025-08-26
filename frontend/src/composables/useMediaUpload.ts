@@ -1,4 +1,4 @@
-import { apiUploadImage, apiUploadImages } from '@/api'
+import { uploadImage, uploadImages } from '@/api'
 
 export type MediaType = 'image' | 'video' | 'gif'
 
@@ -10,7 +10,7 @@ export interface UploadedMedia {
 /**
  * 统一上传图片（单图/多图），返回标准化的媒体数据
  */
-export async function uploadImages(files: File[]): Promise<UploadedMedia[]> {
+export async function handleFileUpload(files: File[]): Promise<UploadedMedia[]> {
   if (!files || files.length === 0) return []
 
   if (files.length === 1) {
@@ -18,7 +18,7 @@ export async function uploadImages(files: File[]): Promise<UploadedMedia[]> {
     formData.append('image', files[0])
 
     try {
-      const res = await apiUploadImage(formData)
+      const res = await uploadImage(formData)
       return [
         {
           type: 'image',
@@ -35,7 +35,7 @@ export async function uploadImages(files: File[]): Promise<UploadedMedia[]> {
   for (const f of files) formData.append('images', f)
 
   try {
-    const res = await apiUploadImages(formData)
+    const res = await uploadImages(formData)
     return res.files.map((file: { relativePath: string }) => ({
       type: 'image' as const,
       url: file.relativePath,

@@ -1,64 +1,62 @@
 import axiosInstance from './axiosInstance'
 
 import {
-  type userLoginData,
-  type userRegisterData,
-  type recieveCode,
+  type LoginPayload,
+  type RegisterPayload,
+  type CaptchaResponse,
   type CreatePostPayload,
-  type RecievePostPayload,
-  type getPost,
-  type getPostReply,
+  type Post,
+  type PaginatedPostsResponse,
+  type PostRepliesResponse,
   type UserProfile,
   type PostStats,
 } from '@/types'
 
 // 检查用户登录状态，靠自动发送的cookie
-export const getCurrentUser = (): Promise<{ message: string; userProfile: UserProfile }> => {
-  return axiosInstance.get('/user/getCurrentUser')
-}
-
-// 用户登录
-export const userLogin = (userLoginData: userLoginData) => {
-  return axiosInstance.post('/user/login', userLoginData)
-}
-
-// 用户退出登录
-export const userLogout = () => {
-  return axiosInstance.post('/user/logout')
-}
-
-// 登录验证码
-export const getIdentifyingCode = (): Promise<recieveCode> => {
-  return axiosInstance.get('/user/getIdentifyingCode')
+export const fetchCurrentUser = (): Promise<{ message: string; userProfile: UserProfile }> => {
+  return axiosInstance.get('/auth/me')
 }
 
 // 用户注册
-export const userRegister = (userRegisterData: userRegisterData) => {
-  return axiosInstance.post('/user/register', userRegisterData)
+export const registerUser = (userRegisterData: RegisterPayload) => {
+  return axiosInstance.post('/auth/register', userRegisterData)
+}
+
+// 用户登录
+export const loginUser = (userLoginData: LoginPayload) => {
+  return axiosInstance.post('/auth/login', userLoginData)
+}
+
+// 用户退出登录
+export const logoutUser = () => {
+  return axiosInstance.post('/auth/logout')
+}
+
+// 登录验证码
+export const fetchCaptcha = (): Promise<CaptchaResponse> => {
+  return axiosInstance.get('/auth/captcha')
 }
 
 // 获取用户信息
-export const getUserProfile = (
+export const fetchUserByUsername = (
   username: string
 ): Promise<{ message: string; userProfile: UserProfile & { isFollowing?: boolean } }> => {
-  return axiosInstance.get(`/user/profile/${username}`)
+  return axiosInstance.get(`/users/${username}`)
 }
 
 // 用户发帖
-export const apiCreatePost = (
-  payload: CreatePostPayload
-): Promise<{ message: string; newPost: RecievePostPayload }> => {
-  return axiosInstance.post('/post/create', payload)
+export const createPost = (payload: CreatePostPayload): Promise<{ message: string; newPost: Post }> => {
+  return axiosInstance.post('/posts', payload)
 }
 
 // 获取单条帖子
-export const apiGetOnePost = (postId: string): Promise<RecievePostPayload> => {
-  return axiosInstance.get(`/post/${postId}/get`)
+export const fetchPostById = (postId: string): Promise<Post> => {
+  return axiosInstance.get(`/posts/${postId}`)
 }
 
 // 主页加载帖子
-export const getPosts = (cursor: string | null = null, limit: number = 10): Promise<getPost> => {
-  return axiosInstance.get('/post/getPost', {
+export const fetchPosts = (cursor: string | null = null, limit: number = 10): Promise<PaginatedPostsResponse> => {
+  return axiosInstance.get('/posts', {
     params: {
       cursor,
       limit,
@@ -67,12 +65,12 @@ export const getPosts = (cursor: string | null = null, limit: number = 10): Prom
 }
 
 // 获取帖子回复
-export const getPostReplies = (
+export const fetchPostReplies = (
   postId: string,
   cursor: string | null = null,
   limit: number = 10
-): Promise<getPostReply> => {
-  return axiosInstance.get(`/post/${postId}/replies`, {
+): Promise<PostRepliesResponse> => {
+  return axiosInstance.get(`/posts/${postId}/replies`, {
     params: {
       cursor,
       limit,
@@ -81,20 +79,18 @@ export const getPostReplies = (
 }
 
 // 获取reply帖子的parentPost
-export const getReplyParentPost = (
-  replyId: string
-): Promise<{ message: string; resultParentPosts: RecievePostPayload[] }> => {
-  return axiosInstance.get(`/post/${replyId}/parent`)
+export const fetchReplyParent = (replyId: string): Promise<{ message: string; resultParentPosts: Post[] }> => {
+  return axiosInstance.get(`/posts/${replyId}/parent`)
 }
 
 // 获取某用户主页的帖子
-export const getUserCategoryPosts = (
+export const fetchUserPostsByCategory = (
   category: string,
   username: string,
   cursor: string | null = null,
   limit: number = 10
-): Promise<getPost> => {
-  return axiosInstance.get(`/post/${username}/category`, {
+): Promise<PaginatedPostsResponse> => {
+  return axiosInstance.get(`/posts/${username}/category`, {
     params: {
       category,
       cursor,
@@ -104,29 +100,29 @@ export const getUserCategoryPosts = (
 }
 
 // 点赞帖子
-export const apiLikePost = (postId: string): Promise<{ message: string; isLiked: boolean; likesCount: number }> => {
-  return axiosInstance.post(`/post/${postId}/like`)
+export const likePost = (postId: string): Promise<{ message: string; isLiked: boolean; likesCount: number }> => {
+  return axiosInstance.post(`/posts/${postId}/likes`)
 }
 
 // 收藏帖子
-export const apiBookmarkPost = (
+export const bookmarkPost = (
   postId: string
 ): Promise<{ message: string; isBookmarked: boolean; bookmarksCount: number }> => {
-  return axiosInstance.post(`/post/${postId}/bookmark`)
+  return axiosInstance.post(`/posts/${postId}/bookmarks`)
 }
 
 // 浏览帖子
-export const apiViewPost = (
+export const recordPostView = (
   postId: string
 ): Promise<{
   message: string
   stats: PostStats
 }> => {
-  return axiosInstance.post(`/post/${postId}/view`)
+  return axiosInstance.post(`/posts/${postId}/views`)
 }
 
 // 上传单张图片
-export const apiUploadImage = (
+export const uploadImage = (
   formData: FormData
 ): Promise<{
   message: string
@@ -144,7 +140,7 @@ export const apiUploadImage = (
   })
 }
 // 上传多张图片
-export const apiUploadImages = (
+export const uploadImages = (
   formData: FormData
 ): Promise<{
   message: string

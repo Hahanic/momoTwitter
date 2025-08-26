@@ -67,7 +67,7 @@ import Avatar from '@/components/post/Avatar.vue'
 import PostAction from '@/components/post/PostAction.vue'
 // import ImagePreview from '@/components/ui/ImagePreview.vue'
 import { usePostInteractionStore } from '@/stores'
-import { type RecievePostPayload } from '@/types'
+import { type Post } from '@/types'
 import { formatDate } from '@/utils'
 
 const router = useRouter()
@@ -75,7 +75,7 @@ const postInteractionStore = usePostInteractionStore()
 const message = useMessage()
 
 const props = defineProps<{
-  post: RecievePostPayload
+  post: Post
   type: 'post' | 'reply' | 'parent'
 }>()
 
@@ -99,7 +99,7 @@ const handlePostBookmark = async () => {
 }
 
 // 点击帖子进入详情页
-const handlePostClick = (post: RecievePostPayload) => {
+const handlePostClick = (post: Post) => {
   postInteractionStore.viewPost(post._id)
   router.push({
     name: 'PostDetail',

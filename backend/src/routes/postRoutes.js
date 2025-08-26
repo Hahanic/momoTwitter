@@ -15,24 +15,22 @@ import {
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
 
-// api/post
-
 // 主页加载帖子
-router.get('/getPost', asyncHandler(getPost))
+router.get('/', asyncHandler(getPost))
+// 新建帖子和回复
+router.post('/', protectAuthRoute, asyncHandler(createPost))
 // 获取单条帖子
-router.get('/:postId/get', asyncHandler(getOnePost))
+router.get('/:postId', asyncHandler(getOnePost))
 // 获取回复
 router.get('/:postId/replies', asyncHandler(getPostReplies))
 // 获取父帖子
 router.get('/:postId/parent', asyncHandler(getReplyParentPost))
-// 新建帖子和回复
-router.post('/create', protectAuthRoute, asyncHandler(createPost))
 // 点赞帖子/回复
-router.post('/:postId/like', protectAuthRoute, asyncHandler(likePost))
-// 收藏帖子/回复
-router.post('/:postId/bookmark', protectAuthRoute, asyncHandler(bookmarkPost))
+router.post('/:postId/likes', protectAuthRoute, asyncHandler(likePost))
+// 收藏帖子
+router.post('/:postId/bookmarks', protectAuthRoute, asyncHandler(bookmarkPost))
 // 增加帖子浏览数
-router.post('/:postId/view', viewPost)
+router.post('/:postId/views', viewPost)
 // 获取某用户主页的帖子
 router.get('/:username/category', asyncHandler(getUserCategoryPosts))
 

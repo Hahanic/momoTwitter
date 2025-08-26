@@ -81,12 +81,12 @@
 import { ref } from 'vue'
 
 import { useWindowStore } from '@/stores'
-import { type RecievePostPayload } from '@/types'
+import { type Post } from '@/types'
 
 const windowStore = useWindowStore()
 
 defineProps<{
-  post: RecievePostPayload
+  post: Post
 }>()
 
 // 图片预览相关状态

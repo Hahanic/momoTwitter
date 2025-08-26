@@ -1,18 +1,18 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-import { apiGetOnePost } from '@/api'
-import type { RecievePostPayload } from '@/types'
+import { fetchPostById } from '@/api'
+import type { Post } from '@/types'
 
 const usePostCacheStore = defineStore('postCache', () => {
   // (key: postId, value: post)
-  const posts = ref(new Map<string, RecievePostPayload>())
+  const posts = ref(new Map<string, Post>())
 
   // 计算属性：缓存大小
   const cacheSize = computed(() => posts.value.size)
 
   // 从缓存中获取帖子
-  function getPost(postId: string): RecievePostPayload | undefined {
+  function getPost(postId: string): Post | undefined {
     return posts.value.get(postId)
   }
 
@@ -22,19 +22,19 @@ const usePostCacheStore = defineStore('postCache', () => {
   }
 
   // 将一批帖子添加到缓存
-  function addPosts(postsToAdd: RecievePostPayload[]) {
+  function addPosts(postsToAdd: Post[]) {
     for (const post of postsToAdd) {
       posts.value.set(post._id, post)
     }
   }
 
   // 添加单个帖子到缓存
-  function addPost(post: RecievePostPayload) {
+  function addPost(post: Post) {
     posts.value.set(post._id, post)
   }
 
   // 更新单个帖子
-  function updatePost(postId: string, updatedData: Partial<RecievePostPayload>) {
+  function updatePost(postId: string, updatedData: Partial<Post>) {
     const post = posts.value.get(postId)
     if (post) {
       Object.assign(post, updatedData)
@@ -48,13 +48,13 @@ const usePostCacheStore = defineStore('postCache', () => {
   }
 
   // 确保帖子存在并返回帖子，如果不存在则从API获取并存入缓存
-  async function fetchPostIfNotExists(postId: string): Promise<RecievePostPayload> {
+  async function fetchPostIfNotExists(postId: string): Promise<Post> {
     const existingPost = getPost(postId)
     if (existingPost) {
       return existingPost
     }
 
-    const newPost = await apiGetOnePost(postId)
+    const newPost = await fetchPostById(postId)
     addPost(newPost)
     return newPost
   }
@@ -65,12 +65,12 @@ const usePostCacheStore = defineStore('postCache', () => {
   }
 
   // 根据条件过滤缓存中的帖子
-  function findPosts(predicate: (post: RecievePostPayload) => boolean): RecievePostPayload[] {
+  function findPosts(predicate: (post: Post) => boolean): Post[] {
     return Array.from(posts.value.values()).filter(predicate)
   }
 
   // 获取所有缓存的帖子
-  function getAllPosts(): RecievePostPayload[] {
+  function getAllPosts(): Post[] {
     return Array.from(posts.value.values())
   }
 

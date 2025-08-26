@@ -37,7 +37,7 @@ import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
 import { useImageSelection } from '@/composables/useImageSelection'
-import { uploadImages } from '@/composables/useMediaUpload'
+import { handleFileUpload } from '@/composables/useMediaUpload'
 import { usePostFeedStore, usePostInteractionStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
 
@@ -98,7 +98,7 @@ const handlePosting = async () => {
 
       try {
         const files = selectedImages.value.map((i) => i.file)
-        mediaData = await uploadImages(files)
+        mediaData = await handleFileUpload(files)
       } catch (error: any) {
         message.error(error.message || '图片上传失败')
         throw error

@@ -1,18 +1,18 @@
 // 用户登录
-export interface userLoginData {
+export interface LoginPayload {
   email: string
   password: string
-  userInputCode: string
+  recieveCode: string
 }
 
 // 用户登录时获取验证码
-export interface recieveCode {
+export interface CaptchaResponse {
   code: string
   message: string
 }
 
 // 用户注册
-export interface userRegisterData {
+export interface RegisterPayload {
   email: string
   password: string
   emailCode: string
@@ -49,7 +49,7 @@ export interface PostStats {
 }
 
 // 帖子
-export interface RecievePostPayload {
+export interface Post {
   _id: string
   authorId: string
   content: string
@@ -84,16 +84,16 @@ export interface RecievePostPayload {
 }
 
 // 主页加载帖子
-export interface getPost {
-  posts: RecievePostPayload[]
+export interface PaginatedPostsResponse {
+  posts: Post[]
   nextCursor: string | null
 }
 
 // 获取帖子回复
-export interface getPostReply {
-  replies: RecievePostPayload[]
+export interface PostRepliesResponse {
+  replies: Post[]
   nextCursor: string | null
-  parentPost: RecievePostPayload
+  parentPost: Post
 }
 
 // 前端发送帖子

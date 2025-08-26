@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { userRegister, userLogin, userLogout, getCurrentUser, getUserProfile } from '@/api/index.ts'
+import { registerUser, loginUser, logoutUser, fetchCurrentUser, fetchUserByUsername } from '@/api/index.ts'
 import { useUserPostStore } from '@/stores'
-import { type UserProfile, type userLoginData, type userRegisterData } from '@/types'
+import { type UserProfile, type LoginPayload, type RegisterPayload } from '@/types'
 
 const USER_STORAGE_KEY = 'user_profile'
 
@@ -29,7 +29,7 @@ const useUserStore = defineStore('user', () => {
   // 检查/更新用户登录信息
   async function checkCurrentUser() {
     try {
-      const res = await getCurrentUser()
+      const res = await fetchCurrentUser()
       if (!res) {
         throw new Error('从服务器返回的数据格式不正确')
       }
@@ -41,10 +41,10 @@ const useUserStore = defineStore('user', () => {
   }
 
   // 登录方法
-  async function login(params: userLoginData) {
+  async function login(params: LoginPayload) {
     try {
       isLogining.value = true
-      const res: any = await userLogin(params)
+      const res: any = await loginUser(params)
       const userData = res.user
       if (!res.user) {
         throw new Error('从服务器返回的数据格式不正确')
@@ -57,10 +57,10 @@ const useUserStore = defineStore('user', () => {
     }
   }
   // 注册方法
-  async function register(params: userRegisterData) {
+  async function register(params: RegisterPayload) {
     try {
       isRegistering.value = true
-      const res: any = await userRegister(params)
+      const res: any = await registerUser(params)
       const userData = res.user
       if (!res.user) {
         throw new Error('从服务器返回的数据格式不正确')
@@ -77,7 +77,7 @@ const useUserStore = defineStore('user', () => {
     try {
       user.value = null
       localStorage.removeItem(USER_STORAGE_KEY)
-      await userLogout()
+      await logoutUser()
     } catch (err) {
       throw err
     } finally {
@@ -104,7 +104,7 @@ const useUserStore = defineStore('user', () => {
     try {
       // 清空上一次用户帖子相关数据
       userPostStore.resetAll()
-      const res = await getUserProfile(username)
+      const res = await fetchUserByUsername(username)
       currentUserProfile.value = res.userProfile
       isFollowing.value = !!res.userProfile.isFollowing
     } catch (err) {

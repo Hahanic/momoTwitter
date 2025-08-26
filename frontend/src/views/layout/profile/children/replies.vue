@@ -3,10 +3,10 @@
     <div v-for="post in userPostStore.replies" :key="post._id">
       <div v-if="parentChains[post._id] && parentChains[post._id].length">
         <div v-for="parent in parentChains[post._id]" :key="parent._id">
-          <Post type="parent" :post="parent" />
+          <PostComponent type="parent" :post="parent" />
         </div>
       </div>
-      <Post type="post" :post="post" />
+      <PostComponent type="post" :post="post" />
     </div>
   </div>
 </template>
@@ -14,8 +14,9 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
-import Post from '@/components/post/index.vue'
-import { useUserPostStore, useUserStore, usePostDetailStore, type RecievePostPayload } from '@/stores'
+import PostComponent from '@/components/post/index.vue'
+import { useUserPostStore, useUserStore, usePostDetailStore } from '@/stores'
+import { type Post } from '@/types'
 
 const userPostStore = useUserPostStore()
 const postDetailStore = usePostDetailStore()
@@ -23,7 +24,7 @@ const userStore = useUserStore()
 const route = useRoute()
 
 // 存储每个回复的父帖子链
-const parentChains = ref<Record<string, RecievePostPayload[]>>({})
+const parentChains = ref<Record<string, Post[]>>({})
 
 // 为回复加载父帖子链
 async function loadParentChains() {

@@ -23,4 +23,4 @@ export { default as useUserStore } from './userUserStore'
 export { default as useThemeStore } from './useThemeStore'
 export { default as useWindowStore } from './useWindowStore'
 
-export type { RecievePostPayload, CreatePostPayload, UserProfile } from '@/types'
+export type { Post, CreatePostPayload, UserProfile } from '@/types'

@@ -3,7 +3,7 @@ import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
 import User from '../db/model/User.js'
 import { PostService } from '../services/postService.js'
-import { verifyUserToken, parseCursor, sendResponse, transformMediaUrls, getFullUrl } from '../utils/index.js'
+import { verifyUserToken, parseCursor, sendResponse } from '../utils/index.js'
 
 // 发送帖子
 export const createPost = async (req, res) => {
@@ -71,11 +71,6 @@ export const createPost = async (req, res) => {
       isBookmarked: false,
       isRetweeted: false,
     },
-    media: transformMediaUrls(newPost.media, req), // 转换媒体URL为完整URL
-    authorInfo: {
-      ...newPost.authorInfo,
-      avatarUrl: getFullUrl(newPost.authorInfo?.avatarUrl, req),
-    },
   }
 
   sendResponse(res, 201, '成功', { newPost: responsePayload })
@@ -102,12 +97,6 @@ export const getOnePost = async (req, res) => {
     } catch (error) {
       // Token 错误时忽略，返回不带交互信息的帖子
     }
-  }
-
-  // 转换媒体URL为完整URL
-  post.media = transformMediaUrls(post.media, req)
-  if (post.authorInfo) {
-    post.authorInfo.avatarUrl = getFullUrl(post.authorInfo.avatarUrl, req)
   }
 
   sendResponse(res, 200, '获取帖子成功', post)
@@ -148,16 +137,6 @@ export const getPost = async (req, res) => {
       // Token 错误时忽略，返回不带交互信息的帖子
     }
   }
-
-  // 转换媒体URL为完整URL
-  results = results.map((post) => ({
-    ...post,
-    media: transformMediaUrls(post.media, req),
-    authorInfo: {
-      ...post.authorInfo,
-      avatarUrl: getFullUrl(post.authorInfo?.avatarUrl, req),
-    },
-  }))
 
   sendResponse(res, 200, '获取帖子列表成功', { posts: results, nextCursor })
 }
@@ -206,27 +185,7 @@ export const getPostReplies = async (req, res) => {
     }
   }
 
-  // 转换媒体URL为完整URL
-  results = results.map((reply) => ({
-    ...reply,
-    media: transformMediaUrls(reply.media, req),
-    authorInfo: {
-      ...reply.authorInfo,
-      avatarUrl: getFullUrl(reply.authorInfo?.avatarUrl, req),
-    },
-  }))
-
-  // 转换父帖子的媒体URL
-  const transformedParentPost = {
-    ...parentPost.toObject(),
-    media: transformMediaUrls(parentPost.media, req),
-    authorInfo: {
-      ...parentPost.authorInfo,
-      avatarUrl: getFullUrl(parentPost.authorInfo?.avatarUrl, req),
-    },
-  }
-
-  sendResponse(res, 200, '获取回复成功', { replies: results, nextCursor, parentPost: transformedParentPost })
+  sendResponse(res, 200, '获取回复成功', { replies: results, nextCursor, parentPost })
 }
 
 // 获取帖子的parentPost
@@ -294,16 +253,6 @@ export const getReplyParentPost = async (req, res) => {
       // Token 错误时忽略，返回不带交互信息的帖子
     }
   }
-
-  // 转换媒体URL为完整URL
-  resultParentPosts = resultParentPosts.map((post) => ({
-    ...post,
-    media: transformMediaUrls(post.media, req),
-    authorInfo: {
-      ...post.authorInfo,
-      avatarUrl: getFullUrl(post.authorInfo?.avatarUrl, req),
-    },
-  }))
 
   sendResponse(res, 200, '获取父帖子成功', { resultParentPosts })
 }
@@ -417,17 +366,7 @@ export const getUserCategoryPosts = async (req, res) => {
     const { posts, nextCursor } = await fetcher(user._id, cursorDate, limit)
     const decorated = await PostService.decorateWithInteractionsIfNeeded(req, posts)
 
-    // 转换媒体URL为完整URL
-    const transformedPosts = decorated.map((post) => ({
-      ...post,
-      media: transformMediaUrls(post.media, req),
-      authorInfo: {
-        ...post.authorInfo,
-        avatarUrl: getFullUrl(post.authorInfo?.avatarUrl, req),
-      },
-    }))
-
-    return sendResponse(res, 200, '获取用户帖子成功', { posts: transformedPosts, nextCursor })
+    return sendResponse(res, 200, '获取用户帖子成功', { posts: decorated, nextCursor })
   } catch (e) {
     return sendResponse(res, 500, '获取用户帖子失败', { error: e.message })
   }

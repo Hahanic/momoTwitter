@@ -4,6 +4,7 @@ const router = express.Router()
 import { uploadPostImage, uploadPostImages } from '../controller/upload.js'
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
+import upload from '../middleware/upload.js'
 
 // api/upload
 
@@ -11,10 +12,11 @@ import { asyncHandler } from '../middleware/errorHandler.js'
 router.post(
   '/image',
   protectAuthRoute, // 认证
+  upload.single('image'),
   asyncHandler(uploadPostImage)
 )
 
 // 上传多张图片
-router.post('/images', protectAuthRoute, asyncHandler(uploadPostImages))
+router.post('/images', protectAuthRoute, upload.array('images', 4), asyncHandler(uploadPostImages))
 
 export default router

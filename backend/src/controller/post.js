@@ -7,6 +7,10 @@ import { verifyUserToken, parseCursor, sendResponse } from '../utils/index.js'
 
 // 发送帖子
 export const createPost = async (req, res) => {
+  // ==================> 在这里添加调试代码 <==================
+  console.log(JSON.stringify(req.body, null, 2))
+  console.log('----------------------------------------------------')
+  // =============================================================
   const authorId = req.user.id
   const { content, postType, media, parentPostId, quotedPostId, visibility } = req.body
 

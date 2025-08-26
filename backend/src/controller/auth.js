@@ -9,7 +9,6 @@ export const getCurrentUser = async (req, res) => {
   if (!user) {
     return sendResponse(res, 404, '用户未找到')
   }
-
   const userToReturn = user.toObject()
   delete userToReturn.password
 

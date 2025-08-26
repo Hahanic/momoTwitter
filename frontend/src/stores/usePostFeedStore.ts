@@ -150,23 +150,6 @@ const usePostFeedStore = defineStore('postFeed', () => {
     isRefreshing.value = false
   }
 
-  // 预加载帖子详情（用于优化用户体验）
-  async function preloadPostDetails(count: number = 5) {
-    const visiblePostIds = postIds.value.slice(0, count)
-
-    for (const postId of visiblePostIds) {
-      const post = postCacheStore.getPost(postId)
-      if (post && post.postType === 'reply' && post.parentPostId) {
-        // 预加载父帖子
-        try {
-          await postCacheStore.fetchPostIfNotExists(post.parentPostId)
-        } catch (error) {
-          console.warn(`预加载父帖子失败 ${post.parentPostId}:`, error)
-        }
-      }
-    }
-  }
-
   return {
     // 状态
     postIds,
@@ -184,9 +167,6 @@ const usePostFeedStore = defineStore('postFeed', () => {
     refreshPosts,
     createAndAddPost,
     resetFeed,
-
-    // 优化方法
-    preloadPostDetails,
   }
 })
 

@@ -4,7 +4,7 @@
     <div class="mx-2 mt-2 flex h-[3rem] w-[3rem] items-center justify-center">
       <Avatar
         :username="userStore.user?.username"
-        :src="userStore.user?.avatarUrl || '/myAvatar.jpg'"
+        :src="userStore.user?.avatarUrl || '/cat.svg'"
         container-class="h-[3rem] w-[3rem]"
       />
     </div>

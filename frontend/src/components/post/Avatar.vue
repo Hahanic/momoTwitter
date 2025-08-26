@@ -5,7 +5,7 @@
   >
     <img
       @click.stop="handleAvatarClick"
-      :src="src || '/myAvatar.jpg'"
+      :src="src || '/cat.svg'"
       :alt="alt"
       class="h-full w-full rounded-full object-cover transition-transform duration-300 ease-in-out select-none group-hover:scale-110 group-hover:-rotate-8"
     />

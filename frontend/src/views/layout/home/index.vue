@@ -22,6 +22,7 @@
       <Posts v-for="post in feedStore.posts" :post="post" :type="'post'" :key="post._id" />
       <div ref="observerEl" class="my-20 flex w-full items-center justify-center">
         <LoaderIcon v-if="feedStore.isLoading" :class="{ 'animate-spin': feedStore.isLoading }" :size="26" />
+        <div v-else-if="!canLoadMore && feedStore.posts.length > 0" class="text-sm text-gray-500">没有更多内容了</div>
       </div>
     </div>
   </MainContainer>
@@ -59,7 +60,7 @@
 <script setup lang="ts">
 import { LoaderIcon } from 'lucide-vue-next'
 import { NScrollbar } from 'naive-ui'
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 
 import AsideContent from '@/components/layout/AsideContent.vue'
 import RankItem from '@/components/layout/RankItem.vue'
@@ -69,6 +70,7 @@ import StickyHead from '@/components/layout/StickyHead.vue'
 import Posts from '@/components/post/index.vue'
 import PostCreate from '@/components/post/PostCreate.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { usePostFeedStore } from '@/stores'
 
 const feedStore = usePostFeedStore()
@@ -97,47 +99,26 @@ const refreshPosts = async () => {
   }
 }
 
-// 滚动加载帖子
-const observerEl = ref<HTMLElement | null>(null)
-const scrollRoot = ref<HTMLElement | null>(null)
-let observer: IntersectionObserver | null = null
+// 滚动容器引用
+const scrollContainerRef = ref<HTMLElement | null>(null)
+
+// 使用无限滚动组合式函数
+const { targetEl: observerEl, canLoadMore } = useInfiniteScroll({
+  loadMore: loadMorePosts,
+  isLoading: computed(() => feedStore.isLoading),
+  hasMore: computed(() => feedStore.hasMore),
+  scrollContainerRef,
+  rootMargin: '0px 0px 200px 0px',
+  debounceMs: 300, // 300ms防抖
+})
+
 onMounted(async () => {
-  scrollRoot.value = document.querySelector('.n-scrollbar-container')
+  // 获取滚动容器
+  scrollContainerRef.value = document.querySelector('.n-scrollbar-container')
 
   // 首次加载
   if (feedStore.posts.length === 0) {
     await loadInitialPosts()
-  }
-
-  // 预加载前几个帖子的详情以优化体验
-  setTimeout(() => {
-    if (feedStore.posts.length > 0) {
-      feedStore.preloadPostDetails(3)
-    }
-  }, 1000)
-})
-// 其实放进onMounted也行，不过这样更健壮
-watch([scrollRoot, observerEl], ([rootElement, targetElement]) => {
-  if (observer) {
-    observer.disconnect()
-  }
-  if (rootElement && targetElement) {
-    const options = {
-      root: rootElement,
-      rootMargin: '0px 0px 0px 0px',
-      threshold: 0,
-    }
-    observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && feedStore.hasMore && !feedStore.isLoading) {
-        loadMorePosts()
-      }
-    }, options)
-    observer.observe(targetElement)
-  }
-})
-onUnmounted(() => {
-  if (observer) {
-    observer.disconnect()
   }
 })
 </script>

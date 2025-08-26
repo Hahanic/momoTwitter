@@ -3,7 +3,7 @@
     <!-- 用户信息 -->
     <div v-if="userStore.isAuthenticated">
       <div class="flex h-[6rem] items-center">
-        <img :src="userStore.user?.avatarUrl || '/myAvatar.jpg'" class="h-full w-[6rem] rounded-full object-cover" />
+        <img :src="userStore.user?.avatarUrl || '//cat.svg'" class="h-full w-[6rem] rounded-full object-cover" />
         <div class="ml-4 flex h-full flex-col justify-center">
           <span>{{ userStore.user?.displayName }}</span>
           <span>@{{ userStore.user?.username }}</span>

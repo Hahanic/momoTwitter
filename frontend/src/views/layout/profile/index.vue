@@ -34,17 +34,14 @@
       <div v-else-if="currentUserProfile" class="flex flex-col">
         <!-- 顶部banner -->
         <div class="h-40 w-full bg-gray-200 dark:bg-gray-800">
-          <img class="h-full w-full object-cover" :src="currentUserProfile.bannerUrl || '/10.gif'" />
+          <img class="h-full w-full object-cover" :src="currentUserProfile.bannerUrl || '/banner.gif'" />
         </div>
         <!-- 头像和按钮 -->
         <div class="flex w-full justify-between px-4">
           <div
-            class="-mt-15 flex h-30 w-30 items-center justify-center rounded-full border-4 border-white bg-gray-300 dark:border-black dark:bg-gray-700"
+            class="-mt-15 flex h-30 w-30 items-center justify-center rounded-full border-4 border-white bg-gray-100 dark:border-black dark:bg-gray-900"
           >
-            <img
-              class="h-full w-full rounded-full object-cover"
-              :src="currentUserProfile.avatarUrl || '/myAvatar.jpg'"
-            />
+            <img class="h-full w-full rounded-full object-cover" :src="currentUserProfile.avatarUrl || '/cat.svg'" />
           </div>
           <div class="mt-2 flex items-center gap-2">
             <button v-if="!isSelf" class="border-borderDark rounded-full border px-4 py-2 text-sm font-bold">

@@ -66,9 +66,9 @@ const useUserPostStore = defineStore('userPost', () => {
     if (category === 'bookmarks' && username !== userStore.user?.username) return
 
     // refresh: 清空后重新拉取
-    // if (options.refresh) {
-    resetCategory(category)
-    // }
+    if (options.refresh) {
+      resetCategory(category)
+    }
 
     const listRef = getListRef(category)
     if (loadingMap.value[category]) return

@@ -1,50 +1,62 @@
 <template>
-  <div class="dark:border-borderDark border-borderWhite w-full border-b-1">
-    <!-- 编辑器区域 -->
-    <PostEditor v-model="messageContent" placeholder="有什么新鲜事?" />
-
-    <!-- 已选择图片预览区 -->
-    <PostImagePre :images="selectedImages" @remove-image="removeImage" @reorder-images="handleReorderImages" />
-
-    <!-- 底部工具栏 -->
-    <div class="flex min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]">
-      <div class="dark:border-borderDark border-borderWhite flex w-full items-center justify-between border-t-1">
+  <FormModal>
+    <template #header>
+      <div class="flex h-full w-full items-center justify-between px-2">
+        <button @click="handleClose" class="cursor-pointer rounded-full p-1 transition-colors hover:bg-blue-500/30">
+          <X />
+        </button>
+        <div class="pr-1">
+          <p class="cursor-pointer text-blue-400">草稿</p>
+        </div>
+      </div>
+    </template>
+    <template #content>
+      <PostEditor
+        local-storage-key="messsageContent"
+        v-model="messageContent"
+        :scrollbarClass="'min-h-[250px] sm:max-h-[60dvh] max-h-[80dvh]'"
+      />
+      <PostImagePre :images="selectedImages" @remove-image="removeImage" @reorder-images="handleReorderImages" />
+    </template>
+    <template #footer>
+      <div class="flex justify-between p-2">
         <MediaToolbar
           @files-selected="handleFilesSelected"
           @file-rejected="handleFileRejected"
           :current-count="selectedImages.length"
           :max-count="MAX_IMAGES"
         />
-        <div>
-          <SubmitButton
-            :disabled="!canSubmitPost || postInteractionStore.isCreatingPost() || isUploading"
-            @click="handlePosting"
-            text="发帖"
-          />
-        </div>
+        <SubmitButton
+          :disabled="!canSubmitPost || postInteractionStore.isCreatingPost() || isUploading"
+          @click="handlePosting"
+          text="发帖"
+        />
       </div>
-    </div>
-  </div>
+    </template>
+  </FormModal>
 </template>
-
-<script lang="ts" setup>
+<script setup lang="ts">
+import { X } from 'lucide-vue-next'
 import { useMessage } from 'naive-ui'
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
-import PostImagePre from './PostImagePre.vue'
+import MediaToolbar from '../post/MediaToolbar.vue'
+import PostEditor from '../post/PostEditor.vue'
+import PostImagePre from '../post/PostImagePre.vue'
+import SubmitButton from '../post/SubmitButton.vue'
 
-import MediaToolbar from '@/components/post/MediaToolbar.vue'
-import PostEditor from '@/components/post/PostEditor.vue'
-import SubmitButton from '@/components/post/SubmitButton.vue'
+import FormModal from './FormModal.vue'
+
 import { useImageSelection } from '@/composables/useImageSelection'
 import { handleFileUpload } from '@/composables/useMediaUpload'
-import { usePostFeedStore, usePostInteractionStore } from '@/stores'
-import useUserStore from '@/stores/userUserStore'
+import { useUserStore, usePostInteractionStore, usePostFeedStore } from '@/stores'
+
+const emit = defineEmits(['close'])
 
 const message = useMessage()
-const postFeedStore = usePostFeedStore()
-const postInteractionStore = usePostInteractionStore()
 const userStore = useUserStore()
+const postInteractionStore = usePostInteractionStore()
+const postFeedStore = usePostFeedStore()
 
 const messageContent = ref<string>('')
 
@@ -132,6 +144,8 @@ const handleReorderImages = (payload: { from: number; to: number }) => {
   updatedImages.splice(to, 0, movedItem)
   selectedImages.value = updatedImages
 }
-</script>
 
-<style scoped></style>
+const handleClose = () => {
+  emit('close')
+}
+</script>

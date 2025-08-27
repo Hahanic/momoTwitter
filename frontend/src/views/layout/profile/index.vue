@@ -28,7 +28,7 @@
       </div>
     </StickyHead>
 
-    <div class="min-h-screen w-full">
+    <div class="min-h-[150vh] w-full">
       <div v-if="isLoading" class="p-4 text-sm text-gray-500">加载中...</div>
       <div v-else-if="!currentUserProfile" class="p-4 text-sm text-gray-500">暂无数据</div>
       <div v-else-if="currentUserProfile" class="flex flex-col">
@@ -186,6 +186,6 @@ onMounted(async () => {
 
 // 打开编辑资料模态框
 const editProfile = () => {
-  router.push({ path: route.path, query: { ...route.query, modal: 'editProfile' } })
+  router.push({ path: route.path, query: { ...route.query, modal: 'profile' } })
 }
 </script>

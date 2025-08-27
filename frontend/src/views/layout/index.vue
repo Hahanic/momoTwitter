@@ -50,11 +50,7 @@
 
     <!-- 模态框 -->
     <transition name="modal-fade" mode="out-in">
-      <ComposeModal
-        v-if="showModal && currentModalType"
-        :modalType="currentModalType"
-        @close="closeModal"
-      ></ComposeModal>
+      <AppModal v-if="showModal && currentModalType" :modalType="currentModalType" @close="closeModal"></AppModal>
     </transition>
   </div>
 </template>
@@ -93,7 +89,7 @@ const router = useRouter()
 const scrollRoot = ref<HTMLElement | null>(null)
 
 // 模态框
-const ComposeModal = defineAsyncComponent(() => import('@/components/modal/index.vue'))
+const AppModal = defineAsyncComponent(() => import('@/components/modal/index.vue'))
 const showModal = ref(false)
 const currentModalType = ref<string | null>(null)
 

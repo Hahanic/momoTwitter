@@ -31,7 +31,7 @@
 
 <script lang="ts" setup>
 import { NScrollbar, useMessage } from 'naive-ui'
-import { ref, watch, computed, nextTick } from 'vue'
+import { ref, watch, computed, nextTick, onMounted } from 'vue'
 
 import Avatar from '@/components/post/Avatar.vue'
 import { useUserStore } from '@/stores'
@@ -50,8 +50,6 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: '有什么新鲜事?',
   scrollbarClass: 'sm:max-h-[600px]',
   textareaClass: '',
-  enableLocalStorage: false,
-  localStorageKey: 'messageContent',
 })
 
 const emit = defineEmits<{
@@ -115,6 +113,10 @@ const loadFromLocalStorage = () => {
     }
   }
 }
+
+onMounted(() => {
+  loadFromLocalStorage()
+})
 
 // 暴露方法
 defineExpose({

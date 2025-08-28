@@ -12,6 +12,7 @@
         <span class="mt-1 text-xs">{{ item.label }}</span>
       </RouterLink>
       <button
+        @click="router.push({ path: route.path, query: { ...route.query, modal: 'compose' } })"
         class="floating-send-button absolute right-4 bottom-[5rem] flex h-[3.6rem] w-[3.6rem] cursor-pointer items-center justify-center rounded-full bg-blue-400 text-white shadow-lg hover:bg-blue-500"
       >
         <component :is="Send" :size="24" />
@@ -22,6 +23,10 @@
 
 <script setup lang="ts">
 import { HomeIcon, Search, Bell, Mail, Users2, Send } from 'lucide-vue-next'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
 
 // 移动端显示的主要菜单项
 const mobileMenuItems = [

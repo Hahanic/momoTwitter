@@ -158,17 +158,15 @@ const usePostDetailStore = defineStore('postDetail', () => {
   }
 
   // 创建新回复并添加到回复列表顶部
-  async function createAndAddPost(content: string, media?: { type: 'image' | 'video' | 'gif'; url: string }[]) {
+  async function createAndAddPost(payload: Parameters<typeof interactionStore.handleCreateReply>[0]) {
     if (!currentPostId.value) {
       throw new Error('当前帖子不存在')
     }
 
     try {
       const newReply = await interactionStore.handleCreateReply({
-        postType: 'reply',
+        ...payload,
         parentPostId: currentPostId.value,
-        content,
-        media,
       })
 
       // 将新回复添加到回复列表的开头

@@ -1,6 +1,4 @@
-// backend/src/controller/upload.js
-
-import { uploadToR2 } from '../services/r2Service.js'
+import { uploadToR2, deleteFromR2 } from '../services/r2Service.js'
 import { sendResponse } from '../utils/index.js'
 
 export const uploadPostImage = async (req, res) => {

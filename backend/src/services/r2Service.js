@@ -4,7 +4,7 @@ dotenv.config()
 import crypto from 'crypto'
 import path from 'path'
 
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 // 初始化 S3 客户端
 const s3 = new S3Client({
@@ -44,5 +44,19 @@ export const uploadToR2 = async (fileBuffer, originalname, mimetype) => {
   } catch (error) {
     console.error('❌ R2 上传失败:', error)
     throw new Error('文件上传到云存储失败。')
+  }
+}
+
+export const deleteFromR2 = async (filename) => {
+  const command = new DeleteObjectCommand({
+    Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+    Key: filename,
+  })
+
+  try {
+    await s3.send(command)
+  } catch (error) {
+    console.error('❌ R2 删除失败:', error)
+    throw new Error('文件从云存储删除失败。')
   }
 }

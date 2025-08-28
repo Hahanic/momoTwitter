@@ -15,7 +15,7 @@ export const createPost = async (req, res) => {
   const { content, postType, media, parentPostId, quotedPostId, visibility } = req.body
 
   // 数据验证
-  if (!content?.trim() || !postType) {
+  if ((!content?.trim() && !media) || !postType) {
     return sendResponse(res, 400, '帖子内容和类型不能为空')
   }
 

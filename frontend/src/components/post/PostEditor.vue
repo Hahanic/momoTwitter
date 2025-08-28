@@ -1,7 +1,7 @@
 <template>
   <div class="flex">
     <!-- 头像 -->
-    <div class="mx-2 mt-2 flex h-[3rem] w-[3rem] items-center justify-center">
+    <div :class="{ hidden: localStorageKey }" class="mx-2 mt-2 flex h-[3rem] w-[3rem] items-center justify-center">
       <Avatar
         :username="userStore.user?.username"
         :src="userStore.user?.avatarUrl || '/cat.svg'"

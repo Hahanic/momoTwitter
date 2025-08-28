@@ -1,6 +1,6 @@
 <template>
   <!-- 已选择图片预览区 -->
-  <div v-if="images.length" class="mt-2 px-4 sm:pl-[3.8rem]">
+  <div v-if="images.length" class="mt-2">
     <div class="flex flex-wrap gap-2">
       <div
         v-for="(img, idx) in images"
@@ -14,7 +14,7 @@
           'opacity-50': draggedIndex !== null && draggedIndex !== idx,
           'scale-105 border-blue-500 shadow-lg': dragOverIndex === idx && dragOverIndex !== draggedIndex,
         }"
-        class="group relative h-28 w-28 cursor-grab overflow-hidden rounded-lg border border-dashed border-gray-400 dark:border-gray-600"
+        class="group relative h-25 w-25 cursor-grab overflow-hidden rounded-lg border border-dashed border-gray-400 sm:h-28 sm:w-28 dark:border-gray-600"
       >
         <img :src="img.preview" class="h-full w-full object-cover" @click="openPreview(idx)" />
         <button
@@ -46,12 +46,10 @@ const handleRemove = (idx: number) => {
 }
 
 const openPreview = (idx: number) => {
-  // 预留：可引入全局预览组件
+  // TODO 全局预览组件
   console.log('预览图片 index=', idx)
 }
 
-// 拖曳排序实现
-// 状态
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 

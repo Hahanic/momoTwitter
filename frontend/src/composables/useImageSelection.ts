@@ -25,6 +25,15 @@ export function useImageSelection(options?: { max?: number }) {
     selectedImages.value.splice(idx, 1)
   }
 
+  // 拖曳排序图片
+  function reorderImages(payload: { from: number; to: number }) {
+    const { from, to } = payload
+    const updatedImages = [...selectedImages.value]
+    const [movedItem] = updatedImages.splice(from, 1)
+    updatedImages.splice(to, 0, movedItem)
+    selectedImages.value = updatedImages
+  }
+
   function clearAll() {
     selectedImages.value.forEach((i) => URL.revokeObjectURL(i.preview))
     selectedImages.value = []
@@ -36,6 +45,7 @@ export function useImageSelection(options?: { max?: number }) {
     max,
     addFiles,
     removeImage,
+    reorderImages,
     clearAll,
   }
 }

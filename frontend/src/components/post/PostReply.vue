@@ -14,7 +14,12 @@
     </PostEditor>
 
     <!-- 已选择图片预览（回复） -->
-    <PostImagePre :images="selectedImages" @remove-image="removeImage" />
+    <PostImagePre
+      class="px-4 sm:pl-[3.8rem]"
+      :images="selectedImages"
+      @remove-image="removeImage"
+      @reorder-images="handleReorderImages"
+    />
 
     <!-- 地点和工具栏 -->
     <div class="min-h-[3rem] px-4 sm:pr-[1rem] sm:pl-[3.8rem]" :class="{ 'mt-3 max-h-[6rem]': hasUserFocused }">
@@ -39,7 +44,7 @@
           :current-count="selectedImages.length"
           :max-count="MAX_IMAGES"
         />
-        <SubmitButton :disabled="!canSubmitReply || isUploading" @click="handlePosting" text="回复" />
+        <SubmitButton :disabled="!canSubmit" @click="handlePosting" text="回复" />
       </div>
     </div>
   </div>
@@ -47,101 +52,49 @@
 
 <script lang="ts" setup>
 import { MapPin } from 'lucide-vue-next'
-import { useMessage } from 'naive-ui'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
 import PostImagePre from './PostImagePre.vue'
 
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
-import { useImageSelection } from '@/composables/useImageSelection'
-import { handleFileUpload } from '@/composables/useMediaUpload'
-import { usePostDetailStore } from '@/stores'
-import useUserStore from '@/stores/userUserStore'
-import useWindowStore from '@/stores/useWindowStore'
+import { usePostHandler } from '@/composables/usePostHandler'
+import { usePostDetailStore, useWindowStore } from '@/stores'
 
-const message = useMessage()
-const postDetailStore = usePostDetailStore()
-const userStore = useUserStore()
-const windowStore = useWindowStore()
-
+// 组件自身独有的状态，保留在组件内
 const hasUserFocused = ref<boolean>(false)
-const messageContent = ref<string>('')
-
-const isUploading = ref(false)
-
-// 图片选择与预览（组合式）
-const { selectedImages, count, max, addFiles, removeImage, clearAll } = useImageSelection({ max: 4 })
-const MAX_IMAGES = max
-
-const handleFilesSelected = (files: File[]) => addFiles(files)
-const handleFileRejected = (info: { file: File; reason: string }) => {
-  message.warning(info.reason)
-}
-
-// 用于提交回复按钮的disabled
-const canSubmitReply = computed(() => {
-  return (
-    (messageContent.value.trim() || count.value > 0) &&
-    userStore.isAuthenticated &&
-    postDetailStore.currentPostId &&
-    !postDetailStore.isLoadingReplies
-  )
-})
-
-// 发送回复的方法
-const handlePosting = async () => {
-  if (!messageContent.value.trim() && selectedImages.value.length === 0) {
-    message.warning('回复内容或图片不能为空')
-    return
-  }
-
-  if (!userStore.isAuthenticated) {
-    message.warning('请先登录！')
-    return
-  }
-
-  if (isUploading.value) {
-    message.warning('图片正在上传，请稍后再试')
-    return
-  }
-
-  try {
-    let mediaData: Array<{ type: 'image' | 'video' | 'gif'; url: string }> = []
-
-    // 如果有图片，先上传图片（统一入口）
-    if (selectedImages.value.length > 0) {
-      isUploading.value = true
-      const imageCount = selectedImages.value.length
-      message.info(`正在上传${imageCount}张图片...`)
-
-      try {
-        const files = selectedImages.value.map((i) => i.file)
-        mediaData = await handleFileUpload(files)
-      } catch (error: any) {
-        message.error(error.message || '图片上传失败')
-        throw error
-      }
-    }
-
-    await postDetailStore.createAndAddPost(messageContent.value, mediaData.length ? mediaData : undefined)
-    message.success('回复成功！')
-    messageContent.value = '' // 清空输入框
-    hasUserFocused.value = false // 收起工具栏
-  } catch (error: any) {
-    message.error(error.message || '回复失败，请稍后再试')
-    console.error('回复失败:', error)
-  } finally {
-    clearAll()
-    isUploading.value = false
-  }
-}
-
-// 用户focus输入框然后显示媒体工具栏和按钮
 const handleTextareaFocus = () => {
   hasUserFocused.value = true
 }
+
+const postDetailStore = usePostDetailStore()
+const windowStore = useWindowStore()
+
+const {
+  messageContent,
+  canSubmit,
+  handlePosting,
+  selectedImages,
+  MAX_IMAGES,
+  removeImage,
+  handleFilesSelected,
+  handleFileRejected,
+  handleReorderImages,
+} = usePostHandler({
+  // 1. 传入回复的 action，注意参数格式匹配
+  submitAction: async ({ content, media }) => {
+    await postDetailStore.createAndAddPost({
+      content,
+      postType: 'reply',
+      media,
+    })
+    // 成功后收起工具栏
+    hasUserFocused.value = false
+  },
+  // 2. 传入回复场景下特有的提交检查条件
+  additionalCanSubmitChecks: () => !!(postDetailStore.currentPostId && !postDetailStore.isLoadingReplies),
+})
 </script>
 
 <style scoped></style>

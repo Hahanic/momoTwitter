@@ -14,31 +14,31 @@
       <PostEditor
         local-storage-key="messsageContent"
         v-model="messageContent"
-        :scrollbarClass="'min-h-[250px] sm:max-h-[60dvh] max-h-[80dvh]'"
-      />
-      <PostImagePre :images="selectedImages" @remove-image="removeImage" @reorder-images="handleReorderImages" />
+        :scrollbarClass="'min-h-[50px] sm:max-h-[60dvh] max-h-[50dvh]'"
+      >
+      </PostEditor>
     </template>
     <template #footer>
-      <div class="flex justify-between p-2">
+      <PostImagePre
+        class="px-2 sm:px-5"
+        :images="selectedImages"
+        @remove-image="removeImage"
+        @reorder-images="handleReorderImages"
+      />
+      <div class="flex justify-between px-1 py-2 sm:px-5">
         <MediaToolbar
           @files-selected="handleFilesSelected"
           @file-rejected="handleFileRejected"
           :current-count="selectedImages.length"
           :max-count="MAX_IMAGES"
         />
-        <SubmitButton
-          :disabled="!canSubmitPost || postInteractionStore.isCreatingPost() || isUploading"
-          @click="handlePosting"
-          text="发帖"
-        />
+        <SubmitButton :disabled="!canSubmit" @click="handlePosting" text="发帖" />
       </div>
     </template>
   </FormModal>
 </template>
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
-import { useMessage } from 'naive-ui'
-import { computed, ref } from 'vue'
 
 import MediaToolbar from '../post/MediaToolbar.vue'
 import PostEditor from '../post/PostEditor.vue'
@@ -47,103 +47,40 @@ import SubmitButton from '../post/SubmitButton.vue'
 
 import FormModal from './FormModal.vue'
 
-import { useImageSelection } from '@/composables/useImageSelection'
-import { handleFileUpload } from '@/composables/useMediaUpload'
-import { useUserStore, usePostInteractionStore, usePostFeedStore } from '@/stores'
+import { usePostHandler } from '@/composables/usePostHandler'
+import { usePostInteractionStore, usePostFeedStore } from '@/stores'
 
 const emit = defineEmits(['close'])
 
-const message = useMessage()
-const userStore = useUserStore()
+// 只需要引入这两个 store 来定义提交逻辑
 const postInteractionStore = usePostInteractionStore()
 const postFeedStore = usePostFeedStore()
 
-const messageContent = ref<string>('')
-
-const isUploading = ref(false)
-
-// 图片选择与预览（提取为组合式函数）
-const { selectedImages, count, max, removeImage, addFiles, clearAll } = useImageSelection({ max: 4 })
-
-const MAX_IMAGES = max
-
-const handleFilesSelected = (files: File[]) => addFiles(files)
-
-const handleFileRejected = (info: { file: File; reason: string }) => {
-  message.warning(info.reason)
-}
-
-// 计算属性：是否能发帖
-const canSubmitPost = computed(() => {
-  return (
-    (messageContent.value.trim() || count.value > 0) &&
-    userStore.isAuthenticated &&
-    !postInteractionStore.isCreatingPost()
-  )
-})
-
-// 发帖方法
-const handlePosting = async () => {
-  if (!messageContent.value.trim() && selectedImages.value.length === 0) {
-    message.warning('发帖内容不能为空')
-    return
-  }
-
-  if (!userStore.isAuthenticated) {
-    message.warning('请先登录！')
-    return
-  }
-
-  if (isUploading.value) {
-    message.warning('图片正在上传，请稍后再试')
-    return
-  }
-
-  try {
-    let mediaData: Array<{ type: 'image' | 'video' | 'gif'; url: string }> = []
-
-    // 如果有图片，先上传图片（统一入口）
-    if (selectedImages.value.length > 0) {
-      isUploading.value = true
-      const imageCount = selectedImages.value.length
-      message.info(`正在上传${imageCount}张图片...`)
-
-      try {
-        const files = selectedImages.value.map((i) => i.file)
-        mediaData = await handleFileUpload(files)
-      } catch (error: any) {
-        message.error(error.message || '图片上传失败')
-        throw error
-      }
-    }
-
-    // 创建帖子
+// 调用 Composable，并传入特定的发帖逻辑和检查条件
+const {
+  messageContent,
+  canSubmit,
+  handlePosting,
+  selectedImages,
+  MAX_IMAGES,
+  removeImage,
+  handleFilesSelected,
+  handleFileRejected,
+  handleReorderImages,
+} = usePostHandler({
+  // 1. 传入发帖的 action
+  submitAction: async ({ content, media }) => {
     await postFeedStore.createAndAddPost({
-      content: messageContent.value,
+      content,
       postType: 'standard',
-      media: mediaData.length > 0 ? mediaData : undefined,
+      media,
     })
-
-    message.success('发帖成功！')
-    messageContent.value = '' // 清空输入框
-    // 释放预览并清空
-  } catch (error: any) {
-    message.error(error.message || '发帖失败，请稍后再试')
-    console.error('发帖失败:', error)
-  } finally {
-    clearAll()
-    isUploading.value = false
-  }
-}
-
-// 拖曳排序图片
-const handleReorderImages = (payload: { from: number; to: number }) => {
-  const { from, to } = payload
-  const updatedImages = [...selectedImages.value]
-  const [movedItem] = updatedImages.splice(from, 1)
-  updatedImages.splice(to, 0, movedItem)
-  selectedImages.value = updatedImages
-}
+    // 成功后可以执行特定于此组件的操作
+    emit('close')
+  },
+  // 2. 传入该组件特有的提交检查条件
+  additionalCanSubmitChecks: () => !postInteractionStore.isCreatingPost(),
+})
 
 const handleClose = () => {
   emit('close')

@@ -7,9 +7,6 @@ export interface UploadedMedia {
   url: string
 }
 
-/**
- * 统一上传图片（单图/多图），返回标准化的媒体数据
- */
 export async function handleFileUpload(files: File[]): Promise<UploadedMedia[]> {
   if (!files || files.length === 0) return []
 

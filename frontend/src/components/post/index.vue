@@ -33,7 +33,7 @@
         </div>
       </div>
       <!-- 文本 -->
-      <div class="mr-4 text-[1rem]">
+      <div class="font-Rounded mr-4 text-[1rem]">
         <span class="tracking-tight break-all whitespace-pre-wrap">{{ post.content }}</span>
       </div>
       <!-- 图片/视频/媒体 -->

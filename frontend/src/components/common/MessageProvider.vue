@@ -4,7 +4,6 @@
       <MessageItem v-for="message in messages" :key="message.id" :type="message.type" :content="message.content" />
     </TransitionGroup>
   </div>
-
   <slot />
 </template>
 

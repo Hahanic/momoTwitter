@@ -6,7 +6,7 @@
           class="flex h-[3.2rem] w-[50%] cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/90"
           @dblclick="refreshPosts"
         >
-          为你推荐
+          推荐
         </div>
         <div
           class="flex h-[3.2rem] w-[50%] cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/80"
@@ -99,23 +99,19 @@ const refreshPosts = async () => {
   }
 }
 
-// 滚动容器引用
-const scrollContainerRef = ref<HTMLElement | null>(null)
+const scrollContainer = ref(null)
 
 // 使用无限滚动组合式函数
 const { targetEl: observerEl, canLoadMore } = useInfiniteScroll({
   loadMore: loadMorePosts,
   isLoading: computed(() => feedStore.isLoading),
   hasMore: computed(() => feedStore.hasMore),
-  scrollContainerRef,
+  scrollContainerRef: scrollContainer,
   rootMargin: '0px 0px 200px 0px',
-  debounceMs: 300, // 300ms防抖
+  debounceMs: 300,
 })
 
 onMounted(async () => {
-  // 获取滚动容器
-  scrollContainerRef.value = document.querySelector('.scrollbar-container')
-
   // 首次加载
   if (feedStore.posts.length === 0) {
     await loadInitialPosts()

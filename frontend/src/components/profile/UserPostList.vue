@@ -101,14 +101,14 @@ const loadParentChains = async () => {
 }
 
 // 滚动容器引用
-const scrollContainerRef = ref<HTMLElement | null>(null)
+const scrollContainer = ref(null)
 
 // 使用无限滚动组合式函数
 const { targetEl: observerEl, canLoadMore } = useInfiniteScroll({
   loadMore,
   isLoading,
   hasMore,
-  scrollContainerRef,
+  scrollContainerRef: scrollContainer,
   rootMargin: '0px 0px 200px 0px',
   debounceMs: 300,
 })
@@ -122,9 +122,6 @@ watch(
 )
 
 onMounted(async () => {
-  // 获取滚动容器
-  scrollContainerRef.value = document.querySelector('.scrollbar-container')
-
   const username = route.params.username as string
 
   // 首次加载数据

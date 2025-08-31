@@ -1,11 +1,14 @@
 <template>
-  <div
-    ref="scrollContainer"
-    class="w-full overflow-y-auto"
-    :class="[scrollbarClasses, propsClass]"
-    :style="{ maxHeight: maxHeight }"
-  >
-    <slot />
+  <div class="scroll-wrapper h-full w-full">
+    <div
+      ref="scrollContainer"
+      class="scrollbar-container h-full w-full overflow-y-auto"
+      :class="[scrollbarClasses, propsClass]"
+      :style="{ maxHeight: maxHeight }"
+      @scroll="onScroll"
+    >
+      <slot />
+    </div>
   </div>
 </template>
 
@@ -23,6 +26,10 @@ const props = withDefaults(
   }
 )
 
+const emit = defineEmits(['scroll'])
+const onScroll = (event: Event) => {
+  emit('scroll', event)
+}
 const scrollbarClasses = computed(() => {
   switch (props.visibility) {
     case 'hidden':
@@ -42,15 +49,24 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 滚动条基础样式和轨道 */
+.scroll-wrapper {
+  overflow: hidden;
+  height: 100%;
+}
+.custom-scrollbar-always,
+.custom-scrollbar-auto {
+  padding-right: 5px;
+  margin-right: -5px;
+  overflow-y: scroll;
+}
 .custom-scrollbar-always::-webkit-scrollbar,
 .custom-scrollbar-auto::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
 }
 
 /*  always 滚动条滑块 */
 .custom-scrollbar-always::-webkit-scrollbar-thumb {
-  border-radius: 6px;
+  border-radius: 5px;
   background-color: #bfbfbf;
 }
 .dark .custom-scrollbar-always::-webkit-scrollbar-thumb {

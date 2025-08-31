@@ -6,6 +6,11 @@ import userRoutes from './modules/user.ts'
 import useUserStore from '@/stores/userUserStore.ts'
 import useWindowStore from '@/stores/useWindowStore.ts'
 
+// 浏览器的滚动恢复交给自己来做
+if (history.scrollRestoration) {
+  history.scrollRestoration = 'manual'
+}
+
 const routes = [...layoutRoutes, ...userRoutes]
 
 // 导航栈判断 back / forward / new / refresh

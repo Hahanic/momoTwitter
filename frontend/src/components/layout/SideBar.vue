@@ -13,7 +13,7 @@
               :to="item.href"
               class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
             >
-              <span class="relative left-6 hidden xl:block">{{ item.label }}</span>
+              <span class="relative left-8 hidden xl:block">{{ item.label }}</span>
               <component
                 :is="item.icon"
                 :size="'1.7rem'"
@@ -25,7 +25,7 @@
               @click="handleAction(item.action)"
               class="relative z-10 flex h-[3.2rem] w-full cursor-pointer items-center px-3 text-left outline-none xl:px-[4.6rem]"
             >
-              <span class="relative left-6 hidden xl:block">{{ item.label }}</span>
+              <span class="relative left-8 hidden xl:block">{{ item.label }}</span>
               <component
                 :is="item.icon"
                 :size="'1.7rem'"

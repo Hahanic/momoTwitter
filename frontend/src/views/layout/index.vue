@@ -71,7 +71,7 @@ import {
   Send,
   ArrowUp,
 } from 'lucide-vue-next'
-import { defineAsyncComponent, ref, watch, computed, onMounted } from 'vue'
+import { defineAsyncComponent, ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
@@ -86,7 +86,6 @@ const userStore = useUserStore()
 const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
-const scrollRoot = ref<HTMLElement | null>(null)
 
 // 模态框
 const AppModal = defineAsyncComponent(() => import('@/components/modal/index.vue'))
@@ -143,12 +142,8 @@ const menuLists = computed(() => {
   ]
 })
 
-// 滚动顶部
-onMounted(() => {
-  scrollRoot.value = document.querySelector('.scrollbar-container')
-})
 const scrollToTop = () => {
-  scrollRoot.value?.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 </script>
 

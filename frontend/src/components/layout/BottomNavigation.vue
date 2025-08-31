@@ -5,11 +5,11 @@
         v-for="item in mobileMenuItems"
         :key="item.href"
         :to="item.href"
-        class="flex flex-col items-center justify-center px-3 py-2 text-gray-600 transition-colors hover:text-amber-950 dark:text-gray-400 dark:hover:text-white"
+        class="flex flex-col items-center justify-center px-3 py-4 text-gray-600 transition-colors hover:text-amber-950 dark:text-gray-400 dark:hover:text-white"
         active-class="text-amber-950 dark:text-white"
       >
         <component :is="item.icon" :size="24" />
-        <span class="mt-1 text-xs">{{ item.label }}</span>
+        <!-- <span class="mt-1 text-xs">{{ item.label }}</span> -->
       </RouterLink>
       <button
         @click="router.push({ path: route.path, query: { ...route.query, modal: 'compose' } })"

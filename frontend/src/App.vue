@@ -1,23 +1,14 @@
 <template>
   <MessageProvider>
-    <Scrollbar
-      ref="scrollbarRef"
-      class="scrollbar-container"
-      maxHeight="100dvh"
-      visibility="always"
-      @scroll="handleScroll"
-    >
-      <RouterView />
-    </Scrollbar>
+    <RouterView />
   </MessageProvider>
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import MessageProvider from './components/common/MessageProvider.vue'
-import Scrollbar from './components/common/Scrollbar.vue'
 import useUserStore from './stores/userUserStore.ts'
 import useWindowStore from './stores/useWindowStore.ts'
 
@@ -25,11 +16,9 @@ const windowStore = useWindowStore()
 const userStore = useUserStore()
 const route = useRoute()
 
-const scrollbarRef = ref<{ scrollContainer: HTMLElement } | null>(null)
 // 滚动事件
-const handleScroll = (e: Event) => {
-  const target = e.target as HTMLElement
-  const scrollTop = target.scrollTop
+const handleScroll = () => {
+  const scrollTop = window.scrollY
 
   // Home页
   if (route.path === '/home') {
@@ -41,6 +30,8 @@ const handleScroll = (e: Event) => {
     }
   } else if (['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)) {
     windowStore.setUserProfileScrollTop(scrollTop)
+  } else if (route.name === 'PostDetail') {
+    windowStore.setPostDetailScroll(route.params.postId as string, scrollTop)
   }
 }
 // 恢复Home页的滚动位置
@@ -53,7 +44,7 @@ watch(
     }
     await nextTick(() => {
       if (routePath === '/home') {
-        scrollbarRef.value?.scrollContainer.scrollTo({
+        window.scrollTo({
           top: windowStore.homeScrollTop,
           behavior: 'auto',
         })
@@ -61,7 +52,7 @@ watch(
         ['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)
       ) {
         setTimeout(() => {
-          scrollbarRef.value?.scrollContainer.scrollTo({
+          window.scrollTo({
             top: windowStore.userProfileScrollTop,
             behavior: 'auto',
           })
@@ -72,7 +63,11 @@ watch(
 )
 
 onMounted(async () => {
+  window.addEventListener('scroll', handleScroll)
   userStore.checkCurrentUser()
+})
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 

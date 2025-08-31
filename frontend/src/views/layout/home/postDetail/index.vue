@@ -46,7 +46,7 @@
             </div>
             <div class="flex-1">
               <!-- 内容 -->
-              <div class="mx-2 text-[1rem]">
+              <div class="font-Rounded mx-2 text-[1rem]">
                 <span class="tracking-tight break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
               </div>
               <!-- 图片/视频/媒体 -->
@@ -161,7 +161,7 @@
 import { ArrowLeft } from 'lucide-vue-next'
 import { MoreHorizontalIcon } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { watch, ref, nextTick, onUnmounted } from 'vue'
+import { watch, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
@@ -231,18 +231,9 @@ const handlePostBookmark = async () => {
 // 监听路由变化，加载帖子详情
 watch(
   () => route.params.postId,
-  async (newPostId) => {
+  async (newPostId, _oldPostId) => {
     // 若 param 未变化（某些情况下触发，比如刷新响应式）则直接返回
     if (newPostId === displayingPostId.value || !newPostId) return
-
-    // 保存当前正在显示的帖子的滚动位置
-    if (displayingPostId.value && typeof displayingPostId.value === 'string') {
-      const scrollbarDom = document.querySelector('.scrollbar-container') as HTMLElement | null
-      if (scrollbarDom) {
-        // console.log('保存滚动位置:', displayingPostId.value, scrollbarDom.scrollTop)
-        windowStore.setPostDetailScroll(displayingPostId.value, scrollbarDom.scrollTop)
-      }
-    }
 
     if (newPostId && typeof newPostId === 'string') {
       // 更新正在显示的 postId
@@ -255,18 +246,14 @@ watch(
       // 只有回退才恢复滚动位置（第一阶段：主帖子渲染后立即尝试）
       if (windowStore.isBackNavigation) {
         const savedScroll = windowStore.getPostDetailScroll(newPostId)
-        // console.log('尝试第一阶段恢复滚动位置:', newPostId, savedScroll)
-        const scrollbarDom = document.querySelector('.scrollbar-container') as HTMLElement | null
-        if (scrollbarDom && savedScroll >= 0) {
+        if (savedScroll >= 0) {
           // 当前容器最大可滚动位置（可能此时回复还没加载，高度不足）
-          const maxNow = scrollbarDom.scrollHeight - scrollbarDom.clientHeight
+          const maxNow = document.documentElement.scrollHeight - window.innerHeight
           // 先滚动一次
-          scrollbarDom.scrollTo({ top: savedScroll, behavior: 'auto' })
+          window.scrollTo({ top: savedScroll, behavior: 'auto' })
           // 如果目标位置超过当前最大值（意味着内容还没完全加载），记为待二次恢复
           if (savedScroll > maxNow - 20) {
             pendingScrollTop.value = savedScroll
-            // console.log('记录待二次恢复滚动位置 pendingScrollTop =', pendingScrollTop.value)
-            // 不要 scrollIntoView，保持 isBackNavigation = true，等待二阶段
           } else {
             pendingScrollTop.value = null
             // 已成功恢复则无需默认 scrollIntoView
@@ -274,15 +261,10 @@ watch(
             return
           }
         }
-      }
-
-      // 默认滚动到当前帖子位置（仅非回退导航或回退但没有可恢复记录时），避免闪烁
-      if (!windowStore.isBackNavigation && currentPostRef.value) {
-        currentPostRef.value.scrollIntoView({ behavior: 'auto', block: 'start' })
-      }
-      // 若是回退且等待二阶段，不立刻 setBackNavigation(false)
-      if (!windowStore.isBackNavigation) {
-        windowStore.setBackNavigation(false)
+      } else {
+        if (currentPostRef.value) {
+          currentPostRef.value.scrollIntoView({ behavior: 'auto', block: 'start' })
+        }
       }
     }
   },
@@ -293,37 +275,13 @@ watch(
 watch(
   () => [replies.value.length, isLoadingReplies.value, parentPosts.value.length],
   async () => {
+    if (!windowStore.isBackNavigation) return
     if (pendingScrollTop.value == null) return
-    // 只有不在加载回复时再尝试
     if (isLoadingReplies.value) return
+
     await nextTick()
-    const scrollbarDom = document.querySelector('.scrollbar-container') as HTMLElement | null
-    if (scrollbarDom) {
-      const target = pendingScrollTop.value
-      const maxNow = scrollbarDom.scrollHeight - scrollbarDom.clientHeight
-      if (target <= maxNow) {
-        // console.log('执行第二阶段恢复滚动位置:', target)
-        scrollbarDom.scrollTo({ top: target, behavior: 'auto' })
-        pendingScrollTop.value = null
-        windowStore.setBackNavigation(false)
-      } else {
-        // 仍未达到，继续等待（比如分页更多）
-        // console.log('仍未达到目标高度，继续等待加载。当前 maxNow =', maxNow, '目标 =', target)
-      }
-    }
+    window.scrollTo({ top: pendingScrollTop.value, behavior: 'auto' })
   }
 )
-
-// 其实这个销毁只在移动端需要，为什么？因为transition动画需要销毁(hhh):key="route.fullPath"
-// 组件销毁时保存当前滚动位置
-onUnmounted(() => {
-  if (displayingPostId.value) {
-    const scrollbarDom = document.querySelector('.scrollbar-container') as HTMLElement | null
-    if (scrollbarDom) {
-      // console.log('组件销毁时保存滚动位置:', displayingPostId.value, scrollbarDom.scrollTop)
-      windowStore.setPostDetailScroll(displayingPostId.value, scrollbarDom.scrollTop)
-    }
-  }
-})
 </script>
 <style scoped></style>

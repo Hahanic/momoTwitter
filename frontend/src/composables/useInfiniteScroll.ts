@@ -49,7 +49,7 @@ export function useInfiniteScroll({
     }
   }
 
-  const setupObserver = (target: HTMLElement, container: HTMLElement) => {
+  const setupObserver = (target: HTMLElement, container: HTMLElement | null) => {
     observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
@@ -72,11 +72,11 @@ export function useInfiniteScroll({
     [targetEl, scrollContainerRef],
     ([newTarget, newScrollContainer]) => {
       cleanupObserver()
-      if (newTarget && newScrollContainer) {
+      if (newTarget) {
         setupObserver(newTarget, newScrollContainer)
       }
     },
-    { immediate: true }
+    { immediate: true, deep: true }
   )
 
   onUnmounted(cleanupObserver)

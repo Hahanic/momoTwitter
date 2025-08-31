@@ -6,7 +6,7 @@
       >
         <Scrollbar visibility="always" :maxHeight="windowStore.isMobile ? '100dvh' : '90dvh'">
           <div
-            class="sticky top-0 h-[3.5rem] w-full border-b border-gray-200 backdrop-blur-sm sm:rounded-t-2xl dark:border-gray-800"
+            class="sticky top-0 z-50 h-[3.5rem] w-full border-b border-gray-200 backdrop-blur-sm sm:rounded-t-2xl dark:border-gray-800"
           >
             <slot name="header" />
           </div>
@@ -16,7 +16,7 @@
           </div>
 
           <div
-            class="sticky bottom-0 min-h-[3.5rem] w-full border-t border-gray-200 backdrop-blur-sm sm:rounded-b-2xl dark:border-gray-800"
+            class="sticky bottom-0 z-50 min-h-[3.5rem] w-full border-t border-gray-200 backdrop-blur-sm sm:rounded-b-2xl dark:border-gray-800"
           >
             <slot name="footer" />
           </div>

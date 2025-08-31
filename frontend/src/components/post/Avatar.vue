@@ -33,7 +33,6 @@ const props = withDefaults(defineProps<Props>(), {
   containerClass: '',
   imageClass: '',
 })
-
 // 头像点击
 const handleAvatarClick = () => {
   if (!props.username) {

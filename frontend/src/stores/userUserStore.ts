@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { registerUser, loginUser, logoutUser, fetchCurrentUser, fetchUserByUsername } from '@/api/index.ts'
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  fetchCurrentUser,
+  fetchUserByUsername,
+  updateUserProfileAPI,
+} from '@/api/index.ts'
 import { useUserPostStore } from '@/stores'
 import { type UserProfile, type LoginPayload, type RegisterPayload } from '@/types'
 
@@ -114,12 +121,29 @@ const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 用户更新信息
+  async function updateUserProfile(profileData: Partial<UserProfile>) {
+    try {
+      const res = await updateUserProfileAPI(profileData)
+      if (!res) {
+        throw new Error('从服务器返回的数据格式不正确')
+      }
+      setUser(res.userProfile)
+      if (isSelf) {
+        currentUserProfile.value = res.userProfile
+      }
+    } catch (err) {
+      throw err
+    }
+  }
+
   return {
     user,
     isAuthenticated,
     isLogining,
     checkCurrentUser,
     fetchUserProfile,
+    updateUserProfile,
     currentUserProfile,
     isFollowing,
     isSelf,

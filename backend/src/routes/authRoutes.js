@@ -1,7 +1,7 @@
 import express from 'express'
 const router = express.Router()
 
-import { getIdentifyingCode, getCurrentUser, register, login, logout } from '../controller/auth.js'
+import { getIdentifyingCode, getCurrentUser, updateUserProfile, register, login, logout } from '../controller/auth.js'
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
 import { validateRegister, validateLogin } from '../middleware/validation.js'
@@ -14,6 +14,8 @@ router.post('/login', validateLogin, asyncHandler(login))
 router.post('/logout', asyncHandler(logout))
 // 获取当前登录用户信息 完全靠cookie中的token
 router.get('/me', protectAuthRoute, asyncHandler(getCurrentUser))
+// 更新用户信息
+router.put('/me', protectAuthRoute, asyncHandler(updateUserProfile))
 // 获取登录验证码
 router.get('/captcha', getIdentifyingCode)
 

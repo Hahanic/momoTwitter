@@ -1,3 +1,4 @@
+import Post from '../db/model/Post.js'
 import Relationship from '../db/model/Relationship.js'
 import User from '../db/model/User.js'
 import { sendResponse, generateToken, setTokenCookie, verifyUserToken } from '../utils/index.js'
@@ -14,6 +15,56 @@ export const getCurrentUser = async (req, res) => {
 
   sendResponse(res, 200, '获取用户信息成功', {
     userProfile: userToReturn,
+  })
+}
+
+export const updateUserProfile = async (req, res) => {
+  const userId = req.user.id
+
+  const { displayName, bio, location, website, avatarUrl, bannerUrl } = req.body
+  const updateFields = {}
+  if (displayName !== undefined) updateFields.displayName = displayName
+  if (bio !== undefined) updateFields.bio = bio
+  if (location !== undefined) updateFields.location = location
+  if (website !== undefined) updateFields.website = website
+  if (avatarUrl) updateFields.avatarUrl = avatarUrl
+  if (bannerUrl) updateFields.bannerUrl = bannerUrl
+
+  // 如果没有任何可更新的字段，则提前返回
+  if (Object.keys(updateFields).length === 0) {
+    return sendResponse(res, 400, '没有需要更新的资料')
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: updateFields },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).select('-password')
+
+  if (!updatedUser) {
+    return sendResponse(res, 404, '用户未找到')
+  }
+
+  // 更新帖子作者信息
+  if (updateFields.displayName || updateFields.avatarUrl || updateFields.username) {
+    const postUpdatePayload = {}
+    if (updateFields.displayName) {
+      postUpdatePayload['authorInfo.displayName'] = updateFields.displayName
+    }
+    if (updateFields.avatarUrl) {
+      postUpdatePayload['authorInfo.avatarUrl'] = updateFields.avatarUrl
+    }
+
+    Post.updateMany({ authorId: userId }, { $set: postUpdatePayload }).catch((err) => {
+      console.error('同步更新帖子作者信息失败:', err)
+    })
+  }
+
+  sendResponse(res, 200, '个人资料更新成功', {
+    userProfile: updatedUser,
   })
 }
 

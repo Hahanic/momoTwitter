@@ -17,6 +17,13 @@ export const fetchCurrentUser = (): Promise<{ message: string; userProfile: User
   return axiosInstance.get('/auth/me')
 }
 
+// 用户更新信息
+export const updateUserProfileAPI = (
+  profileData: Partial<UserProfile>
+): Promise<{ message: string; userProfile: UserProfile }> => {
+  return axiosInstance.put('/auth/me', profileData)
+}
+
 // 用户注册
 export const registerUser = (userRegisterData: RegisterPayload) => {
   return axiosInstance.post('/auth/register', userRegisterData)

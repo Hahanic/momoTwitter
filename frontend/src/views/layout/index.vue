@@ -13,9 +13,9 @@
             src="/warp.svg"
           />
         </div>
-        <n-scrollbar style="max-height: 100%">
+        <Scrollbar maxHeight="100%">
           <SideBar :items="menuLists" @action="handleSidebarAction" />
-        </n-scrollbar>
+        </Scrollbar>
       </header>
       <!-- 移动端菜单 -->
       <transition name="slide-up">
@@ -71,10 +71,10 @@ import {
   Send,
   ArrowUp,
 } from 'lucide-vue-next'
-import { NScrollbar } from 'naive-ui'
 import { defineAsyncComponent, ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import Scrollbar from '@/components/common/Scrollbar.vue'
 import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 import SideBar from '@/components/layout/SideBar.vue'
 import { useWindowStore } from '@/stores'
@@ -145,7 +145,7 @@ const menuLists = computed(() => {
 
 // 滚动顶部
 onMounted(() => {
-  scrollRoot.value = document.querySelector('.n-scrollbar-container')
+  scrollRoot.value = document.querySelector('.scrollbar-container')
 })
 const scrollToTop = () => {
   scrollRoot.value?.scrollTo({ top: 0, behavior: 'smooth' })

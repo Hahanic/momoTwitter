@@ -4,7 +4,7 @@
       <div
         class="relative w-full border-0 bg-white sm:min-h-fit sm:w-[38rem] sm:rounded-2xl dark:border-gray-800 dark:bg-black sm:dark:border-1"
       >
-        <NScrollbar :style="{ maxHeight: windowStore.isMobile ? '100dvh' : '90dvh' }">
+        <Scrollbar visibility="always" :maxHeight="windowStore.isMobile ? '100dvh' : '90dvh'">
           <div
             class="sticky top-0 h-[3.5rem] w-full border-b border-gray-200 backdrop-blur-sm sm:rounded-t-2xl dark:border-gray-800"
           >
@@ -20,13 +20,13 @@
           >
             <slot name="footer" />
           </div>
-        </NScrollbar>
+        </Scrollbar>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { NScrollbar } from 'naive-ui'
+import Scrollbar from '../common/Scrollbar.vue'
 
 import { useWindowStore } from '@/stores'
 

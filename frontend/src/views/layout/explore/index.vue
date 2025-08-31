@@ -30,20 +30,20 @@
   <StickyAside>
     <div class="dark:border-borderDark border-borderWhite mt-4 border-t-1"></div>
     <!-- 推送 -->
-    <n-scrollbar class="hide-scrollbar" style="height: calc(100dvh - 40px)">
+    <Scrollbar max-height="calc(100dvh - 40px)">
       <div class="mt-[0.8rem] flex w-full flex-col gap-[1.2rem]">
         <div class="dark:border-borderDark border-borderWhite h-[9rem] rounded-xl border-1"></div>
         <div class="dark:border-borderDark border-borderWhite h-[35rem] rounded-xl border-1"></div>
       </div>
-    </n-scrollbar>
+    </Scrollbar>
   </StickyAside>
 </template>
 
 <script setup lang="ts">
 import { SettingsIcon } from 'lucide-vue-next'
-import { NScrollbar } from 'naive-ui'
 import { ref } from 'vue'
 
+import Scrollbar from '@/components/common/Scrollbar.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'

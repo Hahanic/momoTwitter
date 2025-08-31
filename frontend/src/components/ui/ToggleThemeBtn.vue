@@ -1,21 +1,27 @@
 <template>
-  <n-icon :size="size" @click="themeStore.toggleTheme" class="cursor-pointer transition hover:scale-110">
+  <div
+    :style="{ width: `${size}px`, height: `${size}px` }"
+    class="flex cursor-pointer items-center justify-center transition hover:scale-110"
+    @click="themeStore.toggleTheme"
+  >
     <Transition name="fade" mode="out-in">
-      <SunIcon v-if="!themeStore.isDarkTheme" key="sunicon" class="theme-icon" />
-      <MoonIcon v-else key="moonicon" class="theme-icon" />
+      <SunIcon v-if="!themeStore.isDarkTheme" :size="iconSize" key="sunicon" class="theme-icon" />
+      <MoonIcon v-else :size="iconSize" key="moonicon" class="theme-icon" />
     </Transition>
-  </n-icon>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { MoonIcon, SunIcon } from 'lucide-vue-next'
-import { NIcon } from 'naive-ui'
+import { computed } from 'vue'
 
 import usethemeStore from '@/stores/useThemeStore'
 
+const props = defineProps<{ size: string | number }>()
+
 const themeStore = usethemeStore()
 
-defineProps<{ size: string }>()
+const iconSize = computed(() => Number(props.size))
 </script>
 
 <style scoped>

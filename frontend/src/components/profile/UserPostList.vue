@@ -123,7 +123,7 @@ watch(
 
 onMounted(async () => {
   // 获取滚动容器
-  scrollContainerRef.value = document.querySelector('.n-scrollbar-container')
+  scrollContainerRef.value = document.querySelector('.scrollbar-container')
 
   const username = route.params.username as string
 

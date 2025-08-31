@@ -1,11 +1,10 @@
-import dotenv from 'dotenv'
-dotenv.config()
-
 import crypto from 'crypto'
 import path from 'path'
 
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import dotenv from 'dotenv'
 
+dotenv.config()
 // 初始化 S3 客户端
 const s3 = new S3Client({
   region: 'auto',

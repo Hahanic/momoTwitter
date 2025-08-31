@@ -1,8 +1,8 @@
-import { useMessage, type MessageReactive } from 'naive-ui'
 import { ref, computed } from 'vue'
 
 import { useImageSelection } from '@/composables/useImageSelection'
 import { handleFileUpload } from '@/composables/useMediaUpload'
+import { useMessage } from '@/composables/useMessage'
 import { useUserStore } from '@/stores'
 
 export type MediaItem = {
@@ -63,7 +63,7 @@ export function usePostHandler(options: UsePostHandlerOptions) {
       return
     }
 
-    let uploadingMessage: MessageReactive | null = null
+    let uploadingMessageId: number | null = null
 
     try {
       let mediaData: MediaItem[] = []
@@ -71,12 +71,9 @@ export function usePostHandler(options: UsePostHandlerOptions) {
       // 图片上传流程
       if (selectedImages.value.length > 0) {
         isUploading.value = true
-        console.log(1)
-        uploadingMessage = message.info(`正在上传${selectedImages.value.length}张图片...`, {
+        uploadingMessageId = message.info(`正在上传${selectedImages.value.length}张图片...`, {
           duration: 0,
-          closable: true,
         })
-        console.log(2)
 
         try {
           const files = selectedImages.value.map((i) => i.file)
@@ -100,7 +97,7 @@ export function usePostHandler(options: UsePostHandlerOptions) {
       console.error('发布失败:', error)
     } finally {
       clearImages()
-      if (uploadingMessage) uploadingMessage.destroy()
+      if (uploadingMessageId) message.destroy(uploadingMessageId)
       isUploading.value = false
     }
   }

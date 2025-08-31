@@ -13,8 +13,9 @@
 </template>
 
 <script lang="ts" setup>
-import { useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
+
+import { useMessage } from '@/composables/useMessage'
 
 const message = useMessage()
 const router = useRouter()

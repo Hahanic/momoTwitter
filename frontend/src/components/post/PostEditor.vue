@@ -11,7 +11,7 @@
 
     <!-- 输入框区域 -->
     <div class="relative flex h-full w-full items-center">
-      <n-scrollbar :class="scrollbarClass">
+      <Scrollbar visibility="always" :propsClass="scrollbarClass">
         <textarea
           ref="textareaRef"
           v-model="internalContent"
@@ -22,7 +22,7 @@
           class="textareaEl mt-3 w-full resize-none overflow-y-hidden bg-transparent pr-2 text-[1rem] break-all placeholder-[#808080] placeholder:text-[1.2rem] focus:outline-none"
           :class="textareaClass"
         ></textarea>
-      </n-scrollbar>
+      </Scrollbar>
       <!-- 右侧按钮（仅在未聚焦时显示） -->
       <slot name="right-button"></slot>
     </div>
@@ -30,10 +30,12 @@
 </template>
 
 <script lang="ts" setup>
-import { NScrollbar, useMessage } from 'naive-ui'
 import { ref, watch, computed, nextTick, onMounted } from 'vue'
 
+import Scrollbar from '../common/Scrollbar.vue'
+
 import Avatar from '@/components/post/Avatar.vue'
+import { useMessage } from '@/composables/useMessage'
 import { useUserStore } from '@/stores'
 const message = useMessage()
 const userStore = useUserStore()

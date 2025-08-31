@@ -31,7 +31,7 @@
     <!-- 搜索框 -->
     <SearchInput />
     <!-- 推送 -->
-    <n-scrollbar class="hide-scrollbar" style="height: calc(100% - 3.2rem)">
+    <Scrollbar max-height="calc(100% - 3.2rem)">
       <div class="flex w-full flex-col gap-4 pt-4">
         <AsideContent>
           <div class="p-4">
@@ -53,15 +53,15 @@
           </div>
         </AsideContent>
       </div>
-    </n-scrollbar>
+    </Scrollbar>
   </StickyAside>
 </template>
 
 <script setup lang="ts">
 import { LoaderIcon } from 'lucide-vue-next'
-import { NScrollbar } from 'naive-ui'
 import { onMounted, ref, computed } from 'vue'
 
+import Scrollbar from '@/components/common/Scrollbar.vue'
 import AsideContent from '@/components/layout/AsideContent.vue'
 import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
@@ -114,7 +114,7 @@ const { targetEl: observerEl, canLoadMore } = useInfiniteScroll({
 
 onMounted(async () => {
   // 获取滚动容器
-  scrollContainerRef.value = document.querySelector('.n-scrollbar-container')
+  scrollContainerRef.value = document.querySelector('.scrollbar-container')
 
   // 首次加载
   if (feedStore.posts.length === 0) {

@@ -34,9 +34,7 @@
       </div>
       <!-- 文本 -->
       <div class="mr-4 text-[1rem]">
-        <!-- <n-scrollbar style="max-height: 400px"> -->
         <span class="tracking-tight break-all whitespace-pre-wrap">{{ post.content }}</span>
-        <!-- </n-scrollbar> -->
       </div>
       <!-- 图片/视频/媒体 -->
       <PostImage :post="post" class="mt-3" />
@@ -57,14 +55,13 @@
 </template>
 
 <script lang="ts" setup>
-import { useMessage } from 'naive-ui'
-// import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import PostImage from './PostImage.vue'
 
 import Avatar from '@/components/post/Avatar.vue'
 import PostAction from '@/components/post/PostAction.vue'
+import { useMessage } from '@/composables/useMessage'
 // import ImagePreview from '@/components/ui/ImagePreview.vue'
 import { usePostInteractionStore } from '@/stores'
 import { type Post } from '@/types'

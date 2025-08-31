@@ -130,7 +130,7 @@
       <!-- 搜索框 -->
       <SearchInput />
       <!-- 推送 -->
-      <n-scrollbar :trigger="'hover'" style="max-height: 90vh">
+      <Scrollbar max-height="90vh">
         <div class="flex w-full flex-col gap-4 pt-4">
           <AsideContent>
             <div class="p-4">
@@ -152,7 +152,7 @@
             </div>
           </AsideContent>
         </div>
-      </n-scrollbar>
+      </Scrollbar>
     </StickyAside>
   </div>
 </template>
@@ -160,11 +160,11 @@
 <script setup lang="ts">
 import { ArrowLeft } from 'lucide-vue-next'
 import { MoreHorizontalIcon } from 'lucide-vue-next'
-import { NScrollbar, useMessage } from 'naive-ui'
 import { storeToRefs } from 'pinia'
 import { watch, ref, nextTick, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import Scrollbar from '@/components/common/Scrollbar.vue'
 import AsideContent from '@/components/layout/AsideContent.vue'
 import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
@@ -176,6 +176,7 @@ import PostAction from '@/components/post/PostAction.vue'
 import PostImage from '@/components/post/PostImage.vue'
 import PostReply from '@/components/post/PostReply.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
+import { useMessage } from '@/composables/useMessage'
 import { usePostDetailStore, usePostInteractionStore, useWindowStore } from '@/stores'
 import { formatDatePostDetail } from '@/utils'
 
@@ -236,7 +237,7 @@ watch(
 
     // 保存当前正在显示的帖子的滚动位置
     if (displayingPostId.value && typeof displayingPostId.value === 'string') {
-      const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
+      const scrollbarDom = document.querySelector('.scrollbar-container') as HTMLElement | null
       if (scrollbarDom) {
         // console.log('保存滚动位置:', displayingPostId.value, scrollbarDom.scrollTop)
         windowStore.setPostDetailScroll(displayingPostId.value, scrollbarDom.scrollTop)
@@ -255,7 +256,7 @@ watch(
       if (windowStore.isBackNavigation) {
         const savedScroll = windowStore.getPostDetailScroll(newPostId)
         // console.log('尝试第一阶段恢复滚动位置:', newPostId, savedScroll)
-        const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
+        const scrollbarDom = document.querySelector('.scrollbar-container') as HTMLElement | null
         if (scrollbarDom && savedScroll >= 0) {
           // 当前容器最大可滚动位置（可能此时回复还没加载，高度不足）
           const maxNow = scrollbarDom.scrollHeight - scrollbarDom.clientHeight
@@ -296,7 +297,7 @@ watch(
     // 只有不在加载回复时再尝试
     if (isLoadingReplies.value) return
     await nextTick()
-    const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
+    const scrollbarDom = document.querySelector('.scrollbar-container') as HTMLElement | null
     if (scrollbarDom) {
       const target = pendingScrollTop.value
       const maxNow = scrollbarDom.scrollHeight - scrollbarDom.clientHeight
@@ -317,7 +318,7 @@ watch(
 // 组件销毁时保存当前滚动位置
 onUnmounted(() => {
   if (displayingPostId.value) {
-    const scrollbarDom = document.querySelector('.n-scrollbar-container') as HTMLElement | null
+    const scrollbarDom = document.querySelector('.scrollbar-container') as HTMLElement | null
     if (scrollbarDom) {
       // console.log('组件销毁时保存滚动位置:', displayingPostId.value, scrollbarDom.scrollTop)
       windowStore.setPostDetailScroll(displayingPostId.value, scrollbarDom.scrollTop)

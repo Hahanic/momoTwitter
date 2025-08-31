@@ -38,28 +38,24 @@
 </template>
 
 <script setup lang="ts">
-import { useLoadingBar, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 
+import { useMessage } from '@/composables/useMessage'
 import useUserStore from '@/stores/userUserStore'
 
 const router = useRouter()
-const loadingBar = useLoadingBar()
 const message = useMessage()
 
 const userStore = useUserStore()
 
 const logoutAndclear = async () => {
-  loadingBar.start()
   try {
     await userStore.logout()
     message.success('已退出登录')
     router.push('/login')
   } catch (error) {
     console.error('Logout failed:', error)
-    loadingBar.error()
   } finally {
-    loadingBar.finish()
   }
 }
 </script>

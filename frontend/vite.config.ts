@@ -16,4 +16,23 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // 将 vue 全家桶单独打包
+          if (id.includes('vue') || id.includes('vue-router') || id.includes('pinia')) {
+            return 'vue-vendor'
+          }
+          if (id.includes('naive-ui')) {
+            return 'naive-ui-vendor'
+          }
+          // 其他的 node_modules 依赖
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
+        },
+      },
+    },
+  },
 })

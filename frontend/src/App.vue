@@ -1,43 +1,31 @@
 <template>
-  <NMessageProvider>
-    <n-config-provider :theme="themeStore.isDarkTheme ? darkTheme : lightTheme" class="h-full w-full">
-      <n-loading-bar-provider>
-        <n-scrollbar
-          :class="{ 'hide-scrollbar': windowStore.isMobile }"
-          ref="scrollbarRef"
-          style="max-height: 100dvh"
-          @scroll="handleScroll"
-        >
-          <RouterView />
-        </n-scrollbar>
-      </n-loading-bar-provider>
-    </n-config-provider>
-  </NMessageProvider>
+  <MessageProvider>
+    <Scrollbar
+      ref="scrollbarRef"
+      class="scrollbar-container"
+      maxHeight="100dvh"
+      visibility="always"
+      @scroll="handleScroll"
+    >
+      <RouterView />
+    </Scrollbar>
+  </MessageProvider>
 </template>
 
 <script setup lang="ts">
-import {
-  NConfigProvider,
-  NScrollbar,
-  NMessageProvider,
-  NLoadingBarProvider,
-  darkTheme,
-  lightTheme,
-  type ScrollbarInst,
-} from 'naive-ui'
 import { nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
+import MessageProvider from './components/common/MessageProvider.vue'
+import Scrollbar from './components/common/Scrollbar.vue'
 import useUserStore from './stores/userUserStore.ts'
-import usethemeStore from './stores/useThemeStore.ts'
 import useWindowStore from './stores/useWindowStore.ts'
 
-const themeStore = usethemeStore()
 const windowStore = useWindowStore()
 const userStore = useUserStore()
 const route = useRoute()
 
-const scrollbarRef = ref<ScrollbarInst | null>(null)
+const scrollbarRef = ref<{ scrollContainer: HTMLElement } | null>(null)
 // 滚动事件
 const handleScroll = (e: Event) => {
   const target = e.target as HTMLElement
@@ -65,17 +53,19 @@ watch(
     }
     await nextTick(() => {
       if (routePath === '/home') {
-        scrollbarRef.value?.scrollTo({
+        scrollbarRef.value?.scrollContainer.scrollTo({
           top: windowStore.homeScrollTop,
           behavior: 'auto',
         })
       } else if (
         ['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)
       ) {
-        scrollbarRef.value?.scrollTo({
-          top: windowStore.userProfileScrollTop,
-          behavior: 'auto',
-        })
+        setTimeout(() => {
+          scrollbarRef.value?.scrollContainer.scrollTo({
+            top: windowStore.userProfileScrollTop,
+            behavior: 'auto',
+          })
+        }, 0)
       }
     })
   }

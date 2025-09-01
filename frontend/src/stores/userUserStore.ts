@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
@@ -8,11 +9,13 @@ import {
   fetchCurrentUser,
   fetchUserByUsername,
   updateUserProfileAPI,
+  refreshAccessToken,
 } from '@/api/index.ts'
 import { useUserPostStore } from '@/stores'
 import { type UserProfile, type LoginPayload, type RegisterPayload } from '@/types'
 
 const USER_STORAGE_KEY = 'user_profile'
+const USER_STORAGE_ACCESS_KEY = 'access_token'
 
 const useUserStore = defineStore('user', () => {
   const userPostStore = useUserPostStore()
@@ -30,6 +33,77 @@ const useUserStore = defineStore('user', () => {
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData))
     } else {
       localStorage.removeItem(USER_STORAGE_KEY)
+    }
+  }
+  // 保存访问令牌AccessToken
+  function setAccessToken(accessToken: string) {
+    localStorage.setItem(USER_STORAGE_ACCESS_KEY, accessToken)
+  }
+  // 获取当前的accessToken
+  function getAccessToken(): string | null {
+    return localStorage.getItem(USER_STORAGE_ACCESS_KEY)
+  }
+
+  // 删除访问令牌
+  function removeAccessToken() {
+    localStorage.removeItem(USER_STORAGE_ACCESS_KEY)
+  }
+
+  async function ensureValidToken(): Promise<void> {
+    const token = getAccessToken()
+    if (!token || !user.value) return
+
+    let needsRefresh = false
+    try {
+      const payload = jwtDecode<{ exp?: number }>(token)
+      if (!payload.exp) {
+        needsRefresh = true
+      } else {
+        const now = Math.floor(Date.now() / 1000)
+        if (payload.exp - now < 300) {
+          // 5分钟缓冲期
+          needsRefresh = true
+        }
+      }
+    } catch {
+      needsRefresh = true
+    }
+
+    if (needsRefresh) {
+      try {
+        const response = await refreshAccessToken()
+        const newAccessToken = response.accessToken
+        if (newAccessToken) {
+          setAccessToken(newAccessToken)
+          console.log('Token refreshed proactively.')
+        } else {
+          throw new Error('Refresh API did not return an access token.')
+        }
+      } catch (refreshError) {
+        console.error('Failed to refresh token. Logging out.', refreshError)
+        await logout()
+      }
+    }
+  }
+
+  async function initialize() {
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY)
+    const token = getAccessToken()
+
+    if (storedUser && token) {
+      setUser(JSON.parse(storedUser))
+
+      // 应用启动时立即检查一次 token 有效性
+      await ensureValidToken()
+
+      // 设置事件监听器，实现混合刷新策略
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          ensureValidToken()
+        }
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange) // 先移除，防止重复监听
+      document.addEventListener('visibilitychange', handleVisibilityChange)
     }
   }
 
@@ -51,12 +125,13 @@ const useUserStore = defineStore('user', () => {
   async function login(params: LoginPayload) {
     try {
       isLogining.value = true
-      const res: any = await loginUser(params)
+      const res = await loginUser(params)
       const userData = res.user
       if (!res.user) {
         throw new Error('从服务器返回的数据格式不正确')
       }
       setUser(userData)
+      setAccessToken(res.accessToken)
     } catch (err) {
       throw err
     } finally {
@@ -67,12 +142,13 @@ const useUserStore = defineStore('user', () => {
   async function register(params: RegisterPayload) {
     try {
       isRegistering.value = true
-      const res: any = await registerUser(params)
+      const res = await registerUser(params)
       const userData = res.user
       if (!res.user) {
         throw new Error('从服务器返回的数据格式不正确')
       }
       setUser(userData)
+      setAccessToken(res.accessToken)
     } catch (err) {
       throw err
     } finally {
@@ -88,6 +164,8 @@ const useUserStore = defineStore('user', () => {
     } catch (err) {
       throw err
     } finally {
+      setUser(null)
+      removeAccessToken()
     }
   }
   // 在 store 初始化时，尝试从 localStorage 恢复状态
@@ -145,6 +223,11 @@ const useUserStore = defineStore('user', () => {
     fetchUserProfile,
     updateUserProfile,
     currentUserProfile,
+    initialize,
+    setAccessToken,
+    removeAccessToken,
+    getAccessToken,
+    ensureValidToken,
     isFollowing,
     isSelf,
     isLoading,

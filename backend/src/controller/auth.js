@@ -1,7 +1,16 @@
+import { UAParser } from 'ua-parser-js'
+
 import Post from '../db/model/Post.js'
 import Relationship from '../db/model/Relationship.js'
+import Session from '../db/model/session.js'
 import User from '../db/model/User.js'
-import { sendResponse, generateToken, setTokenCookie, verifyUserToken } from '../utils/index.js'
+import {
+  sendResponse,
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+  verifyAccessToken,
+} from '../utils/index.js'
 
 export const getCurrentUser = async (req, res) => {
   const userId = req.user.id
@@ -80,10 +89,10 @@ export const getUserProfile = async (req, res) => {
   delete userToReturn.password
 
   // 如果用户登录了 则附带是否关注的信息
-  const token = req.cookies.token
-  if (token) {
+  const accessToken = req.headers.authorization?.split(' ')[1]
+  if (accessToken) {
     try {
-      const currentUserId = verifyUserToken(token)
+      const currentUserId = verifyAccessToken(accessToken)
       if (currentUserId && currentUserId.toString() === user._id.toString()) {
         return sendResponse(res, 200, '获取用户信息成功', {
           userProfile: userToReturn,
@@ -114,14 +123,17 @@ export const login = async (req, res) => {
     return sendResponse(res, 401, '账户或密码错误')
   }
 
+  // 创建会话和令牌
+  const accessToken = await createSessionAndTokens(user, req, res)
+
   // 生成token并设置cookie
   const userToReturn = user.toObject()
   delete userToReturn.password
 
-  const token = generateToken(userToReturn._id)
-  setTokenCookie(res, token)
+  // const token = generateToken(userToReturn._id)
+  // setTokenCookie(res, token)
 
-  sendResponse(res, 200, '登录成功', { user: userToReturn })
+  sendResponse(res, 200, '登录成功', { user: userToReturn, accessToken })
 }
 
 export const register = async (req, res) => {
@@ -147,16 +159,55 @@ export const register = async (req, res) => {
   const userToReturn = newUser.toObject()
   delete userToReturn.password
 
-  // 生成token并设置cookie
-  const token = generateToken(userToReturn._id)
-  setTokenCookie(res, token)
+  // 创建会话和令牌
+  const accessToken = await createSessionAndTokens(userToReturn, req, res)
 
-  sendResponse(res, 201, '注册成功', { user: userToReturn })
+  // 生成token并设置cookie
+  // const token = generateToken(userToReturn._id)
+  // setTokenCookie(res, token)
+
+  sendResponse(res, 201, '注册成功', { user: userToReturn, accessToken })
 }
 
 export const logout = async (req, res) => {
-  res.clearCookie('token')
-  sendResponse(res, 200, '登出成功')
+  try {
+    const refreshToken = req.cookies.refreshToken
+
+    if (refreshToken) {
+      try {
+        // 验证refreshToken并获取sessionId
+        const sessionId = verifyRefreshToken(refreshToken)
+
+        if (sessionId) {
+          // 删除对应的会话记录
+          await Session.findByIdAndDelete(sessionId)
+        }
+      } catch (error) {
+        console.log('删除出错...')
+      }
+    }
+
+    // 清除cookie
+    res.clearCookie('token')
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    })
+    sendResponse(res, 200, '登出成功')
+  } catch (error) {
+    console.error('Logout error:', error)
+
+    // 即使出错也要清理cookies
+    res.clearCookie('token')
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    })
+
+    sendResponse(res, 200, '登出成功')
+  }
 }
 
 export const getIdentifyingCode = (req, res) => {
@@ -166,4 +217,81 @@ export const getIdentifyingCode = (req, res) => {
     result += chars.charAt(Math.floor(Math.random() * chars.length))
   }
   sendResponse(res, 200, '成功', { code: result })
+}
+
+const createSessionAndTokens = async (user, req, res) => {
+  // 从请求中获取 IP 和 User-Agent
+  let ipAddress = req.ip || req.connection.remoteAddress
+  if (ipAddress.startsWith('::ffff:')) {
+    ipAddress = ipAddress.substring(7)
+  }
+  const uaString = req.headers['user-agent'] || 'Unknown'
+  const parser = new UAParser(uaString)
+  const deviceInfo = parser.getResult()
+  const userAgent = `${parser.getBrowser().name} on ${parser.getOS().name}`
+
+  // 保存会话信息
+  const session = new Session({
+    userId: user._id,
+    userAgent,
+    ipAddress,
+    deviceInfo: {
+      browser: deviceInfo.browser.name,
+      os: `${deviceInfo.os.name} ${deviceInfo.os.version || ''}`.trim(),
+      deviceType: deviceInfo.device.type || 'desktop',
+      deviceVendor: deviceInfo.device.vendor,
+      deviceModel: deviceInfo.device.model,
+    },
+  })
+  await session.save()
+
+  console.log(session.toObject())
+
+  // 生成双token
+  const refreshToken = generateRefreshToken(session._id)
+  const accessToken = generateAccessToken(user._id)
+
+  // 只设置refreshToken到cookie，accessToken通过响应返回
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30天
+  })
+  return accessToken
+}
+
+export const refreshAccessToken = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken
+  if (!refreshToken) {
+    return sendResponse(res, 401, '未提供刷新令牌')
+  }
+
+  try {
+    // 验证刷新令牌
+    const sessionId = verifyRefreshToken(refreshToken)
+    if (!sessionId) {
+      return sendResponse(res, 401, '刷新令牌无效')
+    }
+
+    // 查找会话
+    const session = await Session.findById(sessionId)
+    if (!session) {
+      return sendResponse(res, 401, '会话已过期或不存在')
+    }
+
+    // 查找用户
+    const user = await User.findById(session.userId).select('-password')
+    if (!user) {
+      return sendResponse(res, 401, '用户不存在')
+    }
+
+    // 生成新的访问令牌
+    const accessToken = generateAccessToken(user._id)
+
+    sendResponse(res, 200, '成功', { user, accessToken })
+  } catch (error) {
+    console.error('刷新令牌时出错:', error)
+    sendResponse(res, 500, '服务器错误')
+  }
 }

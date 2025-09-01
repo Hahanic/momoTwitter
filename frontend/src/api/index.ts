@@ -25,13 +25,29 @@ export const updateUserProfileAPI = (
 }
 
 // 用户注册
-export const registerUser = (userRegisterData: RegisterPayload) => {
+export const registerUser = (
+  userRegisterData: RegisterPayload
+): Promise<{ message: string; accessToken: string; user: UserProfile }> => {
   return axiosInstance.post('/auth/register', userRegisterData)
 }
 
 // 用户登录
-export const loginUser = (userLoginData: LoginPayload) => {
+export const loginUser = (
+  userLoginData: LoginPayload
+): Promise<{ message: string; accessToken: string; user: UserProfile }> => {
   return axiosInstance.post('/auth/login', userLoginData)
+}
+
+// 刷新访问令牌
+export const refreshAccessToken = async (): Promise<{ message: string; accessToken: string; user: UserProfile }> => {
+  return await axiosInstance.post(
+    '/auth/refresh-token',
+    {},
+    {
+      baseURL: import.meta.env.VITE_API_BASE_URL,
+      withCredentials: true,
+    }
+  )
 }
 
 // 用户退出登录

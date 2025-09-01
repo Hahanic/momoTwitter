@@ -9,7 +9,7 @@
         <div class="relative z-10 flex h-[64px] w-full items-center">
           <img
             @click="themeStore.toggleTheme()"
-            class="absolute left-[24px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
+            class="absolute left-[15px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
             src="/warp.svg"
           />
         </div>

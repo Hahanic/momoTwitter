@@ -3,7 +3,7 @@ import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
 import User from '../db/model/User.js'
 import { PostService } from '../services/postService.js'
-import { verifyUserToken, parseCursor, sendResponse } from '../utils/index.js'
+import { parseCursor, sendResponse, verifyAccessToken } from '../utils/index.js'
 
 // 发送帖子
 export const createPost = async (req, res) => {
@@ -90,10 +90,10 @@ export const getOnePost = async (req, res) => {
   }
 
   // 如果用户已登录，添加交互信息
-  const token = req.cookies.token
-  if (token) {
+  const accessToken = req.headers.authorization?.split(' ')[1]
+  if (accessToken) {
     try {
-      const currentUserId = verifyUserToken(token)
+      const currentUserId = verifyAccessToken(accessToken)
       if (currentUserId) {
         const interactions = await PostService.getUserInteractions(currentUserId, [postId])
         post = PostService.addUserInteractions([post], interactions)[0]
@@ -128,10 +128,10 @@ export const getPost = async (req, res) => {
   let results = posts
 
   // 如果用户已登录，添加交互信息
-  const token = req.cookies.token
-  if (token && posts.length > 0) {
+  const accessToken = req.headers.authorization?.split(' ')[1]
+  if (accessToken && posts.length > 0) {
     try {
-      const currentUserId = verifyUserToken(token)
+      const currentUserId = verifyAccessToken(accessToken)
       if (currentUserId) {
         const postIds = posts.map((p) => p._id)
         const interactions = await PostService.getUserInteractions(currentUserId, postIds)
@@ -175,10 +175,10 @@ export const getPostReplies = async (req, res) => {
   let results = replies
 
   // 如果用户已登录，添加交互信息
-  const token = req.cookies.token
-  if (token && replies.length > 0) {
+  const accessToken = req.headers.authorization?.split(' ')[1]
+  if (accessToken && replies.length > 0) {
     try {
-      const currentUserId = verifyUserToken(token)
+      const currentUserId = verifyAccessToken(accessToken)
       if (currentUserId) {
         const replyIds = replies.map((r) => r._id)
         const interactions = await PostService.getUserInteractions(currentUserId, replyIds)
@@ -242,12 +242,12 @@ export const getReplyParentPost = async (req, res) => {
   const ancestors = ancestorIds.map((id) => ancestorsMap.get(id.toString())).filter(Boolean) // 过滤掉不存在或不可见的帖子
 
   // 如果用户登录了，添加交互信息
-  const token = req.cookies.token
+  const accessToken = req.headers.authorization?.split(' ')[1]
   let resultParentPosts = ancestors
 
-  if (token && ancestors.length > 0) {
+  if (accessToken && ancestors.length > 0) {
     try {
-      const currentUserId = verifyUserToken(token)
+      const currentUserId = verifyAccessToken(accessToken)
       if (currentUserId) {
         const postIds = ancestors.map((p) => p._id)
         const interactions = await PostService.getUserInteractions(currentUserId, postIds)

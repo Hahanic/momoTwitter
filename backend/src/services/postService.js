@@ -2,7 +2,7 @@ import Bookmark from '../db/model/Bookmark.js'
 import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
 import User from '../db/model/User.js'
-import { verifyUserToken } from '../utils/index.js'
+import { verifyAccessToken } from '../utils/index.js'
 
 export class PostService {
   // 获取用户交互信息
@@ -161,10 +161,10 @@ export class PostService {
 
   static async decorateWithInteractionsIfNeeded(req, posts) {
     if (!posts.length) return posts
-    const token = req.cookies.token
-    if (!token) return posts
+    const accessToken = req.headers.authorization?.split(' ')[1]
+    if (!accessToken) return posts
     try {
-      const currentUserId = verifyUserToken(token)
+      const currentUserId = verifyAccessToken(accessToken)
       if (!currentUserId) return posts
       const ids = posts.map((p) => p._id).filter(Boolean)
       if (!ids.length) return posts

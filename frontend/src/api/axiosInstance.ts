@@ -1,16 +1,23 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'
 
+import { refreshAccessToken } from '.'
+
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 10000, //10秒
+  timeout: 20000, //20秒
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true,
 })
 
+// 请求拦截器 (Request Interceptor)
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const accessToken = localStorage.getItem('access_token')
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`
+    }
     return config
   },
   (error) => {
@@ -19,22 +26,44 @@ axiosInstance.interceptors.request.use(
   }
 )
 
-// 3. 响应拦截器 (Response Interceptor)
+// 响应拦截器 (Response Interceptor)
 axiosInstance.interceptors.response.use(
   (response) => {
     return response.data
   },
-  (error) => {
+  async (error) => {
+    // 原始请求配置
+    const originalRequest = error.config
+
     let userFriendlyMessage = '操作失败，请稍后重试'
     // 服务区响应状态码不在 2xx 范围内
     if (error.response) {
       const { status, data } = error.response
+
       switch (status) {
         case 401:
-          // 通常是 token 失效，重定向到登录页
-          userFriendlyMessage = data.message || '认证失败，请重新登录'
-          console.error('401: 未登录状态')
-          // window.location.href = '/login';
+          if (data?.code === 'TOKEN_EXPIRED' && !originalRequest._retry) {
+            originalRequest._retry = true
+
+            try {
+              const refreshResponse = await refreshAccessToken()
+
+              if (refreshResponse.accessToken) {
+                localStorage.setItem('access_token', refreshResponse.accessToken)
+
+                // 更新原始请求的Authorization头
+                originalRequest.headers.Authorization = `Bearer ${refreshResponse.accessToken}`
+
+                // 重试原始请求
+                return axiosInstance(originalRequest)
+              }
+            } catch (error) {
+              // 如果刷新 token 失败，清除 token 并重定向到登录页
+              localStorage.removeItem('access_token')
+              window.location.href = '/login'
+              return Promise.reject(error)
+            }
+          }
           break
         case 403:
           // 服务器拒绝执行，可能是权限不足

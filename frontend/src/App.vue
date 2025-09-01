@@ -65,6 +65,8 @@ watch(
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   userStore.checkCurrentUser()
+  // 启动认证状态管理
+  userStore.initialize()
 })
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)

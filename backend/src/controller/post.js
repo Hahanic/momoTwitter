@@ -3,6 +3,7 @@ import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
 import User from '../db/model/User.js'
 import { PostService } from '../services/postService.js'
+import { translateText } from '../services/translationService.js'
 import { parseCursor, sendResponse, verifyAccessToken } from '../utils/index.js'
 
 // 发送帖子
@@ -373,5 +374,26 @@ export const getUserCategoryPosts = async (req, res) => {
     return sendResponse(res, 200, '获取用户帖子成功', { posts: decorated, nextCursor })
   } catch (e) {
     return sendResponse(res, 500, '获取用户帖子失败', { error: e.message })
+  }
+}
+
+export const translatePost = async (req, res) => {
+  const { postId } = req.params
+  let ToLanguage = req.body?.targetLanguage || 'Simplified Chinese'
+
+  try {
+    const post = await Post.findById(postId)
+    if (!post) {
+      return sendResponse(res, 404, '帖子不存在')
+    }
+
+    if (!post.content || !post.content.trim()) {
+      return sendResponse(res, 400, '帖子没有可翻译的内容')
+    }
+
+    const translatedContent = await translateText(post.content, ToLanguage)
+    sendResponse(res, 200, '翻译成功', { translatedContent })
+  } catch (error) {
+    sendResponse(res, 500, '翻译失败', { error: error.message })
   }
 }

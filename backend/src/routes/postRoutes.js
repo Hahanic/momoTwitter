@@ -11,6 +11,7 @@ import {
   getOnePost,
   getReplyParentPost,
   getUserCategoryPosts,
+  translatePost,
 } from '../controller/post.js'
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
@@ -33,5 +34,7 @@ router.post('/:postId/bookmarks', protectAuthRoute, asyncHandler(bookmarkPost))
 router.post('/:postId/views', viewPost)
 // 获取某用户主页的帖子
 router.get('/:username/category', asyncHandler(getUserCategoryPosts))
+// 翻译帖子
+router.post('/:postId/translate', asyncHandler(translatePost))
 
 export default router

@@ -12,18 +12,18 @@
     <div class="flex w-full flex-col">
       <div class="mx-2 my-3 flex w-full items-center">
         <Settings :size="24" />
-        <p class="pl-2 text-xl">设置</p>
+        <p class="pl-2 text-xl">{{ t('more.settings') }}</p>
       </div>
       <ul>
         <li class="w-full transition-all hover:bg-[#f7f9f9] dark:hover:bg-[#16181c]">
           <RouterLink to="/more/account" class="flex w-full items-center justify-between p-3">
-            <p>你的账号</p>
+            <p>{{ t('more.yourAccount') }}</p>
             <span>&gt;</span>
           </RouterLink>
         </li>
         <li class="w-full transition-all hover:bg-[#f7f9f9] dark:hover:bg-[#16181c]">
           <RouterLink to="/more/settings" class="flex w-full items-center justify-between p-3">
-            <p>辅助功能、显示和语言</p>
+            <p>{{ t('more.accessibilityDisplayLanguages') }}</p>
             <span>&gt;</span>
           </RouterLink>
         </li>
@@ -49,12 +49,14 @@
 import { Settings } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 import useWindowStore from '@/stores/useWindowStore'
 
 const route = useRoute()
 const windowStore = useWindowStore()
+const { t } = useI18n()
 
 const { isMobile, isLargeScreen } = storeToRefs(windowStore)
 

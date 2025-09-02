@@ -6,7 +6,7 @@ dotenv.config()
 const openai_base_url = 'https://openai.qiniu.com/v1'
 const openai_api_key = process.env.QINIU_AI_API_KEY
 
-export const translateText = async (text, targetLanguage = 'Simplified Chinese') => {
+export const translateText = async (text, targetLanguage) => {
   if (!openai_api_key) {
     throw new Error('未配置七牛云 API Key')
   }

@@ -242,7 +242,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
   }
 
   // 翻译帖子
-  async function handleTranslatePost(postId: string, targetLanguage = 'Simplified Chinese') {
+  async function handleTranslatePost(postId: string) {
     if (!userStore.isAuthenticated) {
       throw new Error('用户未登录，无法翻译帖子')
     }
@@ -250,15 +250,17 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
       throw new Error('翻译操作已在进行中，请稍后再试')
     }
 
+    const currentLocale = localStorage.getItem('locale') || 'zh-CN'
+
     try {
       translatingInProgress.value = true
 
       const oldTranslation = translatedPosts.value.get(postId)
-      if (oldTranslation && oldTranslation.language === targetLanguage) {
+      if (oldTranslation && oldTranslation.language === currentLocale) {
         return oldTranslation
       }
 
-      const res = await translatePost(postId, targetLanguage)
+      const res = await translatePost(postId, currentLocale)
 
       translatedPosts.value.set(postId, { language: res.language, translatedContent: res.translatedContent })
 

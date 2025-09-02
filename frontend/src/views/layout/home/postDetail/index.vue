@@ -34,7 +34,7 @@
               />
               <div class="flex w-full flex-1 items-center justify-between text-[0.9rem]">
                 <!-- userName -->
-                <div class="flex h-full flex-col items-center">
+                <div class="flex h-full flex-col justify-center">
                   <span class="font-bold hover:underline">{{ currentPost.authorInfo.displayName }}</span>
                   <span class="text-center text-gray-500">@{{ currentPost.authorInfo.username }}</span>
                 </div>
@@ -44,13 +44,13 @@
                 </div>
               </div>
             </div>
-            <div class="flex-1">
+            <div class="mt-2 w-full flex-1">
               <!-- 内容 -->
               <div class="font-Rounded mx-2 text-[1rem]">
                 <span class="tracking-tight break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
               </div>
-              <!-- 翻译按钮 -->
               <div class="mx-2">
+                <!-- 翻译按钮 -->
                 <button
                   v-if="!isTranslating && !displayTranslation"
                   @click="handleTranslate"
@@ -66,13 +66,11 @@
                 </div>
 
                 <div v-if="isTranslating" class="text-[0.9rem] text-gray-500">正在翻译...</div>
-
-                <div v-if="translationResult && displayTranslation" class="translation-container pt-2">
-                  <div class="font-Rounded text-[1rem]">
-                    <span class="tracking-tight break-all whitespace-pre-wrap">{{
-                      translationResult.translatedContent
-                    }}</span>
-                  </div>
+                <!-- 翻译结果 -->
+                <div v-if="translationResult && displayTranslation" class="font-Rounded text-[1rem]">
+                  <span class="tracking-tight break-all whitespace-pre-wrap">{{
+                    translationResult.translatedContent
+                  }}</span>
                 </div>
               </div>
               <!-- 图片/视频/媒体 -->

@@ -379,7 +379,7 @@ export const getUserCategoryPosts = async (req, res) => {
 
 export const translatePost = async (req, res) => {
   const { postId } = req.params
-  let ToLanguage = req.body?.targetLanguage || 'Simplified Chinese'
+  let ToLanguage = req.body?.targetLanguage || 'zh-CN'
 
   try {
     const post = await Post.findById(postId)

@@ -56,22 +56,9 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  HomeIcon,
-  Search,
-  Bell,
-  Mail,
-  BotIcon,
-  Rows3,
-  Bookmark,
-  BriefcaseBusiness,
-  Users2,
-  User2,
-  CircleEllipsis,
-  Send,
-  ArrowUp,
-} from 'lucide-vue-next'
+import { HomeIcon, Search, Bell, Mail, BotIcon, Users2, User2, CircleEllipsis, Send, ArrowUp } from 'lucide-vue-next'
 import { defineAsyncComponent, ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
@@ -86,6 +73,7 @@ const userStore = useUserStore()
 const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 // 模态框
 const AppModal = defineAsyncComponent(() => import('@/components/modal/index.vue'))
@@ -143,18 +131,15 @@ const handleSidebarAction = (actionType: string) => {
 const menuLists = computed(() => {
   const username = userStore.user?.username
   return [
-    { icon: HomeIcon, label: '主页', href: '/home' },
-    { icon: Search, label: '探索', href: '/explore' },
-    { icon: Bell, label: '通知', href: '/notifications' },
-    { icon: Mail, label: '私信', href: '/messages' },
-    { icon: BotIcon, label: '智能', href: '/bot' },
-    { icon: Rows3, label: '列表', href: '/lists' },
-    { icon: Bookmark, label: '书签', href: '/bookmarks' },
-    { icon: BriefcaseBusiness, label: '工作', href: '/work' },
-    { icon: Users2, label: '社群', href: '/groups' },
-    { icon: User2, label: '个人资料', href: username ? `/profile/${username}` : '/login' },
-    { icon: CircleEllipsis, label: '更多', href: '/more' },
-    { icon: Send, label: '发帖', href: null, action: 'compose' },
+    { icon: HomeIcon, label: t('sidebar.home'), href: '/home' },
+    { icon: Search, label: t('sidebar.explore'), href: '/explore' },
+    { icon: Bell, label: t('sidebar.notifications'), href: '/notifications' },
+    { icon: Mail, label: t('sidebar.messages'), href: '/messages' },
+    { icon: BotIcon, label: t('sidebar.bot'), href: '/bot' },
+    { icon: Users2, label: t('sidebar.groups'), href: '/groups' },
+    { icon: User2, label: t('sidebar.profile'), href: username ? `/profile/${username}` : '/login' },
+    { icon: CircleEllipsis, label: t('sidebar.more'), href: '/more' },
+    { icon: Send, label: t('sidebar.post'), href: null, action: 'compose' },
   ]
 })
 

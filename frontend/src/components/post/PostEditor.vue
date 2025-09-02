@@ -16,7 +16,7 @@
           ref="textareaRef"
           v-model="internalContent"
           maxlength="301"
-          :placeholder="placeholder"
+          :placeholder="props.placeholder"
           @focus="$emit('focus')"
           @blur="$emit('blur')"
           class="textareaEl mt-3 w-full resize-none overflow-y-hidden bg-transparent pr-2 text-[1rem] break-all placeholder-[#808080] placeholder:text-[1.2rem] focus:outline-none"
@@ -31,14 +31,17 @@
 
 <script lang="ts" setup>
 import { ref, watch, computed, nextTick, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import Scrollbar from '../common/Scrollbar.vue'
 
 import Avatar from '@/components/post/Avatar.vue'
 import { useMessage } from '@/composables/useMessage'
 import { useUserStore } from '@/stores'
+
 const message = useMessage()
 const userStore = useUserStore()
+const { t } = useI18n()
 
 interface Props {
   modelValue: string
@@ -49,7 +52,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: '有什么新鲜事?',
+  placeholder: '',
   scrollbarClass: 'sm:max-h-[600px]',
   textareaClass: '',
 })
@@ -86,7 +89,7 @@ watch(
     // 限制三百字
     if (newValue.length >= 301) {
       internalContent.value = newValue.slice(0, 300)
-      message.warning('不能超过300字')
+      message.warning(t('post.maxLengthWarning'))
     }
 
     // 输入框高度：根据内容自适应

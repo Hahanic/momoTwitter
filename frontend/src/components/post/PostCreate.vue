@@ -1,7 +1,7 @@
 <template>
   <div class="dark:border-borderDark border-borderWhite w-full border-b-1">
     <!-- 编辑器区域 -->
-    <PostEditor v-model="messageContent" placeholder="有什么新鲜事?" />
+    <PostEditor v-model="messageContent" :placeholder="t('post.whatsHappening')" />
 
     <!-- 已选择图片预览区 -->
     <PostImagePre
@@ -21,7 +21,7 @@
           :max-count="MAX_IMAGES"
         />
         <div>
-          <SubmitButton :disabled="!canSubmit" @click="handlePosting" text="发帖" />
+          <SubmitButton :disabled="!canSubmit" @click="handlePosting" :text="t('post.submit')" />
         </div>
       </div>
     </div>
@@ -29,6 +29,8 @@
 </template>
 
 <script lang="ts" setup>
+import { useI18n } from 'vue-i18n'
+
 import PostImagePre from './PostImagePre.vue'
 
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
@@ -39,6 +41,7 @@ import { usePostFeedStore, usePostInteractionStore } from '@/stores'
 
 const postFeedStore = usePostFeedStore()
 const postInteractionStore = usePostInteractionStore()
+const { t } = useI18n()
 
 const {
   messageContent,

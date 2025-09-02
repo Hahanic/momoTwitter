@@ -3,13 +3,13 @@
     <!-- 输入框区域 -->
     <PostEditor
       v-model="messageContent"
+      :placeholder="t('post.submitReply')"
       :scrollbar-class="'sm:max-h-[230px]'"
       :textarea-class="'h-[2rem] leading-[1.4rem] tracking-[1.2px]'"
-      placeholder="发布你的回复"
       @focus="handleTextareaFocus"
     >
       <template #right-button>
-        <SubmitButton v-if="!hasUserFocused" :disabled="true" text="回复" class="mt-1 mr-4" />
+        <SubmitButton v-if="!hasUserFocused" :disabled="true" :text="t('post.reply')" class="mt-1 mr-4" />
       </template>
     </PostEditor>
 
@@ -44,7 +44,7 @@
           :current-count="selectedImages.length"
           :max-count="MAX_IMAGES"
         />
-        <SubmitButton :disabled="!canSubmit" @click="handlePosting" text="回复" />
+        <SubmitButton :disabled="!canSubmit" @click="handlePosting" :text="t('post.reply')" />
       </div>
     </div>
   </div>
@@ -53,6 +53,7 @@
 <script lang="ts" setup>
 import { MapPin } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import PostImagePre from './PostImagePre.vue'
 
@@ -70,6 +71,7 @@ const handleTextareaFocus = () => {
 
 const postDetailStore = usePostDetailStore()
 const windowStore = useWindowStore()
+const { t } = useI18n()
 
 const {
   messageContent,

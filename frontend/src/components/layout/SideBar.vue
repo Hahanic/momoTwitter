@@ -13,7 +13,7 @@
               :to="item.href"
               class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
             >
-              <span class="relative left-8 hidden xl:block">{{ item.label }}</span>
+              <span class="relative left-8 hidden text-nowrap xl:block">{{ item.label }}</span>
               <component
                 :is="item.icon"
                 :size="'1.7rem'"

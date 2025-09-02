@@ -136,7 +136,7 @@ import { onMounted, ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 import { fetchCaptcha } from '@/api/index.ts'
-import btnTheme from '@/components/ui/ToggleThemeBtn.vue'
+import btnTheme from '@/components/ui/ThemeSwitcher.vue'
 import { useMessage } from '@/composables/useMessage'
 import useUserStore from '@/stores/userUserStore'
 import { throttle } from '@/utils/index.ts'

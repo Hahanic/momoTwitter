@@ -1,0 +1,25 @@
+{
+  "sidebar": {
+    "home": "主页",
+    "explore": "探索",
+    "notifications": "通知",
+    "messages": "私信",
+    "bot": "智能",
+    "groups": "社群",
+    "profile": "个人资料",
+    "more": "更多",
+    "post": "发帖"
+  },
+  "more": {
+    "settings": "设置",
+    "yourAccount": "你的账号",
+    "accessibilityDisplayLanguages": "辅助功能、显示和语言"
+  },
+  "post": {
+    "whatsHappening": "有什么新鲜事?",
+    "submitReply": "发布你的回复",
+    "maxLengthWarning": "不能超过300字",
+    "submit": "发帖",
+    "reply": "回复"
+  }
+}

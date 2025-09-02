@@ -120,7 +120,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
-import btnTheme from '@/components/ui/ToggleThemeBtn.vue'
+import btnTheme from '@/components/ui/ThemeSwitcher.vue'
 import { useMessage } from '@/composables/useMessage'
 import useUserStore from '@/stores/userUserStore'
 import { throttle } from '@/utils/index.ts'

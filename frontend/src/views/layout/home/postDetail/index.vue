@@ -49,6 +49,32 @@
               <div class="font-Rounded mx-2 text-[1rem]">
                 <span class="tracking-tight break-all whitespace-pre-wrap">{{ currentPost.content }}</span>
               </div>
+              <!-- 翻译按钮 -->
+              <div class="mx-2">
+                <button
+                  v-if="!isTranslating && !displayTranslation"
+                  @click="handleTranslate"
+                  class="flex items-start justify-center text-[0.9rem] text-blue-500 hover:underline"
+                >
+                  翻译推文
+                </button>
+                <div
+                  v-else-if="translationResult && !isTranslating && displayTranslation"
+                  class="text-[0.8rem] text-blue-500"
+                >
+                  由deepseek翻译
+                </div>
+
+                <div v-if="isTranslating" class="text-[0.9rem] text-gray-500">正在翻译...</div>
+
+                <div v-if="translationResult && displayTranslation" class="translation-container pt-2">
+                  <div class="font-Rounded text-[1rem]">
+                    <span class="tracking-tight break-all whitespace-pre-wrap">{{
+                      translationResult.translatedContent
+                    }}</span>
+                  </div>
+                </div>
+              </div>
               <!-- 图片/视频/媒体 -->
               <PostImage :post="currentPost" />
               <!-- 日期 -->
@@ -162,7 +188,7 @@
 import { ArrowLeft } from 'lucide-vue-next'
 import { MoreHorizontalIcon } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { watch, ref, nextTick } from 'vue'
+import { watch, ref, nextTick, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
@@ -197,6 +223,15 @@ const pendingScrollTop = ref<number | null>(null)
 
 const { currentPost, replies, isLoadingReplies, hasMoreReplies, parentPosts } = storeToRefs(detailStore)
 
+const translationResult = computed(() => {
+  if (!currentPost.value) return null
+  return interactionStore.translatedPosts.get(currentPost.value._id)
+})
+
+const isTranslating = computed(() => interactionStore.isTranslatingPost())
+
+const displayTranslation = ref(false)
+
 // 加载更多回复
 const loadMoreReplies = async () => {
   try {
@@ -225,6 +260,19 @@ const handlePostBookmark = async () => {
     await interactionStore.toggleBookmark(currentPost.value._id)
   } catch (error: any) {
     message.error('收藏失败')
+    console.error(error.message || error)
+  }
+}
+// 翻译
+const handleTranslate = async () => {
+  if (!currentPost.value) return
+
+  displayTranslation.value = true
+
+  try {
+    await interactionStore.handleTranslatePost(currentPost.value._id)
+  } catch (error: any) {
+    message.error('翻译失败')
     console.error(error.message || error)
   }
 }

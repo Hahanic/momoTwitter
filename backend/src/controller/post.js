@@ -392,7 +392,7 @@ export const translatePost = async (req, res) => {
     }
 
     const translatedContent = await translateText(post.content, ToLanguage)
-    sendResponse(res, 200, '翻译成功', { translatedContent })
+    sendResponse(res, 200, '翻译成功', { translatedContent, language: ToLanguage })
   } catch (error) {
     sendResponse(res, 500, '翻译失败', { error: error.message })
   }

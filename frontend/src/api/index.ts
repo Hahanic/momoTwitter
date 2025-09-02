@@ -134,6 +134,14 @@ export const bookmarkPost = (
   return axiosInstance.post(`/posts/${postId}/bookmarks`)
 }
 
+// 翻译帖子
+export const translatePost = (
+  postId: string,
+  targetLanguage: string = 'Simplified Chinese'
+): Promise<{ message: string; translatedContent: string; language: string }> => {
+  return axiosInstance.post(`/posts/${postId}/translate`, { targetLanguage })
+}
+
 // 浏览帖子
 export const recordPostView = (
   postId: string

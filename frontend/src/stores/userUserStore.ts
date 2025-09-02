@@ -25,7 +25,7 @@ const useUserStore = defineStore('user', () => {
   const isLogining = ref<boolean>(false)
   const isRegistering = ref<boolean>(false)
   // 判断用户是否登录
-  const isAuthenticated = computed(() => !!user.value)
+  const isAuthenticated = computed(() => !!user.value && !!getAccessToken())
   // 保存用户信息
   function setUser(userData: UserProfile | null) {
     user.value = userData

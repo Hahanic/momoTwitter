@@ -4,18 +4,22 @@ import { ref } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import useUserStore from './userUserStore.ts'
 
-import { likePost, bookmarkPost, createPost, recordPostView } from '@/api/index.ts'
+import { likePost, bookmarkPost, createPost, recordPostView, translatePost } from '@/api/index.ts'
 import type { CreatePostPayload } from '@/types'
 
 const usePostInteractionStore = defineStore('postInteraction', () => {
   const postCacheStore = usePostCacheStore()
   const userStore = useUserStore()
 
+  // 存储已经翻译的帖子ID和目标语言和内容
+  const translatedPosts = ref<Map<string, { language: string; translatedContent: string }>>(new Map())
+
   // 防止重复操作的状态跟踪
   const likingInProgress = ref(new Set<string>())
   const bookmarkingInProgress = ref(new Set<string>())
   const replyingInProgress = ref(new Set<string>())
   const postingInProgress = ref(false)
+  const translatingInProgress = ref(false)
 
   // 点赞/取消点赞
   async function toggleLike(postId: string) {
@@ -237,6 +241,35 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     return
   }
 
+  // 翻译帖子
+  async function handleTranslatePost(postId: string, targetLanguage = 'Simplified Chinese') {
+    if (!userStore.isAuthenticated) {
+      throw new Error('用户未登录，无法翻译帖子')
+    }
+    if (translatingInProgress.value) {
+      throw new Error('翻译操作已在进行中，请稍后再试')
+    }
+
+    try {
+      translatingInProgress.value = true
+
+      const oldTranslation = translatedPosts.value.get(postId)
+      if (oldTranslation && oldTranslation.language === targetLanguage) {
+        return oldTranslation
+      }
+
+      const res = await translatePost(postId, targetLanguage)
+
+      translatedPosts.value.set(postId, { language: res.language, translatedContent: res.translatedContent })
+
+      return res
+    } catch (error) {
+      console.error('翻译帖子失败:', error)
+    } finally {
+      translatingInProgress.value = false
+    }
+  }
+
   // 检查是否正在进行某个操作
   function isLikingPost(postId: string): boolean {
     return likingInProgress.value.has(postId)
@@ -254,6 +287,10 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     return postingInProgress.value
   }
 
+  function isTranslatingPost(): boolean {
+    return translatingInProgress.value
+  }
+
   // 清除所有操作状态（用于重置或错误恢复）
   function clearAllOperations() {
     likingInProgress.value.clear()
@@ -267,15 +304,20 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     toggleLike,
     toggleBookmark,
     toggleRetweet,
+    handleTranslatePost,
     handleCreateReply,
     handleCreatePost,
     viewPost,
+
+    // state
+    translatedPosts,
 
     // 状态检查方法
     isLikingPost,
     isBookmarkingPost,
     isReplyingToPost,
     isCreatingPost,
+    isTranslatingPost,
 
     // 工具方法
     clearAllOperations,

@@ -1,7 +1,7 @@
 <template>
   <main
     :class="{ 'dark:border-borderDark border-borderWhite border-x-1': !windowStore.isMobile }"
-    class="w-[100vw] sm:w-[38rem]"
+    class="w-full sm:w-[38rem]"
   >
     <slot />
   </main>

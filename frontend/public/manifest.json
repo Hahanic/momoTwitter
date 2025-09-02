@@ -1,7 +1,7 @@
 {
-  "name": "你的应用全名 (例如：Gemini Web App)",
-  "short_name": "你的应用短名 (例如：Gemini)",
-  "description": "关于你的应用的简短描述。",
+  "name": "momoTwitter",
+  "short_name": "momoTwitter",
+  "description": "社交媒体",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex w-full">
     <MainContainer>
       <StickyHead>
         <div class="flex h-[3.2rem] items-center">
@@ -90,6 +90,7 @@
             </div>
           </div>
         </div>
+        <div v-else class="flex h-60 w-full items-center justify-center"></div>
 
         <!-- 用户发送回复 -->
         <PostReply />

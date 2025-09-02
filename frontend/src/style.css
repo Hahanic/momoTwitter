@@ -3,7 +3,7 @@
 @import 'tailwindcss';
 
 @theme {
-  /* 自定义字体 */
+  /* 自定义字体，帖子用 */
   --font-Rounded: 'M PLUS Rounded 1c', sans-serif;
   /* 自定义断点 */
   --breakpoint-sm: 700px;
@@ -22,11 +22,23 @@
 
 html,
 body {
+  margin: 0;
+  padding: 0;
   font-family: 'Noto Sans SC', sans-serif;
   width: 100%;
   min-height: 100vh;
   font-size: 16px;
   color: white;
+}
+html {
+  overflow-y: scroll;
+}
+body {
+  padding-right: calc(100vw - 100%);
+}
+html.modal-open {
+  overflow: hidden;
+  padding-right: var(--scrollbar-width, 0px);
 }
 #app {
   width: 100%;

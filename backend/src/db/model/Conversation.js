@@ -1,10 +1,5 @@
 import mongoose from 'mongoose'
 
-/**
- * Conversation Schema
- * 作用：存储每个对话（私聊或群聊）的元信息。
- * 主要用于在用户的私信列表中展示对话，并按最新消息排序。
- */
 const conversationSchema = new mongoose.Schema(
   {
     // 参与对话的所有用户ID
@@ -20,17 +15,16 @@ const conversationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // 群聊名称 (仅当 isGroup 为 true 时)
+    // 群聊名称
     groupName: {
       type: String,
       trim: true,
     },
-    // 群聊头像 (仅当 isGroup 为 true 时)
+    // 群聊头像
     groupAvatar: {
       type: String,
     },
 
-    // --- 反范式化字段，用于提高私信列表的加载性能 ---
     // 最后一条消息的发送时间，用于对话列表排序
     lastMessageAt: {
       type: Date,

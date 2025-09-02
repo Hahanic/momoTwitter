@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full justify-center bg-white text-amber-950 dark:bg-[#000] dark:text-white">
-    <div class="flex transition-all" :inert="showModal">
+    <div class="flex transition-all" :inert="showModal" :class="{ 'w-full': windowStore.isMobile }">
       <!-- 桌面端菜单 -->
       <header
         v-if="!windowStore.isMobile"
@@ -9,7 +9,7 @@
         <div class="relative z-10 flex h-[64px] w-full items-center">
           <img
             @click="themeStore.toggleTheme()"
-            class="absolute left-[15px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
+            class="absolute left-[8px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
             src="/warp.svg"
           />
         </div>
@@ -24,7 +24,7 @@
         </header>
       </transition>
       <!-- 主体内容 路由出口 -->
-      <div class="flex" :class="{ 'pb-16': windowStore.isMobile }">
+      <div class="flex w-full" :class="{ 'pb-16': windowStore.isMobile }">
         <router-view v-slot="{ Component, route }">
           <!-- 移动端且路由为 PostDetail 时，执行特定动画 -->
           <transition v-if="windowStore.isMobile && route.name === 'PostDetail'" name="slide-right" mode="out-in">
@@ -106,7 +106,23 @@ watch(
   },
   { immediate: true }
 )
-
+// 监听模态框状态，控制body滚动
+watch(
+  showModal,
+  (isModalOpen) => {
+    if (isModalOpen) {
+      // 计算并设置滚动条宽度
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+      document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
+      document.documentElement.classList.add('modal-open')
+    } else {
+      // 恢复滚动
+      document.documentElement.classList.remove('modal-open')
+      document.documentElement.style.removeProperty('--scrollbar-width')
+    }
+  },
+  { immediate: true }
+)
 // 关闭模态框
 const closeModal = () => {
   const query = { ...route.query }

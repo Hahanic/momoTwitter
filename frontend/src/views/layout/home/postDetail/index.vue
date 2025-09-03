@@ -186,7 +186,7 @@
 import { ArrowLeft } from 'lucide-vue-next'
 import { MoreHorizontalIcon } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { watch, ref, nextTick, computed } from 'vue'
+import { watch, ref, nextTick, computed, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
@@ -325,10 +325,19 @@ watch(
     if (!windowStore.isBackNavigation) return
     if (pendingScrollTop.value == null) return
     if (isLoadingReplies.value) return
-
     await nextTick()
     window.scrollTo({ top: pendingScrollTop.value, behavior: 'auto' })
   }
 )
+
+// 这里是因为从该帖子返回然后再次进入该帖子时确保本帖子在顶部
+// 因为PostId，watch没有继续往下执行scrollIntoView
+onActivated(() => {
+  if (windowStore.navType === 'forward') {
+    if (currentPostRef.value) {
+      currentPostRef.value.scrollIntoView({ behavior: 'auto', block: 'start' })
+    }
+  }
+})
 </script>
 <style scoped></style>

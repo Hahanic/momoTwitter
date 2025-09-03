@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 import layoutRoutes from './modules/layout.ts'
 import userRoutes from './modules/user.ts'
@@ -12,30 +12,6 @@ if (history.scrollRestoration) {
 }
 
 const routes = [...layoutRoutes, ...userRoutes]
-
-// 导航栈判断 back / forward / new / refresh
-const _navStack: string[] = []
-let _navIndex = -1
-function recordDirection(to: RouteLocationNormalized): 'new' | 'back' | 'forward' | 'refresh' {
-  const key = to.fullPath
-  const existIdx = _navStack.indexOf(key)
-  if (existIdx === -1) {
-    // 新分支：截断 forward 分支后 push
-    _navStack.splice(_navIndex + 1)
-    _navStack.push(key)
-    _navIndex = _navStack.length - 1
-    return 'new'
-  }
-  if (existIdx < _navIndex) {
-    _navIndex = existIdx
-    return 'back'
-  }
-  if (existIdx > _navIndex) {
-    _navIndex = existIdx
-    return 'forward'
-  }
-  return 'refresh'
-}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,10 +31,17 @@ router.beforeEach((to, _from, next) => {
   } else {
     next()
   }
-  console.log(_navStack)
   // 记录导航方向，这里主要是要恢复滚动条位置
-  const dir = recordDirection(to)
+  const dir = windowStore.recordDirection(to)
   windowStore.setBackNavigation(dir === 'back')
+  windowStore.setNavType(dir)
+  console.log('导航类型:', dir)
+})
+
+router.afterEach((_to, _from) => {
+  const windowStore = useWindowStore()
+
+  console.log(windowStore.navigationStack)
 })
 
 export default router

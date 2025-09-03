@@ -1,14 +1,9 @@
 import { useBreakpoints } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { RouteLocationNormalized } from 'vue-router'
 
 const useWindowStore = defineStore('window', () => {
-  // 是否是通过回退移动的路由，如router.back() // 相关的使用在routers/index.ts
-  const isBackNavigation = ref<boolean>(false)
-  function setBackNavigation(value: boolean) {
-    isBackNavigation.value = value
-  }
-
   // Home的滚动记忆
   let homeScrollTop = ref<number>(0)
   function setHomeScrollTop(position: number) {
@@ -78,6 +73,43 @@ const useWindowStore = defineStore('window', () => {
   const isMobile = breakpoints.smaller('tablet')
   const isLargeScreen = breakpoints.greaterOrEqual('laptop')
 
+  // 是否是通过回退移动的路由，如router.back() // 相关的使用在routers/index.ts
+  const isBackNavigation = ref<boolean>(false)
+  function setBackNavigation(value: boolean) {
+    isBackNavigation.value = value
+  }
+
+  // 路由移动的类型
+  const navType = ref<'new' | 'back' | 'forward' | 'refresh'>('new')
+  function setNavType(value: 'new' | 'back' | 'forward' | 'refresh') {
+    navType.value = value
+  }
+
+  // 导航栈的记录
+  const navigationStack = ref<string[]>([])
+
+  let _navIndex = -1
+  function recordDirection(to: RouteLocationNormalized): 'new' | 'back' | 'forward' | 'refresh' {
+    const key = to.fullPath
+    const existIdx = navigationStack.value.indexOf(key)
+    if (existIdx === -1) {
+      // 新分支：截断 forward 分支后 push
+      navigationStack.value.splice(_navIndex + 1)
+      navigationStack.value.push(key)
+      _navIndex = navigationStack.value.length - 1
+      return 'new'
+    }
+    if (existIdx < _navIndex) {
+      _navIndex = existIdx
+      return 'back'
+    }
+    if (existIdx > _navIndex) {
+      _navIndex = existIdx
+      return 'forward'
+    }
+    return 'refresh'
+  }
+
   return {
     homeScrollTop,
     userProfileScrollTop,
@@ -88,8 +120,12 @@ const useWindowStore = defineStore('window', () => {
     getPostDetailScroll,
     clearPostDetailScroll,
 
+    navigationStack,
     isBackNavigation,
     setBackNavigation,
+    recordDirection,
+    setNavType,
+    navType,
 
     showNav,
     handleScrollDirection,

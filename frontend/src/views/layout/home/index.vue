@@ -109,7 +109,7 @@ const { targetEl: observerEl, canLoadMore } = useInfiniteScroll({
   isLoading: computed(() => feedStore.isLoading),
   hasMore: computed(() => feedStore.hasMore),
   scrollContainerRef: scrollContainer,
-  rootMargin: '0px 0px 200px 0px',
+  rootMargin: '0px 0px 500px 0px',
   debounceMs: 300,
 })
 

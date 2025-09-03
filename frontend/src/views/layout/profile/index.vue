@@ -150,13 +150,14 @@ import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
-import { useUserStore } from '@/stores'
+import { useUserStore, useWindowStore } from '@/stores'
 import useUserPostStore from '@/stores/useUserPostStore'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const userPostStore = useUserPostStore()
+const windowStore = useWindowStore()
 
 const { currentUserProfile, isFollowing, isSelf, isLoading } = storeToRefs(userStore)
 
@@ -184,6 +185,9 @@ onActivated(async () => {
   if (route.params.username !== userStore.currentUserProfile?.username) {
     userPostStore.resetAll()
     await fetchProfile(route.params.username as string)
+  }
+  if (windowStore.navType === 'new') {
+    document.documentElement.scrollTo({ top: 0, behavior: 'auto' })
   }
 })
 

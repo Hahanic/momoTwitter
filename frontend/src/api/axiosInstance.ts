@@ -43,6 +43,7 @@ axiosInstance.interceptors.response.use(
       switch (status) {
         case 401:
           if (data?.code === 'TOKEN_EXPIRED' && !originalRequest._retry) {
+            console.log('未授权访问')
             originalRequest._retry = true
 
             try {

@@ -1,4 +1,13 @@
 {
+  "home": {
+    "forYou": "推荐",
+    "following": "关注",
+    "noMoreContent": "没有更多内容了",
+    "subscribeToPremium": "订阅Premium",
+    "subscribeDescription": "订阅以解锁新功能，若符合条件，还可获得收入分成。",
+    "subscribeButton": "订阅",
+    "whatsHappening": "有什么新鲜事"
+  },
   "sidebar": {
     "home": "主页",
     "explore": "探索",
@@ -20,6 +29,7 @@
     "submitReply": "发布你的回复",
     "maxLengthWarning": "不能超过300字",
     "submit": "发帖",
-    "reply": "回复"
+    "reply": "回复",
+    "draft": "草稿"
   }
 }

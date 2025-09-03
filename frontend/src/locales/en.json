@@ -1,4 +1,13 @@
 {
+  "home": {
+    "forYou": "For you",
+    "following": "Following",
+    "noMoreContent": "No more content",
+    "subscribeToPremium": "Subscribe to Premium",
+    "subscribeDescription": "Subscribe to unlock new features and if eligible, receive a share of ad revenue.",
+    "subscribeButton": "Subscribe",
+    "whatsHappening": "What's happening"
+  },
   "sidebar": {
     "home": "Home",
     "explore": "Explore",
@@ -20,6 +29,7 @@
     "submitReply": "Post your reply",
     "maxLengthWarning": "Cannot exceed 300 characters",
     "submit": "Post",
-    "reply": "Reply"
+    "reply": "Reply",
+    "draft": "Draft"
   }
 }

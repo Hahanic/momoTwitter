@@ -19,7 +19,6 @@ const route = useRoute()
 // 滚动事件
 const handleScroll = () => {
   const scrollTop = window.scrollY
-
   // Home页
   if (route.path === '/home') {
     // 记忆Home页的滚动位置
@@ -51,12 +50,10 @@ watch(
       } else if (
         ['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)
       ) {
-        setTimeout(() => {
-          window.scrollTo({
-            top: windowStore.userProfileScrollTop,
-            behavior: 'auto',
-          })
-        }, 0)
+        window.scrollTo({
+          top: windowStore.userProfileScrollTop,
+          behavior: 'auto',
+        })
       }
     })
   }

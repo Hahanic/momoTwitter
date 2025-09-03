@@ -55,7 +55,7 @@ router.beforeEach((to, _from, next) => {
   } else {
     next()
   }
-
+  console.log(_navStack)
   // 记录导航方向，这里主要是要恢复滚动条位置
   const dir = recordDirection(to)
   windowStore.setBackNavigation(dir === 'back')

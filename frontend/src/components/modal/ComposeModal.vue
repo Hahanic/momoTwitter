@@ -6,7 +6,7 @@
           <X />
         </button>
         <div class="pr-1">
-          <p class="cursor-pointer text-blue-400">草稿</p>
+          <p class="cursor-pointer text-blue-400">{{ t('post.draft') }}</p>
         </div>
       </div>
     </template>
@@ -15,6 +15,7 @@
         local-storage-key="messsageContent"
         v-model="messageContent"
         :scrollbarClass="'min-h-[50px] sm:max-h-[60dvh] max-h-[50dvh]'"
+        :placeholder="t('post.whatsHappening')"
       >
       </PostEditor>
     </template>
@@ -32,13 +33,14 @@
           :current-count="selectedImages.length"
           :max-count="MAX_IMAGES"
         />
-        <SubmitButton :disabled="!canSubmit" @click="handlePosting" text="发帖" />
+        <SubmitButton :disabled="!canSubmit" @click="handlePosting" :text="t('post.submit')" />
       </div>
     </template>
   </FormModal>
 </template>
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 
 import MediaToolbar from '../post/MediaToolbar.vue'
 import PostEditor from '../post/PostEditor.vue'
@@ -52,6 +54,7 @@ import { usePostInteractionStore, usePostFeedStore } from '@/stores'
 
 const emit = defineEmits(['close'])
 
+const { t } = useI18n()
 // 只需要引入这两个 store 来定义提交逻辑
 const postInteractionStore = usePostInteractionStore()
 const postFeedStore = usePostFeedStore()

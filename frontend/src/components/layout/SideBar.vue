@@ -1,45 +1,38 @@
 <template>
-  <div>
-    <div class="relative">
-      <nav class="relative z-10 mr-3 flex justify-end xl:justify-start">
-        <ul class="relative z-[3] flex flex-col gap-1">
-          <li
-            v-for="(item, index) in items"
-            :key="index"
-            class="relative cursor-pointer rounded-full text-amber-950 transition-all dark:text-white"
-          >
-            <RouterLink
-              v-if="item.href"
-              :to="item.href"
-              class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
-            >
-              <span class="relative left-8 hidden text-nowrap xl:block">{{ item.label }}</span>
-              <component
-                :is="item.icon"
-                :size="'1.7rem'"
-                :class="['left-[4rem] transition-all xl:absolute', { 'active-icon': activeIndex === index }]"
-              />
-            </RouterLink>
-            <button
-              v-else
-              @click="handleAction(item.action)"
-              class="relative z-10 flex h-[3.2rem] w-full cursor-pointer items-center px-3 text-left outline-none xl:px-[4.6rem]"
-            >
-              <span class="relative left-8 hidden xl:block">{{ item.label }}</span>
-              <component
-                :is="item.icon"
-                :size="'1.7rem'"
-                :class="[
-                  'left-[4rem] transition-all xl:absolute',
-                  { 'active-icon': activeIndex === initialActiveIndex },
-                ]"
-              />
-            </button>
-          </li>
-        </ul>
-      </nav>
-    </div>
-  </div>
+  <nav class="relative z-10 mr-3 flex justify-end xl:justify-start">
+    <ul class="relative z-[3] flex flex-col gap-1">
+      <li
+        v-for="(item, index) in items"
+        :key="index"
+        class="relative cursor-pointer rounded-full text-amber-950 transition-all dark:text-white"
+      >
+        <RouterLink
+          v-if="item.href"
+          :to="item.href"
+          class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
+        >
+          <span class="absolute left-[7rem] hidden text-nowrap xl:block">{{ item.label }}</span>
+          <component
+            :is="item.icon"
+            :size="'1.7rem'"
+            :class="['left-[4rem] xl:absolute', { 'active-icon': activeIndex === index }]"
+          />
+        </RouterLink>
+        <button
+          v-else
+          @click="handleAction(item.action)"
+          class="relative z-10 flex h-[3.2rem] w-full cursor-pointer items-center px-3 text-left outline-none xl:px-[4.6rem]"
+        >
+          <span class="absolute left-[7rem] hidden xl:block">{{ item.label }}</span>
+          <component
+            :is="item.icon"
+            :size="'1.7rem'"
+            :class="['left-[4rem] xl:absolute', { 'active-icon': activeIndex === initialActiveIndex }]"
+          />
+        </button>
+      </li>
+    </ul>
+  </nav>
 </template>
 
 <script setup lang="ts">

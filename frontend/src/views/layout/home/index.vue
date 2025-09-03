@@ -6,12 +6,12 @@
           class="flex h-[3.2rem] w-[50%] cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/90"
           @dblclick="refreshPosts"
         >
-          推荐
+          {{ t('home.forYou') }}
         </div>
         <div
           class="flex h-[3.2rem] w-[50%] cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/80"
         >
-          关注
+          {{ t('home.following') }}
         </div>
       </div>
     </StickyHead>
@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import { LoaderIcon } from 'lucide-vue-next'
 import { onMounted, ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import AsideContent from '@/components/layout/AsideContent.vue'
@@ -74,6 +75,7 @@ import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { usePostFeedStore } from '@/stores'
 
 const feedStore = usePostFeedStore()
+const { t } = useI18n()
 
 const loadMorePosts = async () => {
   try {

@@ -109,7 +109,7 @@ export const getOnePost = async (req, res) => {
 
 // 获取全部帖子
 export const getPost = async (req, res) => {
-  const limit = parseInt(req.query.limit) || 10
+  const limit = parseInt(req.query.limit) || 20
   const cursor = parseCursor(req.query.cursor)
 
   // 查询条件
@@ -149,7 +149,7 @@ export const getPost = async (req, res) => {
 // 获取帖子的回复
 export const getPostReplies = async (req, res) => {
   const { postId } = req.params
-  const limit = parseInt(req.query.limit) || 10
+  const limit = parseInt(req.query.limit) || 20
   const cursor = parseCursor(req.query.cursor)
 
   // 验证父帖子是否存在
@@ -196,7 +196,7 @@ export const getPostReplies = async (req, res) => {
 // 获取帖子的parentPost
 export const getReplyParentPost = async (req, res) => {
   const { postId } = req.params // 修正参数名
-  const MAX_DEPTH = 10 // 防止无限递归的最大深度
+  const MAX_DEPTH = 20 // 防止无限递归的最大深度
 
   // 验证本回复是否存在
   const reply = await Post.findById(postId).lean()
@@ -352,7 +352,7 @@ export const viewPost = async (req, res) => {
 export const getUserCategoryPosts = async (req, res) => {
   const { username } = req.params
   const category = req.query.category || 'posts'
-  const limit = Math.min(parseInt(req.query.limit) || 10, 50)
+  const limit = Math.min(parseInt(req.query.limit) || 20, 50)
   const cursorDate = parseCursor(req.query.cursor)
 
   const user = await User.findOne({ username })

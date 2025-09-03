@@ -4,7 +4,7 @@
       <!-- 桌面端菜单 -->
       <header
         v-if="!windowStore.isMobile"
-        class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center transition-all sm:flex xl:w-[17rem] xl:items-start"
+        class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center sm:flex xl:w-[17rem] xl:items-start"
       >
         <div class="relative z-10 flex h-[64px] w-full items-center">
           <img
@@ -25,15 +25,15 @@
       </transition>
       <!-- 主体内容 路由出口 -->
       <div class="flex w-full" :class="{ 'pb-16': windowStore.isMobile }">
-        <router-view v-slot="{ Component, route }">
+        <router-view v-slot="{ Component }">
           <!-- 移动端且路由为 PostDetail 时，执行特定动画 -->
-          <transition v-if="windowStore.isMobile && route.name === 'PostDetail'" name="slide-right" mode="out-in">
+          <!-- <transition v-if="windowStore.isMobile && route.name === 'PostDetail'" name="slide-right" mode="out-in">
             <component :is="Component" :key="route.fullPath" />
-          </transition>
+          </transition> -->
           <!-- 其它情况保留 keep-alive 缓存 -->
-          <!-- <keep-alive v-else :include="['Profile']"> -->
-          <component v-else :is="Component" />
-          <!-- </keep-alive> -->
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
         </router-view>
       </div>
     </div>
@@ -200,7 +200,7 @@ const scrollToTop = () => {
 }
 
 /* PostDetail 组件从右边进入和离开的动画 */
-.slide-right-enter-active {
+/* .slide-right-enter-active {
   transition:
     transform 0.3s cubic-bezier(0, 0, 0.2, 1),
     opacity 0.3s cubic-bezier(0, 0, 0.2, 1);
@@ -223,5 +223,5 @@ const scrollToTop = () => {
 .slide-right-leave-from {
   transform: translateX(0);
   opacity: 1;
-}
+} */
 </style>

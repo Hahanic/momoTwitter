@@ -94,9 +94,9 @@
         <!-- 内容 -->
         <div class="flex w-full flex-col">
           <router-view v-slot="{ Component }">
-            <!-- <keep-alive :include="['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks']"> -->
-            <component :is="Component" />
-            <!-- </keep-alive> -->
+            <keep-alive :include="['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks']">
+              <component :is="Component" />
+            </keep-alive>
           </router-view>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default {
 <script setup lang="ts">
 import { ArrowLeft, SearchIcon } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted } from 'vue'
+import { computed, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
@@ -151,10 +151,12 @@ import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import { useUserStore } from '@/stores'
+import useUserPostStore from '@/stores/useUserPostStore'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const userPostStore = useUserPostStore()
 
 const { currentUserProfile, isFollowing, isSelf, isLoading } = storeToRefs(userStore)
 
@@ -178,8 +180,9 @@ async function fetchProfile(username?: string) {
   }
 }
 
-onMounted(async () => {
+onActivated(async () => {
   if (route.params.username !== userStore.currentUserProfile?.username) {
+    userPostStore.resetAll()
     await fetchProfile(route.params.username as string)
   }
 })

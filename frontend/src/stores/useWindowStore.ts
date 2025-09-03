@@ -3,16 +3,16 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 const useWindowStore = defineStore('window', () => {
-  // Home的滚动记忆
-  let homeScrollTop = ref<number>(0)
-  function setHomeScrollTop(position: number) {
-    homeScrollTop.value = position
-  }
-
   // 是否是通过回退移动的路由，如router.back() // 相关的使用在routers/index.ts
   const isBackNavigation = ref<boolean>(false)
   function setBackNavigation(value: boolean) {
     isBackNavigation.value = value
+  }
+
+  // Home的滚动记忆
+  let homeScrollTop = ref<number>(0)
+  function setHomeScrollTop(position: number) {
+    homeScrollTop.value = position
   }
 
   //userProfile的滚动记忆

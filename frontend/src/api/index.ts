@@ -78,7 +78,7 @@ export const fetchPostById = (postId: string): Promise<Post> => {
 }
 
 // 主页加载帖子
-export const fetchPosts = (cursor: string | null = null, limit: number = 10): Promise<PaginatedPostsResponse> => {
+export const fetchPosts = (cursor: string | null = null, limit: number = 20): Promise<PaginatedPostsResponse> => {
   return axiosInstance.get('/posts', {
     params: {
       cursor,
@@ -91,7 +91,7 @@ export const fetchPosts = (cursor: string | null = null, limit: number = 10): Pr
 export const fetchPostReplies = (
   postId: string,
   cursor: string | null = null,
-  limit: number = 10
+  limit: number = 20
 ): Promise<PostRepliesResponse> => {
   return axiosInstance.get(`/posts/${postId}/replies`, {
     params: {
@@ -111,7 +111,7 @@ export const fetchUserPostsByCategory = (
   category: string,
   username: string,
   cursor: string | null = null,
-  limit: number = 10
+  limit: number = 20
 ): Promise<PaginatedPostsResponse> => {
   return axiosInstance.get(`/posts/${username}/category`, {
     params: {

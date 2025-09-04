@@ -2,7 +2,7 @@ import { UAParser } from 'ua-parser-js'
 
 import Post from '../db/model/Post.js'
 import Relationship from '../db/model/Relationship.js'
-import Session from '../db/model/session.js'
+import Session from '../db/model/Session.js'
 import User from '../db/model/User.js'
 import {
   sendResponse,

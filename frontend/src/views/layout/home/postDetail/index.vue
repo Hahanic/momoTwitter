@@ -279,6 +279,8 @@ const handleTranslate = async () => {
 watch(
   () => route.params.postId,
   async (newPostId, _oldPostId) => {
+    displayTranslation.value = false
+
     // 若 param 未变化（某些情况下触发，比如刷新响应式）则直接返回
     if (newPostId === displayingPostId.value || !newPostId) return
 

@@ -2,6 +2,8 @@ import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axio
 
 import { refreshAccessToken } from '.'
 
+import { useUserStore } from '@/stores'
+
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 20000, //20秒
@@ -14,9 +16,10 @@ const axiosInstance: AxiosInstance = axios.create({
 // 请求拦截器 (Request Interceptor)
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem('access_token')
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`
+    const userStore = useUserStore()
+    // 从 store 中获取 AccessToken
+    if (userStore.isAuthenticated) {
+      config.headers.Authorization = `Bearer ${userStore.accessToken}`
     }
     return config
   },
@@ -43,27 +46,31 @@ axiosInstance.interceptors.response.use(
       switch (status) {
         case 401:
           if (data?.code === 'TOKEN_EXPIRED' && !originalRequest._retry) {
-            console.log('未授权访问')
+            const userStore = useUserStore()
+            console.log('未授权访问, 尝试刷新token')
             originalRequest._retry = true
 
             try {
               const refreshResponse = await refreshAccessToken()
 
               if (refreshResponse.accessToken) {
-                localStorage.setItem('access_token', refreshResponse.accessToken)
-
+                userStore.setUser(refreshResponse.user)
+                userStore.setAccessToken(refreshResponse.accessToken)
                 // 更新原始请求的Authorization头
                 originalRequest.headers.Authorization = `Bearer ${refreshResponse.accessToken}`
 
                 // 重试原始请求
                 return axiosInstance(originalRequest)
               }
-            } catch (error) {
-              // 如果刷新 token 失败，清除 token 并重定向到登录页
-              localStorage.removeItem('access_token')
-              window.location.href = '/login'
-              return Promise.reject(error)
+            } catch (refreshError) {
+              const userStore = useUserStore()
+              userStore.logout()
+              return Promise.reject(refreshError)
             }
+          } else {
+            const userStore = useUserStore()
+            userStore.logout()
+            userFriendlyMessage = data?.message || '认证失败，请重新登录'
           }
           break
         case 403:

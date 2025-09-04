@@ -59,14 +59,35 @@ watch(
   }
 )
 
+// Token刷新检查函数
+const checkTokenValidity = () => {
+  if (userStore.isAuthenticated) {
+    userStore.ensureValidToken()
+  }
+}
+
+// 页面可见性变化处理函数
+const handleVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    checkTokenValidity()
+  }
+}
+
 onMounted(async () => {
+  // 添加滚动监听
   window.addEventListener('scroll', handleScroll)
-  userStore.checkCurrentUser()
-  // 启动认证状态管理
-  userStore.initialize()
+  // 添加页面可见性监听
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  // 如果用户已登录（从持久化存储中恢复），检查token
+  checkTokenValidity()
+  // 检查当前用户信息
+  await userStore.checkCurrentUser()
 })
+
 onUnmounted(() => {
+  // 清理所有事件监听器
   window.removeEventListener('scroll', handleScroll)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>
 

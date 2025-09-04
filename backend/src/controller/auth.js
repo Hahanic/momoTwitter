@@ -245,16 +245,15 @@ const createSessionAndTokens = async (user, req, res) => {
   })
   await session.save()
 
-  console.log(session.toObject())
-
   // 生成双token
   const refreshToken = generateRefreshToken(session._id)
   const accessToken = generateAccessToken(user._id)
 
   // 只设置refreshToken到cookie，accessToken通过响应返回
+  // secure: process.env.NODE_ENV === 'production',
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     sameSite: 'strict',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30天
   })

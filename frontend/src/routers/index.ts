@@ -35,13 +35,6 @@ router.beforeEach((to, _from, next) => {
   const dir = windowStore.recordDirection(to)
   windowStore.setBackNavigation(dir === 'back')
   windowStore.setNavType(dir)
-  console.log('导航类型:', dir)
-})
-
-router.afterEach((_to, _from) => {
-  const windowStore = useWindowStore()
-
-  console.log(windowStore.navigationStack)
 })
 
 export default router

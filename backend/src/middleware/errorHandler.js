@@ -34,6 +34,7 @@ export const errorHandler = (err, req, res, next) => {
 
 export const notFound = (req, res, next) => {
   const error = new Error(`路径未找到 - ${req.originalUrl}`)
-  res.status(404)
+  console.log(req.method, req.originalUrl)
+  error.status(404)
   next(error)
 }

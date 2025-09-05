@@ -2,6 +2,7 @@
   <div class="dark:border-borderDark border-borderWhite w-full border-b">
     <!-- 输入框区域 -->
     <PostEditor
+      ref="PostEditorRef"
       v-model="messageContent"
       :placeholder="t('post.submitReply')"
       :scrollbar-class="'sm:max-h-[230px]'"
@@ -37,13 +38,21 @@
 
       <!-- 展开的工具栏 -->
       <div v-show="hasUserFocused" class="flex w-full items-center justify-between pt-2 pb-4 transition-all">
-        <MediaToolbar
-          :icon-size="20"
-          @files-selected="handleFilesSelected"
-          @file-rejected="handleFileRejected"
-          :current-count="selectedImages.length"
-          :max-count="MAX_IMAGES"
-        />
+        <div ref="emojiWrapperRef" class="relative">
+          <MediaToolbar
+            :icon-size="20"
+            @files-selected="handleFilesSelected"
+            @file-rejected="handleFileRejected"
+            @emoji="handleToggleEmoji"
+            :current-count="selectedImages.length"
+            :max-count="MAX_IMAGES"
+          />
+          <EmojiPicker
+            v-if="showEmojiPicker"
+            class="absolute top-full z-10 mt-2"
+            @emoji-selected="handleEmojiSelected"
+          />
+        </div>
         <SubmitButton :disabled="!canSubmit" @click="handlePosting" :text="t('post.reply')" />
       </div>
     </div>
@@ -51,10 +60,12 @@
 </template>
 
 <script lang="ts" setup>
+import { onClickOutside } from '@vueuse/core'
 import { MapPin } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import EmojiPicker from './EmojiPicker.vue'
 import PostImagePre from './PostImagePre.vue'
 
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
@@ -68,6 +79,24 @@ const hasUserFocused = ref<boolean>(false)
 const handleTextareaFocus = () => {
   hasUserFocused.value = true
 }
+
+// 表情选择器相关状态
+const PostEditorRef = ref<InstanceType<typeof PostEditor> | null>(null)
+const showEmojiPicker = ref(false)
+const emojiWrapperRef = ref(null)
+
+const handleToggleEmoji = async () => {
+  showEmojiPicker.value = !showEmojiPicker.value
+}
+
+const handleEmojiSelected = (emoji: any) => {
+  PostEditorRef.value?.insertEmoji(emoji.unicode)
+}
+
+// 点击外部关闭表情选择器
+onClickOutside(emojiWrapperRef, () => {
+  showEmojiPicker.value = false
+})
 
 const postDetailStore = usePostDetailStore()
 const windowStore = useWindowStore()

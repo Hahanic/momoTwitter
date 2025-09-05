@@ -25,7 +25,7 @@ app.use(express.json())
 // app.use('/uploads', express.static('uploads'))
 
 // 跨域配置 process.env.Test_Server=用于测试的服务器地址，比如在手机上访问
-const allowedOrigins = ['http://localhost', 'http://localhost:5173', process.env.Test_Server]
+const allowedOrigins = ['http://localhost', 'http://localhost:5173', 'http://8.153.160.83', process.env.Test_Server]
 app.use(
   cors({
     origin: (origin, callback) => {

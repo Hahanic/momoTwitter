@@ -12,9 +12,10 @@
     </template>
     <template #content>
       <PostEditor
+        ref="PostEditorRef"
         local-storage-key="messsageContent"
         v-model="messageContent"
-        :scrollbarClass="'min-h-[50px] sm:max-h-[60dvh] max-h-[50dvh]'"
+        :scrollbarClass="'sm:min-h-[450px] min-h-[400px] sm:max-h-[60dvh] max-h-[50dvh]'"
         :placeholder="t('post.whatsHappening')"
       >
       </PostEditor>
@@ -27,21 +28,32 @@
         @reorder-images="handleReorderImages"
       />
       <div class="flex justify-between px-1 py-2 sm:px-5">
-        <MediaToolbar
-          @files-selected="handleFilesSelected"
-          @file-rejected="handleFileRejected"
-          :current-count="selectedImages.length"
-          :max-count="MAX_IMAGES"
-        />
+        <div ref="emojiWrapperRef" class="relative">
+          <MediaToolbar
+            @files-selected="handleFilesSelected"
+            @file-rejected="handleFileRejected"
+            @emoji="handleToggleEmoji"
+            :current-count="selectedImages.length"
+            :max-count="MAX_IMAGES"
+          />
+          <EmojiPicker
+            v-if="showEmojiPicker"
+            class="absolute bottom-full z-10 mb-2"
+            @emoji-selected="handleEmojiSelected"
+          />
+        </div>
         <SubmitButton :disabled="!canSubmit" @click="handlePosting" :text="t('post.submit')" />
       </div>
     </template>
   </FormModal>
 </template>
 <script setup lang="ts">
+import { onClickOutside } from '@vueuse/core'
 import { X } from 'lucide-vue-next'
+import { nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import EmojiPicker from '../post/EmojiPicker.vue'
 import MediaToolbar from '../post/MediaToolbar.vue'
 import PostEditor from '../post/PostEditor.vue'
 import PostImagePre from '../post/PostImagePre.vue'
@@ -58,6 +70,35 @@ const { t } = useI18n()
 // 只需要引入这两个 store 来定义提交逻辑
 const postInteractionStore = usePostInteractionStore()
 const postFeedStore = usePostFeedStore()
+
+// 表情选择器相关状态
+const PostEditorRef = ref<InstanceType<typeof PostEditor> | null>(null)
+const showEmojiPicker = ref(false)
+const emojiWrapperRef = ref(null)
+
+const handleToggleEmoji = async (Event: MouseEvent) => {
+  showEmojiPicker.value = !showEmojiPicker.value
+  if (showEmojiPicker.value) {
+    await nextTick()
+    const button = Event?.currentTarget as HTMLElement
+    if (button) {
+      // const rect = button.getBoundingClientRect()
+      // pickerStyle.value = {
+      //   top: `${rect.bottom + window.scrollY + 8}px`,
+      //   left: `${rect.left + window.scrollX}px`,
+      // }
+    }
+  }
+}
+
+const handleEmojiSelected = (emoji: any) => {
+  PostEditorRef.value?.insertEmoji(emoji.unicode)
+}
+
+// 点击外部关闭表情选择器
+onClickOutside(emojiWrapperRef, () => {
+  showEmojiPicker.value = false
+})
 
 // 调用 Composable，并传入特定的发帖逻辑和检查条件
 const {

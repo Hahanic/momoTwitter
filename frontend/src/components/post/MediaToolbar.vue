@@ -9,11 +9,11 @@
         :multiple="allowMultiple"
         @change="onFileChange"
       />
-      <button type="button" class="hover:cursor-pointer" @click="triggerFilePicker">
+      <button type="button" class="hover:cursor-pointer" @click="() => fileInputRef?.click()">
         <Image :size="iconSize" />
       </button>
     </div>
-    <button type="button" class="hover:cursor-pointer" @click="$emit('emoji')">
+    <button ref="emojiButtonRef" type="button" class="hover:cursor-pointer" @click="$emit('emoji', $event)">
       <SmileIcon :size="iconSize" />
     </button>
     <button type="button" class="hover:cursor-pointer" @click="$emit('bot')">
@@ -54,7 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  emoji: []
+  emoji: [event: MouseEvent]
   bot: []
   menu: []
   location: []
@@ -64,10 +64,6 @@ const emit = defineEmits<{
 }>()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
-
-const triggerFilePicker = () => {
-  fileInputRef.value?.click()
-}
 
 const onFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement

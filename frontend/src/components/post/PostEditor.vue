@@ -17,8 +17,10 @@
           v-model="internalContent"
           maxlength="301"
           :placeholder="props.placeholder"
-          @focus="$emit('focus')"
-          @blur="$emit('blur')"
+          @focus="(updateCursorPosition, $emit('focus'))"
+          @blur="(updateCursorPosition, $emit('blur'))"
+          @keyup="updateCursorPosition"
+          @click="updateCursorPosition"
           class="textareaEl mt-3 w-full resize-none overflow-y-hidden bg-transparent pr-2 text-[1rem] break-all placeholder-[#808080] placeholder:text-[1.2rem] focus:outline-none"
           :class="textareaClass"
         ></textarea>
@@ -70,6 +72,33 @@ const internalContent = computed({
   get: () => props.modelValue,
   set: (value: string) => emit('update:modelValue', value),
 })
+
+// 记录最后一次光标
+const lastCursorPosition = ref(0)
+
+const updateCursorPosition = () => {
+  if (!textareaRef.value) return
+  lastCursorPosition.value = textareaRef.value.selectionStart
+}
+// 插入表情
+const insertEmoji = (emoji: any) => {
+  if (!textareaRef.value) return
+  const textarea = textareaRef.value
+  const start = lastCursorPosition.value
+  const end = lastCursorPosition.value
+
+  // 拼接字符串
+  const currentText = internalContent.value
+  internalContent.value = currentText.slice(0, start) + emoji + currentText.slice(end)
+
+  // 插入后，更新光标位置到插入文本的后面，并重新聚焦
+  const newCursorPosition = start + emoji.length
+  nextTick(() => {
+    textarea.focus()
+    textarea.setSelectionRange(newCursorPosition, newCursorPosition)
+    lastCursorPosition.value = newCursorPosition // 更新保存的位置
+  })
+}
 
 // 监听内容变化，自适应高度
 watch(
@@ -125,8 +154,8 @@ onMounted(() => {
 
 // 暴露方法
 defineExpose({
-  loadFromLocalStorage,
   textareaRef,
+  insertEmoji,
 })
 </script>
 

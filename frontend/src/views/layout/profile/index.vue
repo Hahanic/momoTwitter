@@ -138,7 +138,7 @@ export default {
 <script setup lang="ts">
 import { ArrowLeft, SearchIcon } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { computed, onActivated } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
@@ -182,16 +182,21 @@ async function fetchProfile(username?: string) {
   }
 }
 
-// 监听路由变化
-onActivated(async () => {
-  if (route.params.username !== userStore.currentUserProfile?.username) {
-    userPostStore.resetAll()
-    await fetchProfile(route.params.username as string)
-  }
-  if (windowStore.navType === 'new') {
-    document.documentElement.scrollTo({ top: 0, behavior: 'auto' })
-  }
-})
+watch(
+  () => route.params.username,
+  async (newUsername) => {
+    if (!newUsername) return
+    if (newUsername !== userStore.currentUserProfile?.username) {
+      userPostStore.resetAll()
+      await fetchProfile(newUsername as string)
+    }
+    if (windowStore.navType === 'new') {
+      console.log(windowStore.navType)
+      document.documentElement.scrollTo({ top: 0, behavior: 'auto' })
+    }
+  },
+  { immediate: true }
+)
 
 // 打开编辑资料模态框
 const editProfile = () => {

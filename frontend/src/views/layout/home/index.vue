@@ -1,28 +1,50 @@
 <template>
   <MainContainer>
-    <StickyHead>
-      <div class="flex w-full">
+    <!-- 移动端显示头像和图标 -->
+    <header
+      v-if="windowStore.isMobile"
+      ref="headerRef"
+      class="main-header dark:border-borderDark border-borderWhite sticky top-0 left-0 z-21 h-[3.2rem] w-full border-b-1 bg-white will-change-transform dark:bg-black"
+    >
+      <div class="relative flex h-full w-full items-center justify-center">
+        <div class="absolute left-0 flex h-full items-center justify-center pl-4">
+          <Avatar container-class="h-6 w-6" :src="userStore.user?.avatarUrl" />
+        </div>
+        <div @click="scrollToTop">
+          <img class="h-[2.5rem]" src="/warp.svg" />
+        </div>
+      </div>
+    </header>
+    <!-- tab -->
+    <div
+      ref="tabsRef"
+      class="tab-bar dark:border-borderDark border-borderWhite sticky left-0 z-20 h-[3.2rem] w-full border-b-1 bg-white/80 backdrop-blur-lg will-change-transform dark:bg-black/80 dark:backdrop-blur-sm"
+      :class="windowStore.isMobile ? 'top-[3.2rem]' : 'top-0'"
+    >
+      <!-- 常态标签 -->
+      <div class="flex h-full w-full">
         <div
-          class="flex h-[3.2rem] w-[50%] cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/90"
+          class="transition-color flex h-full w-[50%] cursor-pointer items-center justify-center hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/90"
           @dblclick="refreshPosts"
         >
           {{ t('home.forYou') }}
         </div>
         <div
-          class="flex h-[3.2rem] w-[50%] cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/80"
+          class="transition-color flex h-full w-[50%] cursor-pointer items-center justify-center hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/80"
         >
           {{ t('home.following') }}
         </div>
       </div>
-    </StickyHead>
-
+    </div>
     <div class="w-full">
-      <PostCreate />
+      <PostCreate v-if="!windowStore.isMobile" />
       <!-- posts -->
       <Posts v-for="post in feedStore.posts" :post="post" :type="'post'" :key="post._id" />
       <div ref="observerEl" class="my-20 flex w-full items-center justify-center">
         <LoaderIcon v-if="feedStore.isLoading" :class="{ 'animate-spin': feedStore.isLoading }" :size="26" />
-        <div v-else-if="!canLoadMore && feedStore.posts.length > 0" class="text-sm text-gray-500">没有更多内容了</div>
+        <div v-else-if="!canLoadMore && feedStore.posts.length > 0" class="text-sm text-gray-500">
+          {{ t('home.noMoreContent') }}
+        </div>
       </div>
     </div>
   </MainContainer>
@@ -35,14 +57,16 @@
       <div class="flex w-full flex-col gap-4 pt-4">
         <AsideContent>
           <div class="p-4">
-            <div class="font-bold">订阅Premium</div>
-            <div class="mt-2">订阅以解锁新功能，若符合条件，还可获得收入分成。</div>
-            <button class="mt-2 h-[2.5rem] w-[5rem] rounded-4xl bg-blue-400 font-bold">订阅</button>
+            <div class="font-bold">{{ t('premium.title') }}</div>
+            <div class="mt-2">{{ t('premium.description') }}</div>
+            <button class="mt-2 h-[2.5rem] w-fit min-w-[5rem] rounded-4xl bg-blue-400 px-2 font-bold">
+              {{ t('premium.button') }}
+            </button>
           </div>
         </AsideContent>
         <AsideContent>
           <div class="p-4">
-            <div class="mb-4 font-bold">有什么新鲜事</div>
+            <div class="mb-4 font-bold">{{ t('explore.news.title') }}</div>
             <ul class="flex flex-col gap-4">
               <RankItem />
               <RankItem />
@@ -59,7 +83,7 @@
 
 <script setup lang="ts">
 import { LoaderIcon } from 'lucide-vue-next'
-import { onMounted, ref, computed } from 'vue'
+import { ref, computed, onActivated, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
@@ -67,14 +91,16 @@ import AsideContent from '@/components/layout/AsideContent.vue'
 import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
-import StickyHead from '@/components/layout/StickyHead.vue'
+import Avatar from '@/components/post/Avatar.vue'
 import Posts from '@/components/post/index.vue'
 import PostCreate from '@/components/post/PostCreate.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
-import { usePostFeedStore } from '@/stores'
+import { usePostFeedStore, useUserStore, useWindowStore } from '@/stores'
 
 const feedStore = usePostFeedStore()
+const userStore = useUserStore()
+const windowStore = useWindowStore()
 const { t } = useI18n()
 
 const loadMorePosts = async () => {
@@ -113,8 +139,62 @@ const { targetEl: observerEl, canLoadMore } = useInfiniteScroll({
   debounceMs: 300,
 })
 
-onMounted(async () => {
-  // 首次加载
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+}
+
+// DOM 元素的引用
+const headerRef = ref<HTMLElement | null>(null)
+const tabsRef = ref<HTMLElement | null>(null)
+
+// 尺寸变量
+let headerHeight = 0
+let tabsHeight = 0
+
+// 分别记录 Header 和 Tabs 当前被隐藏的距离
+let hiddenHeaderHeight = 0
+let hiddenTabsHeight = 0
+
+watchEffect(() => {
+  if (!windowStore.isMobile || !headerRef.value || !tabsRef.value) {
+    return
+  }
+  const delta = windowStore.scrollDelta
+  const scrollY = windowStore.scrollY
+
+  if (scrollY <= 0) {
+    hiddenHeaderHeight = 0
+    hiddenTabsHeight = 0
+  } else {
+    const potentialTabsHeight = hiddenTabsHeight + delta
+    const clampedTabsHeight = Math.max(0, Math.min(tabsHeight, potentialTabsHeight))
+    const consumedDelta = clampedTabsHeight - hiddenTabsHeight
+
+    hiddenTabsHeight = clampedTabsHeight
+
+    const potentialHeaderHeight = hiddenHeaderHeight + delta - consumedDelta
+    hiddenHeaderHeight = Math.max(0, Math.min(headerHeight, potentialHeaderHeight))
+  }
+
+  if (headerRef.value && tabsRef.value) {
+    headerRef.value.style.transform = `translateY(-${hiddenHeaderHeight}px)`
+
+    const tabsTranslateY = -hiddenHeaderHeight - hiddenTabsHeight
+    tabsRef.value.style.transform = `translateY(${tabsTranslateY}px)`
+  }
+})
+
+onActivated(async () => {
+  // 设置元素高度和滚动监听器
+  if (headerRef.value && tabsRef.value) {
+    headerHeight = headerRef.value.offsetHeight
+    tabsHeight = tabsRef.value.offsetHeight
+  }
+
+  // 首次加载帖子
   if (feedStore.posts.length === 0) {
     await loadInitialPosts()
   }

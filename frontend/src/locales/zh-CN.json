@@ -19,6 +19,26 @@
     "more": "更多",
     "post": "发帖"
   },
+  "premium": {
+    "title": "订阅Premium",
+    "description": "订阅以解锁新功能，若符合条件，还可获得收入分成。",
+    "button": "订阅"
+  },
+
+  "explore": {
+    "tags": {
+      "for_you": "推荐",
+      "trending": "趋势",
+      "news": "新闻",
+      "sports": "体育",
+      "entertainment": "娱乐"
+    },
+    "news": {
+      "title": "有什么新鲜事"
+    },
+    "postsCount": "{count} 条帖子",
+    "trendingRank": "{rank} · 全球趋势"
+  },
   "more": {
     "settings": "设置",
     "yourAccount": "你的账号",
@@ -31,5 +51,8 @@
     "submit": "发帖",
     "reply": "回复",
     "draft": "草稿"
+  },
+  "search": {
+    "placeholder": "搜索"
   }
 }

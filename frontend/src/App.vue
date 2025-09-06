@@ -16,24 +16,21 @@ const windowStore = useWindowStore()
 const userStore = useUserStore()
 const route = useRoute()
 
-// 滚动事件
-const handleScroll = () => {
-  const scrollTop = window.scrollY
-  // Home页
-  if (route.path === '/home') {
-    // 记忆Home页的滚动位置
-    windowStore.setHomeScrollTop(scrollTop)
-    // 处理移动端底部菜单的显示/隐藏
-    if (windowStore.isMobile) {
-      windowStore.handleScrollDirection(scrollTop)
-    }
-  } else if (['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)) {
-    windowStore.setUserProfileScrollTop(scrollTop)
-  } else if (route.name === 'PostDetail') {
-    windowStore.setPostDetailScroll(route.params.postId as string, scrollTop)
+// Token刷新检查函数
+const checkTokenValidity = () => {
+  if (userStore.isAuthenticated) {
+    userStore.ensureValidToken()
   }
 }
-// 恢复Home页的滚动位置
+
+// 页面可见性变化处理函数
+const handleVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    checkTokenValidity()
+  }
+}
+
+// 恢复页面的滚动位置
 watch(
   () => route.path,
   async (routePath) => {
@@ -59,23 +56,11 @@ watch(
   }
 )
 
-// Token刷新检查函数
-const checkTokenValidity = () => {
-  if (userStore.isAuthenticated) {
-    userStore.ensureValidToken()
-  }
-}
-
-// 页面可见性变化处理函数
-const handleVisibilityChange = () => {
-  if (document.visibilityState === 'visible') {
-    checkTokenValidity()
-  }
-}
+let cleanupScrollListener: (() => void) | null = null
 
 onMounted(async () => {
-  // 添加滚动监听
-  window.addEventListener('scroll', handleScroll)
+  cleanupScrollListener = windowStore.initializeScrollListener(route)
+
   // 添加页面可见性监听
   document.addEventListener('visibilitychange', handleVisibilityChange)
   // 如果用户已登录（从持久化存储中恢复），检查token
@@ -86,7 +71,9 @@ onMounted(async () => {
 
 onUnmounted(() => {
   // 清理所有事件监听器
-  window.removeEventListener('scroll', handleScroll)
+  if (cleanupScrollListener) {
+    cleanupScrollListener()
+  }
   document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>

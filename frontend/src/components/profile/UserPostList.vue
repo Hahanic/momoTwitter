@@ -20,7 +20,9 @@
     <!-- 无限滚动触发器 -->
     <div ref="observerEl" class="my-20 flex w-full items-center justify-center">
       <LoaderIcon v-if="isLoading" :class="{ 'animate-spin': isLoading }" :size="26" />
-      <div v-else-if="!canLoadMore && posts.length > 0" class="text-sm text-gray-500">没有更多内容了</div>
+      <div v-else-if="!canLoadMore && posts.length > 0" class="text-sm text-gray-500">
+        {{ t('home.noMoreContent') }}
+      </div>
     </div>
   </div>
 </template>
@@ -28,6 +30,7 @@
 <script setup lang="ts">
 import { LoaderIcon } from 'lucide-vue-next'
 import { onMounted, ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 import Post from '@/components/post/index.vue'
@@ -47,6 +50,7 @@ const userPostStore = useUserPostStore()
 const userStore = useUserStore()
 const postDetailStore = usePostDetailStore()
 const route = useRoute()
+const { t } = useI18n()
 
 // 存储每个回复的父帖子链（仅回复页面使用）
 const parentChains = ref<Record<string, PostType[]>>({})

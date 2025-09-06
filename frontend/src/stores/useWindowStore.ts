@@ -1,24 +1,77 @@
 import { useBreakpoints } from '@vueuse/core'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { readonly, ref } from 'vue'
 import type { RouteLocationNormalized } from 'vue-router'
 
 const useWindowStore = defineStore('window', () => {
-  // Home的滚动记忆
-  let homeScrollTop = ref<number>(0)
-  function setHomeScrollTop(position: number) {
-    homeScrollTop.value = position
+  const scrollY = ref(0)
+  // 滚动差值
+  const scrollDelta = ref(0)
+  // 上一次的滚动位置
+  let lastScrollTop = 0
+  // 防止重复添加监听器
+  let isScrollListenerInitialized = false
+
+  const homeScrollTop = ref<number>(0)
+  const userProfileScrollTop = ref<number>(0)
+  const postDetailScrollMap = ref<Record<string, number>>({})
+
+  // 底部菜单显示状态
+  const showNav = ref<boolean>(true)
+  // 累计滚动距离
+  let accumulatedScroll = 0
+  // 滚动阈值
+  const scrollThreshold = 120
+
+  // 监听内部调用
+  function _handleScroll(currentRoute: RouteLocationNormalized) {
+    const currentScrollY = window.scrollY
+
+    // a. 更新基础滚动状态
+    scrollDelta.value = currentScrollY - lastScrollTop
+    scrollY.value = currentScrollY
+
+    // b. 处理底部菜单的显示/隐藏
+    accumulatedScroll += scrollDelta.value
+    if (accumulatedScroll > scrollThreshold) {
+      showNav.value = false
+      accumulatedScroll = 0
+    } else if (accumulatedScroll < -scrollThreshold) {
+      showNav.value = true
+      accumulatedScroll = 0
+    }
+
+    // c. 更新当前页面的滚动位置记忆
+    const routeName = currentRoute.name as string
+    const routePath = currentRoute.path
+    if (routePath === '/home') {
+      homeScrollTop.value = currentScrollY
+    } else if (['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(routeName)) {
+      userProfileScrollTop.value = currentScrollY
+    } else if (routeName === 'PostDetail') {
+      setPostDetailScroll(currentRoute.params.postId as string, currentScrollY)
+    }
+
+    // d. 更新 lastScrollTop
+    lastScrollTop = currentScrollY
   }
 
-  //userProfile的滚动记忆
-  const userProfileScrollTop = ref<number>(0)
-  function setUserProfileScrollTop(position: number) {
-    userProfileScrollTop.value = position
+  // 初始化滚动监听器
+  function initializeScrollListener(currentRoute: RouteLocationNormalized): (() => void) | null {
+    if (isScrollListenerInitialized) return null
+    // 我们需要 currentRoute 来做滚动位置记忆，所以从 App.vue 传入
+    const scrollHandler = () => _handleScroll(currentRoute)
+    window.addEventListener('scroll', scrollHandler, { passive: true })
+    isScrollListenerInitialized = true
+
+    // 返回一个清理函数，方便 App.vue 在 onUnmounted 中调用
+    return () => {
+      window.removeEventListener('scroll', scrollHandler)
+      isScrollListenerInitialized = false
+    }
   }
 
   // 帖子详情页滚动记忆：key 为 postId
-  const postDetailScrollMap = ref<Record<string, number>>({})
-
   function setPostDetailScroll(postId: string, position: number) {
     postDetailScrollMap.value[postId] = position
     // 如果记录超过限制，删除最旧的记录
@@ -30,37 +83,6 @@ const useWindowStore = defineStore('window', () => {
   }
   function getPostDetailScroll(postId: string): number {
     return postDetailScrollMap.value[postId] ?? 0
-  }
-  function clearPostDetailScroll(postId?: string) {
-    if (postId) {
-      delete postDetailScrollMap.value[postId]
-    } else {
-      postDetailScrollMap.value = {}
-    }
-  }
-
-  // 移动端顶部和底部菜单显示状态
-  const showNav = ref<boolean>(true)
-  let lastScrollTop = ref<number>(0)
-  let accumulatedScroll = ref<number>(0) // 累计滚动距离
-  const scrollThreshold = 120 // 滚动阈值
-
-  function handleScrollDirection(scrollTop: number) {
-    // 计算滚动差值
-    const scrollDifference = scrollTop - lastScrollTop.value
-
-    // 累计滚动距离
-    accumulatedScroll.value += scrollDifference
-
-    if (accumulatedScroll.value > scrollThreshold) {
-      showNav.value = false
-      accumulatedScroll.value = 0
-    } else if (accumulatedScroll.value < -scrollThreshold) {
-      showNav.value = true
-      accumulatedScroll.value = 0
-    }
-
-    lastScrollTop.value = scrollTop
   }
 
   // 视口的断点
@@ -111,14 +133,15 @@ const useWindowStore = defineStore('window', () => {
   }
 
   return {
+    scrollY: readonly(scrollY),
+    scrollDelta: readonly(scrollDelta),
+
+    initializeScrollListener,
+
     homeScrollTop,
     userProfileScrollTop,
-    setHomeScrollTop,
-    setUserProfileScrollTop,
     postDetailScrollMap,
-    setPostDetailScroll,
     getPostDetailScroll,
-    clearPostDetailScroll,
 
     navigationStack,
     isBackNavigation,
@@ -128,7 +151,6 @@ const useWindowStore = defineStore('window', () => {
     navType,
 
     showNav,
-    handleScrollDirection,
     isMobile,
     isLargeScreen,
   }

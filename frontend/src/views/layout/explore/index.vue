@@ -2,21 +2,23 @@
   <MainContainer>
     <StickyHead>
       <!-- 搜索及设置 -->
-      <div class="ml-5 flex w-[95%] items-center justify-center">
-        <SearchInput />
+      <div class="flex w-full items-center justify-center pt-2">
+        <div class="w-full px-5">
+          <SearchInput />
+        </div>
         <div class="relative">
           <SettingsIcon :size="20" class="mx-4" />
         </div>
       </div>
 
       <!-- 标签 -->
-      <div class="flex h-[3.2rem] w-full">
+      <div class="flex h-[3rem] w-full">
         <RouterLink
           v-for="item in tagList"
           :to="`/explore/${item.path}`"
           class="relative flex h-full w-full items-center justify-center text-[#71767b] transition-[background-color] hover:cursor-pointer hover:dark:bg-[#181818]"
         >
-          <span>{{ item.name }}</span>
+          <span class="text-[0.9rem]">{{ t(item.nameKey) }}</span>
           <div class="active-underline absolute bottom-0 hidden w-[60%] rounded-2xl border-2 border-[#1d9bf0]"></div>
         </RouterLink>
       </div>
@@ -42,6 +44,7 @@
 <script setup lang="ts">
 import { SettingsIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
@@ -49,12 +52,14 @@ import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 
+const { t } = useI18n()
+
 const tagList = ref([
-  { name: '推荐', path: 'for_you' },
-  { name: '趋势', path: 'trending' },
-  { name: '新闻', path: 'news' },
-  { name: '体育', path: 'sports' },
-  { name: '娱乐', path: 'entertainment' },
+  { nameKey: 'explore.tags.for_you', path: 'for_you' },
+  { nameKey: 'explore.tags.trending', path: 'trending' },
+  { nameKey: 'explore.tags.news', path: 'news' },
+  { nameKey: 'explore.tags.sports', path: 'sports' },
+  { nameKey: 'explore.tags.entertainment', path: 'entertainment' },
 ])
 </script>
 

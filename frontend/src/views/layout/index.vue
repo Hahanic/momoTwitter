@@ -17,12 +17,6 @@
           <SideBar :items="menuLists" @action="handleSidebarAction" />
         </Scrollbar>
       </header>
-      <!-- 移动端菜单 -->
-      <transition name="slide-up">
-        <header v-if="windowStore.isMobile && windowStore.showNav" class="fixed right-0 bottom-0 left-0 z-50 w-full">
-          <BottomNavigation />
-        </header>
-      </transition>
       <!-- 主体内容 路由出口 -->
       <div class="flex w-full" :class="{ 'pb-16': windowStore.isMobile }">
         <router-view v-slot="{ Component }">
@@ -36,6 +30,12 @@
           </keep-alive>
         </router-view>
       </div>
+      <!-- 移动端菜单 -->
+      <transition name="slide-up">
+        <footer v-if="windowStore.isMobile && windowStore.showNav" class="fixed right-0 bottom-0 left-0 z-50 w-full">
+          <BottomNavigation />
+        </footer>
+      </transition>
     </div>
 
     <!-- 返回顶部按钮 -->

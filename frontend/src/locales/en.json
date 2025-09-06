@@ -19,6 +19,25 @@
     "more": "More",
     "post": "Post"
   },
+  "premium": {
+    "title": "Subscribe to Premium",
+    "description": "Subscribe to unlock new features and, if eligible, earn revenue share.",
+    "button": "Subscribe"
+  },
+  "explore": {
+    "tags": {
+      "for_you": "For You",
+      "trending": "Trending",
+      "news": "News",
+      "sports": "Sports",
+      "entertainment": "Entertainment"
+    },
+    "news": {
+      "title": "What's happening"
+    },
+    "postsCount": "{count} posts",
+    "trendingRank": "{rank} · Trending worldwide"
+  },
   "more": {
     "settings": "Settings",
     "yourAccount": "Your Account",
@@ -31,5 +50,8 @@
     "submit": "Post",
     "reply": "Reply",
     "draft": "Draft"
+  },
+  "search": {
+    "placeholder": "Search"
   }
 }

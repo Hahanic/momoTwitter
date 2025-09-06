@@ -5,12 +5,12 @@
         <div
           class="flex h-[3.2rem] w-[50%] cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/90"
         >
-          为你推荐
+          4
         </div>
         <div
           class="flex h-[3.2rem] w-[50%] cursor-pointer items-center justify-center transition-all hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/80"
         >
-          关注
+          04
         </div>
       </div>
     </StickyHead>

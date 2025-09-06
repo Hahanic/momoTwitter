@@ -9,6 +9,8 @@ import {
   register,
   login,
   logout,
+  followUser,
+  unfollowUser,
 } from '../controller/auth.js'
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
@@ -28,5 +30,9 @@ router.get('/me', protectAuthRoute, asyncHandler(getCurrentUser))
 router.put('/me', protectAuthRoute, asyncHandler(updateUserProfile))
 // 获取登录验证码
 router.get('/captcha', getIdentifyingCode)
+// 关注用户
+router.post('/:username/follow', protectAuthRoute, asyncHandler(followUser))
+// 取消关注用户
+router.delete('/:username/follow', protectAuthRoute, asyncHandler(unfollowUser))
 
 export default router

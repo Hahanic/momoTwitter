@@ -44,12 +44,10 @@
             <img class="h-full w-full rounded-full object-cover" :src="currentUserProfile.avatarUrl || '/cat.svg'" />
           </div>
           <div class="mt-2 flex items-center gap-2">
-            <button v-if="!isSelf" class="border-borderDark rounded-full border px-4 py-2 text-sm font-bold">
-              {{ isFollowing ? '正在关注' : '关注' }}
-            </button>
+            <FollowButton v-if="!isSelf" :user="currentUserProfile" />
             <button
-              @click="editProfile"
               v-else
+              @click="editProfile"
               class="border-borderDark rounded-full border px-4 py-2 text-sm font-bold"
             >
               编辑资料
@@ -149,6 +147,7 @@ import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
+import FollowButton from '@/components/profile/FollowButton.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import { useUserStore, useWindowStore } from '@/stores'
 import useUserPostStore from '@/stores/useUserPostStore'
@@ -159,8 +158,9 @@ const userStore = useUserStore()
 const userPostStore = useUserPostStore()
 const windowStore = useWindowStore()
 
-const { currentUserProfile, isFollowing, isSelf, isLoading } = storeToRefs(userStore)
+const { currentUserProfile, isSelf, isLoading } = storeToRefs(userStore)
 
+// 三个子路由
 const tabList = computed(() => {
   const base = [
     { name: '帖子', routeName: 'ProfilePosts' },
@@ -171,6 +171,7 @@ const tabList = computed(() => {
   return base
 })
 
+// 获取用户信息
 async function fetchProfile(username?: string) {
   const uname = (username || (route.params.username as string))?.trim()
   if (!uname) return
@@ -181,6 +182,7 @@ async function fetchProfile(username?: string) {
   }
 }
 
+// 监听路由变化
 onActivated(async () => {
   if (route.params.username !== userStore.currentUserProfile?.username) {
     userPostStore.resetAll()

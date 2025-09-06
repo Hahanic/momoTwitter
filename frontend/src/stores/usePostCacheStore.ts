@@ -69,23 +69,6 @@ const usePostCacheStore = defineStore('postCache', () => {
     return Array.from(posts.value.values()).filter(predicate)
   }
 
-  // 获取所有缓存的帖子
-  function getAllPosts(): Post[] {
-    return Array.from(posts.value.values())
-  }
-
-  // 获取缓存统计信息
-  function getCacheStats() {
-    const allPosts = getAllPosts()
-    return {
-      total: allPosts.length,
-      byType: {
-        standard: allPosts.filter((p) => p.postType === 'standard').length,
-        reply: allPosts.filter((p) => p.postType === 'reply').length,
-      },
-    }
-  }
-
   return {
     // 状态
     cacheSize,
@@ -102,8 +85,6 @@ const usePostCacheStore = defineStore('postCache', () => {
     // 高级操作
     fetchPostIfNotExists,
     findPosts,
-    getAllPosts,
-    getCacheStats,
   }
 })
 

@@ -192,3 +192,19 @@ export const uploadImages = (
     },
   })
 }
+
+// 关注/取消关注用户
+export const followUserAPI = (username: string): Promise<{ message: string; isFollowing: boolean }> => {
+  return axiosInstance.post(`/auth/${username}/follow`)
+}
+export const unfollowUserAPI = (username: string): Promise<{ message: string; isFollowing: boolean }> => {
+  return axiosInstance.delete(`/auth/${username}/follow`)
+}
+
+// 获取某用户的关注/粉丝列表
+export const fetchFollowing = async (username: string): Promise<{ message: string; following: UserProfile[] }> => {
+  return axiosInstance.get(`/users/${username}/following`)
+}
+export const fetchFollowers = async (username: string): Promise<{ message: string; followers: UserProfile[] }> => {
+  return axiosInstance.get(`/users/${username}/followers`)
+}

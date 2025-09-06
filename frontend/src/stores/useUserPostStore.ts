@@ -116,19 +116,6 @@ const useUserPostStore = defineStore('userPost', () => {
     ;(['posts', 'replies', 'likes', 'bookmarks'] as FeedCategory[]).forEach(resetCategory)
   }
 
-  function getStats() {
-    return {
-      counts: {
-        posts: postIds.value.length,
-        replies: replyIds.value.length,
-        likes: likeIds.value.length,
-        bookmarks: bookmarkIds.value.length,
-      },
-      hasMore: { ...hasMoreMap.value },
-      loading: { ...loadingMap.value },
-    }
-  }
-
   return {
     // 状态
     postIds,
@@ -147,7 +134,6 @@ const useUserPostStore = defineStore('userPost', () => {
     loadCategory,
     resetCategory,
     resetAll,
-    getStats,
   }
 })
 

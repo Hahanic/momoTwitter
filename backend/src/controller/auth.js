@@ -4,6 +4,7 @@ import Post from '../db/model/Post.js'
 import Relationship from '../db/model/Relationship.js'
 import Session from '../db/model/Session.js'
 import User from '../db/model/User.js'
+import { PostService } from '../services/postService.js'
 import {
   sendResponse,
   generateAccessToken,
@@ -93,13 +94,15 @@ export const getUserProfile = async (req, res) => {
   if (accessToken) {
     try {
       const currentUserId = verifyAccessToken(accessToken)
+      // 是本人
       if (currentUserId && currentUserId.toString() === user._id.toString()) {
         return sendResponse(res, 200, '获取用户信息成功', {
           userProfile: userToReturn,
         })
       }
+      // 非本人，带上isFollowing
       if (currentUserId && currentUserId.toString() !== user._id.toString()) {
-        const rel = await Relationship.exists({ follower: currentUserId, following: user._id })
+        const rel = await Relationship.exists({ followerId: currentUserId, followingId: user._id })
         userToReturn.isFollowing = !!rel
       }
     } catch (e) {
@@ -130,9 +133,6 @@ export const login = async (req, res) => {
   const userToReturn = user.toObject()
   delete userToReturn.password
 
-  // const token = generateToken(userToReturn._id)
-  // setTokenCookie(res, token)
-
   sendResponse(res, 200, '登录成功', { user: userToReturn, accessToken })
 }
 
@@ -161,10 +161,6 @@ export const register = async (req, res) => {
 
   // 创建会话和令牌
   const accessToken = await createSessionAndTokens(userToReturn, req, res)
-
-  // 生成token并设置cookie
-  // const token = generateToken(userToReturn._id)
-  // setTokenCookie(res, token)
 
   sendResponse(res, 201, '注册成功', { user: userToReturn, accessToken })
 }
@@ -291,6 +287,99 @@ export const refreshAccessToken = async (req, res) => {
     sendResponse(res, 200, '成功', { user, accessToken })
   } catch (error) {
     console.error('刷新令牌时出错:', error)
+    sendResponse(res, 500, '服务器错误')
+  }
+}
+
+export const followUser = async (req, res) => {
+  const { username } = req.params
+  const userId = req.user.id
+
+  try {
+    // 查找目标用户
+    const userToFollow = await User.findOne({ username })
+    if (!userToFollow) {
+      return sendResponse(res, 404, '用户不存在')
+    }
+    if (userToFollow._id.equals(userId)) {
+      return sendResponse(res, 400, '不能关注自己')
+    }
+
+    // 检查是否已关注
+    const existing = await Relationship.findOne({ followerId: userId, followingId: userToFollow._id })
+    if (!existing) {
+      // 未关注，执行关注
+      await Relationship.create({ followerId: userId, followingId: userToFollow._id })
+      await PostService.updateUserStats(userToFollow._id, { 'stats.followersCount': 1 })
+      await PostService.updateUserStats(userId, { 'stats.followingCount': 1 })
+      return sendResponse(res, 200, '关注成功', { isFollowing: true })
+    }
+  } catch (error) {
+    console.error('关注/取关用户时出错:', error)
+    sendResponse(res, 500, '服务器错误')
+  }
+}
+
+// 取消关注
+export const unfollowUser = async (req, res) => {
+  const { username } = req.params
+  const userId = req.user.id
+
+  try {
+    const userToUnfollow = await User.findOne({ username })
+    if (!userToUnfollow) {
+      return sendResponse(res, 404, '用户不存在')
+    }
+    if (userToUnfollow._id.equals(userId)) {
+      return sendResponse(res, 400, '不能取消关注自己')
+    }
+
+    const result = await Relationship.deleteOne({ followerId: userId, followingId: userToUnfollow._id })
+    if (result.deletedCount > 0) {
+      await PostService.updateUserStats(userToUnfollow._id, { 'stats.followersCount': -1 })
+      await PostService.updateUserStats(userId, { 'stats.followingCount': -1 })
+      return sendResponse(res, 200, '已取消关注', { isFollowing: false })
+    } else {
+      return sendResponse(res, 400, '未关注该用户')
+    }
+  } catch (error) {
+    console.error('取消关注时出错:', error)
+    sendResponse(res, 500, '服务器错误')
+  }
+}
+
+// 获取关注列表
+export const getUserFollowing = async (req, res) => {
+  const { username } = req.params
+  try {
+    const user = await User.findOne({ username })
+    if (!user) {
+      return sendResponse(res, 404, '用户不存在')
+    }
+    // 查找所有该用户关注的关系
+    const relations = await Relationship.find({ followerId: user._id }).populate('followingId', '-password')
+    const following = relations.map((r) => r.followingId)
+    sendResponse(res, 200, '获取关注列表成功', { following })
+  } catch (error) {
+    console.error('获取关注列表出错:', error)
+    sendResponse(res, 500, '服务器错误')
+  }
+}
+
+// 获取粉丝列表
+export const getUserFollowers = async (req, res) => {
+  const { username } = req.params
+  try {
+    const user = await User.findOne({ username })
+    if (!user) {
+      return sendResponse(res, 404, '用户不存在')
+    }
+    // 查找所有关注该用户的关系
+    const relations = await Relationship.find({ followingId: user._id }).populate('followerId', '-password')
+    const followers = relations.map((r) => r.followerId)
+    sendResponse(res, 200, '获取粉丝列表成功', { followers })
+  } catch (error) {
+    console.error('获取粉丝列表出错:', error)
     sendResponse(res, 500, '服务器错误')
   }
 }

@@ -25,17 +25,6 @@ const usePostFeedStore = defineStore('postFeed', () => {
     return postIds.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
   })
 
-  // 计算属性：加载状态统计
-  const loadingStats = computed(() => {
-    return {
-      isLoading: isLoading.value,
-      isRefreshing: isRefreshing.value,
-      hasMore: hasMore.value,
-      totalPosts: postIds.value.length,
-      cachedPosts: posts.value.length,
-    }
-  })
-
   // 初始加载帖子
   async function loadInitialPosts() {
     if (isLoading.value) return
@@ -152,13 +141,10 @@ const usePostFeedStore = defineStore('postFeed', () => {
   return {
     // 状态
     postIds,
+    posts,
     isLoading,
     isRefreshing,
     hasMore,
-
-    // 计算属性
-    posts,
-    loadingStats,
 
     // 核心方法
     loadInitialPosts,

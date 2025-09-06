@@ -226,7 +226,7 @@ const translationResult = computed(() => {
   return interactionStore.translatedPosts.get(currentPost.value._id)
 })
 
-const isTranslating = computed(() => interactionStore.isTranslatingPost())
+const isTranslating = computed(() => interactionStore.isTranslatingPost(currentPost.value?._id || ''))
 
 const displayTranslation = ref(false)
 
@@ -246,7 +246,7 @@ const handleLikeCurrentPost = async () => {
   try {
     await interactionStore.toggleLike(currentPost.value._id)
   } catch (error: any) {
-    message.error('点赞失败')
+    message.error(error.message || '点赞失败')
     console.error(error.message || error)
   }
 }
@@ -257,7 +257,7 @@ const handlePostBookmark = async () => {
   try {
     await interactionStore.toggleBookmark(currentPost.value._id)
   } catch (error: any) {
-    message.error('收藏失败')
+    message.error(error.message || '收藏失败')
     console.error(error.message || error)
   }
 }
@@ -270,7 +270,7 @@ const handleTranslate = async () => {
   try {
     await interactionStore.handleTranslatePost(currentPost.value._id)
   } catch (error: any) {
-    message.error('翻译失败')
+    message.error(error.message || '翻译失败')
     console.error(error.message || error)
   }
 }

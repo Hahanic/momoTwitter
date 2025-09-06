@@ -29,17 +29,17 @@ const usePostDetailStore = defineStore('postDetail', () => {
   const repliesCursor = ref<string | null>(null)
   const hasMoreReplies = ref(true)
 
-  // 计算属性：当前帖子
+  // 当前帖子
   const currentPost = computed(() => {
     return currentPostId.value ? postCacheStore.getPost(currentPostId.value) : null
   })
 
-  // 计算属性：父帖子链（实际的帖子对象）
+  // 父帖子链
   const parentPosts = computed(() => {
     return parentChain.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
   })
 
-  // 计算属性：回复列表（实际的帖子对象）
+  // 回复列表
   const replies = computed(() => {
     return replyIds.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
   })

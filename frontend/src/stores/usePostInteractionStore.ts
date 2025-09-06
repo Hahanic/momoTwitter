@@ -14,112 +14,105 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
   // 存储已经翻译的帖子ID和目标语言和内容
   const translatedPosts = ref<Map<string, { language: string; translatedContent: string }>>(new Map())
 
-  // 防止重复操作的状态跟踪
-  const likingInProgress = ref(new Set<string>())
-  const bookmarkingInProgress = ref(new Set<string>())
-  const replyingInProgress = ref(new Set<string>())
-  const postingInProgress = ref(false)
-  const translatingInProgress = ref(false)
+  const operationInProgress = ref<Map<string, Set<string>>>(
+    new Map([
+      ['liking', new Set<string>()],
+      ['bookmarking', new Set<string>()],
+      ['replying', new Set<string>()],
+      ['posting', new Set<string>()],
+      ['translating', new Set<string>()],
+    ])
+  )
 
   // 点赞/取消点赞
   async function toggleLike(postId: string) {
-    if (!userStore.isAuthenticated) {
-      throw new Error('用户未登录，无法点赞')
-    }
-
-    if (likingInProgress.value.has(postId)) {
-      throw new Error('点赞进行中，请稍后再试')
-    }
-
     const post = postCacheStore.getPost(postId)
-    if (!post || !post.currentUserInteraction) {
+    if (!post) {
       throw new Error('帖子不存在')
     }
-
-    // 记录原始状态
-    const originalIsLiked = post.currentUserInteraction.isLiked
-    const originalLikesCount = post.stats.likesCount
-
-    likingInProgress.value.add(postId)
-
-    // 乐观更新
-    postCacheStore.updatePost(postId, {
-      stats: {
-        ...post.stats,
-        likesCount: originalLikesCount + (!originalIsLiked ? 1 : -1),
+    if (!post.currentUserInteraction || !userStore.isAuthenticated) {
+      throw new Error('未登录')
+    }
+    const original = {
+      isLiked: post.currentUserInteraction.isLiked,
+      isBookmarked: post.currentUserInteraction.isBookmarked,
+      isRetweeted: post.currentUserInteraction.isRetweeted,
+      likesCount: post.stats.likesCount,
+    }
+    return withOptimisticUpdate({
+      operationType: 'liking',
+      entityId: postId,
+      apiCall: () => likePost(postId),
+      optimisticUpdateFn: () => {
+        postCacheStore.updatePost(postId, {
+          stats: {
+            ...post.stats,
+            likesCount: original.likesCount + (!original.isLiked ? 1 : -1),
+          },
+          currentUserInteraction: {
+            isLiked: !original.isLiked,
+            isBookmarked: original.isBookmarked,
+            isRetweeted: original.isRetweeted,
+          },
+        })
       },
-      currentUserInteraction: {
-        ...post.currentUserInteraction,
-        isLiked: !originalIsLiked,
+      rollbackFn: () => {
+        postCacheStore.updatePost(postId, {
+          stats: { ...post.stats, likesCount: original.likesCount },
+          currentUserInteraction: {
+            isLiked: original.isLiked,
+            isBookmarked: original.isBookmarked,
+            isRetweeted: original.isRetweeted,
+          },
+        })
       },
     })
-
-    try {
-      await likePost(postId)
-    } catch (error) {
-      // 失败回滚
-      postCacheStore.updatePost(postId, {
-        stats: { ...post.stats, likesCount: originalLikesCount },
-        currentUserInteraction: { ...post.currentUserInteraction, isLiked: originalIsLiked },
-      })
-
-      throw error
-    } finally {
-      likingInProgress.value.delete(postId)
-    }
   }
 
   // 收藏/取消收藏 (目前只做乐观更新，等后端API)
   async function toggleBookmark(postId: string) {
-    if (!userStore.isAuthenticated) {
-      throw new Error('用户未登录，无法收藏')
-    }
-
-    if (bookmarkingInProgress.value.has(postId)) {
-      throw new Error('收藏进行中，请稍后再试')
-    }
-
     const post = postCacheStore.getPost(postId)
-    if (!post || !post.currentUserInteraction) {
-      throw new Error('帖子不存在')
+    if (!post) throw new Error('帖子不存在')
+    if (!post.currentUserInteraction || !userStore.isAuthenticated) {
+      throw new Error('未登录')
     }
-
-    const originalIsBookmarked = post.currentUserInteraction.isBookmarked
-    const originalBookmarksCount = post.stats.bookmarksCount
-
-    bookmarkingInProgress.value.add(postId)
-
-    // 乐观更新
-    postCacheStore.updatePost(postId, {
-      stats: {
-        ...post.stats,
-        bookmarksCount: originalBookmarksCount + (!originalIsBookmarked ? 1 : -1),
+    const original = {
+      isLiked: post.currentUserInteraction.isLiked,
+      isBookmarked: post.currentUserInteraction.isBookmarked,
+      isRetweeted: post.currentUserInteraction.isRetweeted,
+      bookmarksCount: post.stats.bookmarksCount,
+    }
+    return withOptimisticUpdate({
+      operationType: 'bookmarking',
+      entityId: postId,
+      apiCall: () => bookmarkPost(postId),
+      optimisticUpdateFn: () => {
+        postCacheStore.updatePost(postId, {
+          stats: {
+            ...post.stats,
+            bookmarksCount: original.bookmarksCount + (!original.isBookmarked ? 1 : -1),
+          },
+          currentUserInteraction: {
+            isLiked: original.isLiked,
+            isBookmarked: !original.isBookmarked,
+            isRetweeted: original.isRetweeted,
+          },
+        })
       },
-      currentUserInteraction: {
-        ...post.currentUserInteraction,
-        isBookmarked: !originalIsBookmarked,
+      rollbackFn: () => {
+        postCacheStore.updatePost(postId, {
+          stats: { ...post.stats, bookmarksCount: original.bookmarksCount },
+          currentUserInteraction: {
+            isLiked: original.isLiked,
+            isBookmarked: original.isBookmarked,
+            isRetweeted: original.isRetweeted,
+          },
+        })
       },
     })
-
-    try {
-      await bookmarkPost(postId)
-    } catch (error) {
-      // 失败回滚
-      postCacheStore.updatePost(postId, {
-        stats: { ...post.stats, bookmarksCount: originalBookmarksCount },
-        currentUserInteraction: {
-          ...post.currentUserInteraction,
-          isBookmarked: originalIsBookmarked,
-        },
-      })
-
-      throw error
-    } finally {
-      bookmarkingInProgress.value.delete(postId)
-    }
   }
 
-  // 转发 (目前只做乐观更新，等后端API)
+  // 转发/取消转发
   async function toggleRetweet(postId: string) {
     if (!userStore.isAuthenticated) {
       throw new Error('用户未登录，无法转发')
@@ -159,76 +152,50 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
 
   // 回复
   async function handleCreateReply(payload: CreatePostPayload) {
-    if (!userStore.isAuthenticated) {
-      throw new Error('用户未登录，无法回复')
-    }
-
     if (!payload.parentPostId) {
       throw new Error('缺少父帖子ID')
     }
-
-    if (replyingInProgress.value.has(payload.parentPostId)) {
-      throw new Error('正在回复中，请稍后再试')
-    }
-
     const parentPost = postCacheStore.getPost(payload.parentPostId)
     if (!parentPost) {
       throw new Error('父帖子不存在')
     }
-
-    replyingInProgress.value.add(payload.parentPostId)
-
-    // 乐观更新父帖子的回复数
     const originalRepliesCount = parentPost.stats.repliesCount
-    postCacheStore.updatePost(payload.parentPostId, {
-      stats: {
-        ...parentPost.stats,
-        repliesCount: originalRepliesCount + 1,
+    return withOptimisticUpdate({
+      operationType: 'replying',
+      entityId: payload.parentPostId,
+      apiCall: async () => {
+        const newReply = await createPost({ ...payload, postType: 'reply' })
+        postCacheStore.addPost(newReply.newPost)
+        return newReply.newPost
+      },
+      optimisticUpdateFn: () => {
+        postCacheStore.updatePost(payload.parentPostId!, {
+          stats: {
+            ...parentPost.stats,
+            repliesCount: originalRepliesCount + 1,
+          },
+        })
+      },
+      rollbackFn: () => {
+        postCacheStore.updatePost(payload.parentPostId!, {
+          stats: { ...parentPost.stats, repliesCount: originalRepliesCount },
+        })
       },
     })
-
-    try {
-      const newReply = await createPost({ ...payload, postType: 'reply' })
-      // 将新回复添加到缓存
-      postCacheStore.addPost(newReply.newPost)
-
-      return newReply.newPost
-    } catch (error) {
-      // 失败回滚
-      postCacheStore.updatePost(payload.parentPostId, {
-        stats: { ...parentPost.stats, repliesCount: originalRepliesCount },
-      })
-
-      throw error
-    } finally {
-      replyingInProgress.value.delete(payload.parentPostId)
-    }
   }
-
   // 创建新帖子
   async function handleCreatePost(payload: CreatePostPayload) {
-    if (!userStore.isAuthenticated) {
-      throw new Error('用户未登录，无法发帖')
-    }
-
-    if (postingInProgress.value) {
-      throw new Error('正在进行发帖操作，请稍后再试')
-    }
-
-    postingInProgress.value = true
-
-    try {
-      const res = await createPost(payload)
-
-      // 将新帖子添加到缓存
-      postCacheStore.addPost(res.newPost)
-
-      return res.newPost
-    } catch (error) {
-      throw error
-    } finally {
-      postingInProgress.value = false
-    }
+    return withOptimisticUpdate({
+      operationType: 'posting',
+      entityId: 'global',
+      apiCall: async () => {
+        const res = await createPost(payload)
+        postCacheStore.addPost(res.newPost)
+        return res.newPost
+      },
+      optimisticUpdateFn: () => {},
+      rollbackFn: () => {},
+    })
   }
 
   // 浏览帖子
@@ -246,59 +213,84 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     if (!userStore.isAuthenticated) {
       throw new Error('用户未登录，无法翻译帖子')
     }
-    if (translatingInProgress.value) {
+    if (operationInProgress.value.get('translating')?.has(postId)) {
       throw new Error('翻译操作已在进行中，请稍后再试')
     }
-
     const currentLocale = localStorage.getItem('locale') || 'zh-CN'
-
+    operationInProgress.value.get('translating')?.add(postId)
     try {
-      translatingInProgress.value = true
-
       const oldTranslation = translatedPosts.value.get(postId)
       if (oldTranslation && oldTranslation.language === currentLocale) {
         return oldTranslation
       }
-
       const res = await translatePost(postId, currentLocale)
-
       translatedPosts.value.set(postId, { language: res.language, translatedContent: res.translatedContent })
-
       return res
     } catch (error) {
       console.error('翻译帖子失败:', error)
     } finally {
-      translatingInProgress.value = false
+      operationInProgress.value.get('translating')?.delete(postId)
     }
   }
 
   // 检查是否正在进行某个操作
   function isLikingPost(postId: string): boolean {
-    return likingInProgress.value.has(postId)
+    return operationInProgress.value.get('liking')?.has(postId) ?? false
   }
 
   function isBookmarkingPost(postId: string): boolean {
-    return bookmarkingInProgress.value.has(postId)
+    return operationInProgress.value.get('bookmarking')?.has(postId) ?? false
   }
 
   function isReplyingToPost(postId: string): boolean {
-    return replyingInProgress.value.has(postId)
+    return operationInProgress.value.get('replying')?.has(postId) ?? false
   }
 
   function isCreatingPost(): boolean {
-    return postingInProgress.value
+    return operationInProgress.value.get('posting')?.has('global') ?? false
   }
 
-  function isTranslatingPost(): boolean {
-    return translatingInProgress.value
+  function isTranslatingPost(postId: string): boolean {
+    return operationInProgress.value.get('translating')?.has(postId) ?? false
   }
 
   // 清除所有操作状态（用于重置或错误恢复）
   function clearAllOperations() {
-    likingInProgress.value.clear()
-    bookmarkingInProgress.value.clear()
-    replyingInProgress.value.clear()
-    postingInProgress.value = false
+    for (const set of operationInProgress.value.values()) {
+      set.clear()
+    }
+  }
+
+  async function withOptimisticUpdate<T>({
+    operationType,
+    entityId,
+    apiCall,
+    optimisticUpdateFn,
+    rollbackFn,
+  }: {
+    operationType: 'liking' | 'bookmarking' | 'replying' | 'posting' | 'translating'
+    entityId?: string
+    apiCall: () => Promise<T>
+    optimisticUpdateFn: () => void
+    rollbackFn: () => void
+  }) {
+    if (!userStore.isAuthenticated) {
+      throw new Error('用户未登录，无法进行此操作')
+    }
+    if (!entityId || !operationInProgress.value.has(operationType)) {
+      throw new Error('无效的操作类型或帖子不存在')
+    }
+    operationInProgress.value.get(operationType)?.add(entityId)
+    // 乐观更新
+    optimisticUpdateFn()
+    try {
+      return await apiCall()
+    } catch (error) {
+      rollbackFn()
+      throw error
+    } finally {
+      operationInProgress.value.get(operationType)?.delete(entityId)
+    }
   }
 
   return {

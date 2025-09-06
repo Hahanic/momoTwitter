@@ -26,7 +26,7 @@
             v-if="showEmojiPicker"
             class="absolute z-5"
             :style="pickerStyle"
-            @emoji-selected="handleEmojiSelected"
+            @emoji-selected="onEmojiSelected"
           />
         </div>
         <div>
@@ -38,8 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onClickOutside } from '@vueuse/core'
-import { nextTick, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import EmojiPicker from './EmojiPicker.vue'
@@ -48,6 +47,7 @@ import PostImagePre from './PostImagePre.vue'
 import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
+import { useEmojiPicker } from '@/composables/useEmojiPicker'
 import { usePostHandler } from '@/composables/usePostHandler'
 import { usePostFeedStore, usePostInteractionStore } from '@/stores'
 
@@ -56,37 +56,15 @@ const postInteractionStore = usePostInteractionStore()
 const { t } = useI18n()
 
 const PostEditorRef = ref<InstanceType<typeof PostEditor> | null>(null)
-const showEmojiPicker = ref(false)
 const pickerStyle = ref<Record<string, string>>()
-const emojiWrapperRef = ref(null)
 
-const handleToggleEmoji = async (Event: MouseEvent) => {
-  showEmojiPicker.value = !showEmojiPicker.value
-  if (showEmojiPicker.value) {
-    await nextTick()
-    const button = Event?.currentTarget as HTMLElement
-    if (button) {
-      // const rect = button.getBoundingClientRect()
-      // pickerStyle.value = {
-      //   top: `${rect.bottom + window.scrollY + 8}px`,
-      //   left: `${rect.left + window.scrollX}px`,
-      // }
-    }
-  }
-}
+// 使用表情选择器 composable
+const { showEmojiPicker, emojiWrapperRef, handleToggleEmoji, handleEmojiSelected } = useEmojiPicker()
 
-// 6. 选择了表情后的处理逻辑（核心连接点）
-const handleEmojiSelected = (emoji: any) => {
-  // 调用 PostEditor 暴露出的 insertText 方法
-  console.log(emoji)
-  PostEditorRef.value?.insertEmoji(emoji.unicode)
-  // 选择后关闭选择器
-  // showEmojiPicker.value = false
+// 处理表情选择的包装函数
+const onEmojiSelected = (emoji: any) => {
+  handleEmojiSelected(emoji, PostEditorRef.value)
 }
-// 7. 点击外部关闭
-onClickOutside(emojiWrapperRef, () => {
-  showEmojiPicker.value = false
-})
 
 const {
   messageContent,

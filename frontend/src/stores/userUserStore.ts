@@ -10,6 +10,8 @@ import {
   fetchUserByUsername,
   updateUserProfileAPI,
   refreshAccessToken,
+  followUserAPI,
+  unfollowUserAPI,
 } from '@/api/index.ts'
 import { useUserPostStore } from '@/stores'
 import { type UserProfile, type LoginPayload, type RegisterPayload } from '@/types'
@@ -74,9 +76,9 @@ const useUserStore = defineStore(
           throw new Error('从服务器返回的数据格式不正确')
         }
         user.value = res.userProfile
-      } catch (err) {
+      } catch (err: any) {
         user.value = null
-        throw err
+        console.error('获取当前用户信息失败:', err.message)
       }
     }
 
@@ -167,6 +169,48 @@ const useUserStore = defineStore(
       }
     }
 
+    // 关注关注用户
+    async function follow(username: string) {
+      if (isAuthenticated.value === false) {
+        throw new Error('请先登录')
+      }
+      if (isSelf.value) return
+      if (!currentUserProfile.value) return
+      try {
+        const res = await followUserAPI(username)
+        if (!res) {
+          throw new Error('从服务器返回的数据格式不正确')
+        }
+        isFollowing.value = res.isFollowing
+        if (currentUserProfile.value.username === username) {
+          currentUserProfile.value.stats.followersCount!++
+        }
+      } catch (err) {
+        throw err
+      }
+    }
+
+    // 取消关注用户
+    async function unfollow(username: string) {
+      if (isAuthenticated.value === false) {
+        throw new Error('请先登录')
+      }
+      if (isSelf.value) return
+      if (!currentUserProfile.value) return
+      try {
+        const res = await unfollowUserAPI(username)
+        if (!res) {
+          throw new Error('从服务器返回的数据格式不正确')
+        }
+        isFollowing.value = res.isFollowing
+        if (currentUserProfile.value.username === username) {
+          currentUserProfile.value.stats.followersCount!--
+        }
+      } catch (err) {
+        throw err
+      }
+    }
+
     // Token 管理方法
     function setAccessToken(token: string | null) {
       accessToken.value = token
@@ -206,6 +250,8 @@ const useUserStore = defineStore(
       updateUserProfile,
       currentUserProfile,
       ensureValidToken,
+      follow,
+      unfollow,
       isFollowing,
       isSelf,
       isLoading,

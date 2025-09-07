@@ -33,9 +33,7 @@ body {
 html {
   overflow-y: scroll;
 }
-body {
-  padding-right: calc(100vw - 100%);
-}
+
 html.modal-open {
   overflow: hidden;
   padding-right: var(--scrollbar-width, 0px);

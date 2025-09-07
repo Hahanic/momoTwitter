@@ -104,9 +104,11 @@ watch(
       document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
       document.documentElement.classList.add('modal-open')
     } else {
-      // 恢复滚动
-      document.documentElement.classList.remove('modal-open')
-      document.documentElement.style.removeProperty('--scrollbar-width')
+      // 等待模态框动画完成再恢复滚动条防止抖动（0.3s）
+      setTimeout(() => {
+        document.documentElement.classList.remove('modal-open')
+        document.documentElement.style.removeProperty('--scrollbar-width')
+      }, 300)
     }
   },
   { immediate: true }

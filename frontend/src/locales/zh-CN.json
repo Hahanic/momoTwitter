@@ -42,7 +42,8 @@
   "more": {
     "settings": "设置",
     "yourAccount": "你的账号",
-    "accessibilityDisplayLanguages": "辅助功能、显示和语言"
+    "accessibilityDisplayLanguages": "辅助功能、显示和语言",
+    "security_and_account_access": "安全性和账号访问权限"
   },
   "post": {
     "whatsHappening": "有什么新鲜事?",

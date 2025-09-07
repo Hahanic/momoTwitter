@@ -41,7 +41,8 @@
   "more": {
     "settings": "Settings",
     "yourAccount": "Your Account",
-    "accessibilityDisplayLanguages": "Accessibility, display and languages"
+    "accessibilityDisplayLanguages": "Accessibility, display and languages",
+    "security_and_account_access": "Security and account access"
   },
   "post": {
     "whatsHappening": "What's happening?",

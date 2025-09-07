@@ -39,16 +39,35 @@ watch(
       windowStore.showNav = true
     }
     await nextTick(() => {
+      // 主页帖子流
       if (routePath === '/home') {
         window.scrollTo({
           top: windowStore.homeScrollTop,
           behavior: 'auto',
         })
-      } else if (
-        ['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)
-      ) {
+      }
+      // 用户个人主页
+      else if (['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(route.name as string)) {
         window.scrollTo({
           top: windowStore.userProfileScrollTop,
+          behavior: 'auto',
+        })
+      }
+      // 探索页
+      else if (
+        ['ExploreForYou', 'ExploreTrending', 'ExploreNews', 'ExploreSports', 'ExploreEntertainment'].includes(
+          route.name as string
+        )
+      ) {
+        window.scrollTo({
+          top: windowStore.exploreScrollMap[route.name as string] || 0,
+          behavior: 'auto',
+        })
+      }
+      // 404页
+      else if (['GlobalNotFound', 'ExploreNotFound'].includes(route.name as string)) {
+        window.scrollTo({
+          top: 0,
           behavior: 'auto',
         })
       }

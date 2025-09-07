@@ -10,7 +10,7 @@
     class="transition-all"
   >
     <div class="flex w-full flex-col">
-      <div class="mx-2 my-3 flex w-full items-center">
+      <div class="my-3 flex w-full items-center px-2">
         <Settings :size="24" />
         <p class="pl-2 text-xl">{{ t('more.settings') }}</p>
       </div>
@@ -27,6 +27,12 @@
             <span>&gt;</span>
           </RouterLink>
         </li>
+        <li class="w-full transition-all hover:bg-[#f7f9f9] dark:hover:bg-[#16181c]">
+          <RouterLink to="/more/security" class="flex w-full items-center justify-between p-3">
+            <p>{{ t('more.security_and_account_access') }}</p>
+            <span>&gt;</span>
+          </RouterLink>
+        </li>
       </ul>
     </div>
   </main>
@@ -34,12 +40,11 @@
   <aside
     v-show="isLargeScreen || isChildRouteActive"
     :class="{
-      'w-[38rem]': isLargeScreen || (!isLargeScreen && !isMobile && isChildRouteActive),
+      'w-[39.75rem]': isLargeScreen,
+      'w-[38rem]': !isLargeScreen && !isMobile && isChildRouteActive,
       'w-[100vw]': isMobile && isChildRouteActive,
       'dark:border-borderDark border-borderWhite border-r-1': !isMobile,
-      'ml-7 pr-7': isLargeScreen,
     }"
-    class="h-screentransition-all sticky top-0 md:min-h-screen"
   >
     <RouterView />
   </aside>

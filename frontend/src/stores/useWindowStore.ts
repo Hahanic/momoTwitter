@@ -15,6 +15,7 @@ const useWindowStore = defineStore('window', () => {
   const homeScrollTop = ref<number>(0)
   const userProfileScrollTop = ref<number>(0)
   const postDetailScrollMap = ref<Record<string, number>>({})
+  const exploreScrollMap = ref<Record<string, number>>({})
 
   // 底部菜单显示状态
   const showNav = ref<boolean>(true)
@@ -50,6 +51,10 @@ const useWindowStore = defineStore('window', () => {
       userProfileScrollTop.value = currentScrollY
     } else if (routeName === 'PostDetail') {
       setPostDetailScroll(currentRoute.params.postId as string, currentScrollY)
+    } else if (
+      ['ExploreForYou', 'ExploreTrending', 'ExploreNews', 'ExploreSports', 'ExploreEntertainment'].includes(routeName)
+    ) {
+      exploreScrollMap.value[routeName] = currentScrollY
     }
 
     // d. 更新 lastScrollTop
@@ -142,6 +147,7 @@ const useWindowStore = defineStore('window', () => {
     userProfileScrollTop,
     postDetailScrollMap,
     getPostDetailScroll,
+    exploreScrollMap,
 
     navigationStack,
     isBackNavigation,

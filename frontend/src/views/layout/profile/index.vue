@@ -191,7 +191,6 @@ watch(
       await fetchProfile(newUsername as string)
     }
     if (windowStore.navType === 'new') {
-      console.log(windowStore.navType)
       document.documentElement.scrollTo({ top: 0, behavior: 'auto' })
     }
   },

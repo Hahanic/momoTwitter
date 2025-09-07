@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 
-type Theme = 'dark' | 'light'
+type Theme = 'dark' | 'light' | 'dim'
 
 const THEME_KEY = 'theme'
 
@@ -19,8 +19,9 @@ const getDefaultTheme = (): Theme => {
 const useThemeStore = defineStore('theme', () => {
   const currentTheme = ref<Theme>(getDefaultTheme())
   const isDarkTheme = computed(() => currentTheme.value === 'dark')
-  const toggleTheme = () => {
-    currentTheme.value = currentTheme.value === 'light' ? 'dark' : 'light'
+  const toggleTheme = (theme: Theme) => {
+    if (theme === 'dim') return
+    currentTheme.value = theme ? theme : currentTheme.value === 'dark' ? 'light' : 'dark'
   }
 
   watch(

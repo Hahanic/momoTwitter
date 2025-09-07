@@ -84,6 +84,11 @@ const layoutRoutes: Array<RouteRecordRaw> = [
             name: 'MoreSettings',
             component: () => import('@/views/layout/more/settings/index.vue'),
           },
+          {
+            path: 'security',
+            name: 'MoreSecurity',
+            component: () => import('@/views/layout/more/security/index.vue'),
+          },
         ],
       },
       {

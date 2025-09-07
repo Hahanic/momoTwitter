@@ -1,0 +1,126 @@
+{
+  "home": {
+    "forYou": "おすすめ",
+    "following": "フォロー中",
+    "noMoreContent": "コンテンツは以上です",
+    "subscribeToPremium": "プレミアムに登録",
+    "subscribeDescription": "登録して新機能のロックを解除し、対象となる場合は広告収益の分配を受け取りましょう。",
+    "subscribeButton": "登録する",
+    "whatsHappening": "いま起きていること"
+  },
+  "sidebar": {
+    "home": "ホーム",
+    "explore": "話題を検索",
+    "notifications": "通知",
+    "messages": "メッセージ",
+    "bot": "ボット",
+    "groups": "グループ",
+    "profile": "プロフィール",
+    "more": "もっと見る",
+    "post": "ポストする"
+  },
+  "premium": {
+    "title": "プレミアムに登録",
+    "description": "登録して新機能を利用可能にし、条件を満たせば広告収益分配を得られます。",
+    "button": "登録する"
+  },
+  "explore": {
+    "tags": {
+      "for_you": "おすすめ",
+      "trending": "トレンド",
+      "news": "ニュース",
+      "sports": "スポーツ",
+      "entertainment": "エンターテイメント"
+    },
+    "news": {
+      "title": "いま起きていること"
+    },
+    "postsCount": "{count}件のポスト",
+    "trendingRank": "{rank} · 世界のトレンド"
+  },
+  "more": {
+    "settings": "設定",
+    "yourAccount": "アカウント",
+    "accessibilityDisplayLanguages": "アクセシビリティ、表示、言語",
+    "security_and_account_access": "セキュリティとアカウントアクセス",
+    "security_and_sessions": "セキュリティとセッション",
+    "account": {
+      "title": "アカウント情報",
+      "username": "ユーザー名",
+      "displayName": "表示名",
+      "phone": "電話番号",
+      "email": "メールアドレス",
+      "creationDate": "アカウント作成日",
+      "countryRegion": "国/地域",
+      "language": "言語",
+      "gender": "性別",
+      "birthDate": "生年月日",
+      "age": "年齢",
+      "parodyAndFanAccounts": {
+        "label": "パロディ、解説、ファンアカウント",
+        "value": "パロディ、解説、ファンアカウントを管理"
+      },
+      "changeYourPassword": {
+        "label": "パスワードの変更",
+        "value": "いつでもパスワードを変更できます"
+      },
+      "deactivateYourAccount": {
+        "label": "アカウントの停止",
+        "value": "アカウントを停止する方法"
+      }
+    },
+    "ability": {
+      "title": "アクセシビリティ、表示、言語",
+      "accessibility": {
+        "label": "アクセシビリティ",
+        "value": "色のコントラストや動きの制限など、momoの体験の様々な側面を管理します。"
+      },
+      "display": {
+        "label": "表示",
+        "value": "フォントサイズ、色、背景を管理します。これらの設定は、このブラウザ上のすべてのXアカウントに影響します。"
+      },
+      "languages": {
+        "label": "言語",
+        "value": "momo体験のパーソナライズに使用する言語を管理します。"
+      },
+      "dataUsage": {
+        "label": "データ利用",
+        "value": "このデバイスでmomoが一部のネットワークデータを使用する方法を制限します。"
+      },
+      "keyboardShortcuts": {
+        "label": "キーボードショートカット",
+        "value": ""
+      }
+    },
+    "securityAndSessions": {
+      "title": "セキュリティとセッション",
+      "security": {
+        "label": "セキュリティ",
+        "value": "アカウントのセキュリティを管理します。"
+      },
+      "sessions": {
+        "label": "セッション",
+        "value": "ログイン履歴やアカウントに連携されているアプリの情報を確認します。"
+      },
+      "connectedAccounts": {
+        "label": "連携済みのアカウント",
+        "value": "ログインに使用するためにmomoに連携しているGoogleまたはAppleアカウントを管理します。"
+      },
+      "delegation": {
+        "label": "委任",
+        "value": "共有アカウントを管理します。"
+      }
+    }
+  },
+  "post": {
+    "whatsHappening": "いまどうしてる？",
+    "submitReply": "返信をポストする",
+    "maxLengthWarning": "300文字を超えることはできません",
+    "submit": "ポストする",
+    "reply": "返信",
+    "draft": "下書き"
+  },
+  "search": {
+    "placeholder": "検索"
+  }
+}

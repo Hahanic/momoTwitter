@@ -2,7 +2,6 @@
   <div
     :style="{ width: `${size}px`, height: `${size}px` }"
     class="flex cursor-pointer items-center justify-center transition hover:scale-110"
-    @click="themeStore.toggleTheme"
   >
     <Transition name="fade" mode="out-in">
       <SunIcon v-if="!themeStore.isDarkTheme" :size="iconSize" key="sunicon" class="theme-icon" />

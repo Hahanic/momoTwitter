@@ -24,7 +24,6 @@
     "description": "订阅以解锁新功能，若符合条件，还可获得收入分成。",
     "button": "订阅"
   },
-
   "explore": {
     "tags": {
       "for_you": "推荐",
@@ -43,7 +42,75 @@
     "settings": "设置",
     "yourAccount": "你的账号",
     "accessibilityDisplayLanguages": "辅助功能、显示和语言",
-    "security_and_account_access": "安全性和账号访问权限"
+    "security_and_account_access": "安全性和账号访问权限",
+    "security_and_sessions": "安全和会话",
+    "account": {
+      "title": "账号信息",
+      "username": "用户名",
+      "displayName": "显示名称",
+      "phone": "手机号",
+      "email": "邮箱",
+      "creationDate": "账号创建时间",
+      "countryRegion": "国家/地区",
+      "language": "语言",
+      "gender": "性别",
+      "birthDate": "生日",
+      "age": "年龄",
+      "parodyAndFanAccounts": {
+        "label": "戏仿、评论和粉丝账号",
+        "value": "管理你的戏仿、评论和粉丝账号"
+      },
+      "changeYourPassword": {
+        "label": "更改你的密码",
+        "value": "随时更改你的密码"
+      },
+      "deactivateYourAccount": {
+        "label": "停用你的账号",
+        "value": "了解如何停用账号"
+      }
+    },
+    "ability": {
+      "title": "辅助功能、显示和语言",
+      "accessibility": {
+        "label": "辅助功能",
+        "value": "管理 momo 体验的各个方面，比如限制颜色对比度和运动。"
+      },
+      "display": {
+        "label": "显示",
+        "value": "管理字体大小、颜色和背景。这些设置会影响此浏览器上的所有 X 账号。"
+      },
+      "languages": {
+        "label": "语言",
+        "value": "管理用哪些语言来个性化你的 momo 体验。"
+      },
+      "dataUsage": {
+        "label": "数据使用",
+        "value": "限制 momo 在此设备上使用某些网络数据的方式。"
+      },
+      "keyboardShortcuts": {
+        "label": "键盘快捷键",
+        "value": ""
+      }
+    },
+    "securityAndSessions": {
+      "title": "安全和会话",
+      "security": {
+        "label": "安全",
+        "value": "管理你账号的安全性。"
+      },
+      "sessions": {
+        "label": "会话",
+        "value": "查看有关你的账号登录时间以及账号关联应用的信息。"
+      },
+      "connectedAccounts": {
+        "label": "已关联的账号",
+        "value": "管理与 momo 关联用于登录的 Google 或 Apple 账户。"
+      },
+      "delegation": {
+        "label": "委派",
+        "value": "管理你的分享账号。"
+      }
+    }
   },
   "post": {
     "whatsHappening": "有什么新鲜事?",

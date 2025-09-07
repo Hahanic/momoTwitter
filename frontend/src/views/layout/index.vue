@@ -7,11 +7,7 @@
         class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center sm:flex xl:w-[17rem] xl:items-start"
       >
         <div class="relative z-10 flex h-[64px] w-full items-center">
-          <img
-            @click="themeStore.toggleTheme()"
-            class="absolute left-[8px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]"
-            src="/warp.svg"
-          />
+          <img class="absolute left-[8px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]" src="/warp.svg" />
         </div>
         <Scrollbar maxHeight="100%">
           <SideBar :items="menuLists" @action="handleSidebarAction" />
@@ -66,11 +62,9 @@ import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 import SideBar from '@/components/layout/SideBar.vue'
 import { useWindowStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
-import useThemeStore from '@/stores/useThemeStore'
 
 const windowStore = useWindowStore()
 const userStore = useUserStore()
-const themeStore = useThemeStore()
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()

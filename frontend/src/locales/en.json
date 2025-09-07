@@ -42,7 +42,75 @@
     "settings": "Settings",
     "yourAccount": "Your Account",
     "accessibilityDisplayLanguages": "Accessibility, display and languages",
-    "security_and_account_access": "Security and account access"
+    "security_and_account_access": "Security and account access",
+    "security_and_sessions": "security and sessions",
+    "account": {
+      "title": "Account information",
+      "username": "Username",
+      "displayName": "Display name",
+      "phone": "Phone",
+      "email": "Email",
+      "creationDate": "Account creation date",
+      "countryRegion": "Country/Region",
+      "language": "Language",
+      "gender": "Gender",
+      "birthDate": "Birth date",
+      "age": "Age",
+      "parodyAndFanAccounts": {
+        "label": "Parody, commentary, and fan accounts",
+        "value": "Manage your parody, commentary, and fan accounts"
+      },
+      "changeYourPassword": {
+        "label": "Change your password",
+        "value": "Change your password at any time"
+      },
+      "deactivateYourAccount": {
+        "label": "Deactivate your account",
+        "value": "Find out how to deactivate your account"
+      }
+    },
+    "ability": {
+      "title": "Accessibility, display, and languages",
+      "accessibility": {
+        "label": "Accessibility",
+        "value": "Manage aspects of your momo experience, such as limiting color contrast and motion."
+      },
+      "display": {
+        "label": "Display",
+        "value": "Manage font size, color, and background. These settings affect all X accounts on this browser."
+      },
+      "languages": {
+        "label": "Languages",
+        "value": "Manage which languages are used to personalize your momo experience."
+      },
+      "dataUsage": {
+        "label": "Data usage",
+        "value": "Limit how momo uses some of your network data on this device."
+      },
+      "keyboardShortcuts": {
+        "label": "Keyboard shortcuts",
+        "value": ""
+      }
+    },
+    "securityAndSessions": {
+      "title": "Security and sessions",
+      "security": {
+        "label": "Security",
+        "value": "Manage your account's security."
+      },
+      "sessions": {
+        "label": "Sessions",
+        "value": "See information about when you've logged in and the apps connected to your account."
+      },
+      "connectedAccounts": {
+        "label": "Connected accounts",
+        "value": "Manage the Google or Apple accounts connected to momo for logging in."
+      },
+      "delegation": {
+        "label": "Delegation",
+        "value": "Manage your shared accounts."
+      }
+    }
   },
   "post": {
     "whatsHappening": "What's happening?",

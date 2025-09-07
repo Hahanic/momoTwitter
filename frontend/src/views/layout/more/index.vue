@@ -29,7 +29,7 @@
         </li>
         <li class="w-full transition-all hover:bg-[#f7f9f9] dark:hover:bg-[#16181c]">
           <RouterLink to="/more/security" class="flex w-full items-center justify-between p-3">
-            <p>{{ t('more.security_and_account_access') }}</p>
+            <p>{{ t('more.security_and_sessions') }}</p>
             <span>&gt;</span>
           </RouterLink>
         </li>
@@ -72,6 +72,15 @@ const isChildRouteActive = computed(() => {
 
 <style scoped>
 .router-link-active {
-  border-right: 2px solid #1d9bf0;
+  position: relative;
+}
+.router-link-active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 2px;
+  background-color: #1d9bf0;
 }
 </style>

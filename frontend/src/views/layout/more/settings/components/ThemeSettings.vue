@@ -1,7 +1,7 @@
 <template>
-  <div class="p-4">
-    <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-      <p class="mb-2 font-semibold">背景</p>
+  <div class="px-4 py-2">
+    <div class="rounded-lg border border-gray-200 p-4 shadow-lg dark:border-gray-700">
+      <p class="mb-2 font-semibold">{{ t('more.ability.display.background.title') }}</p>
       <div class="flex items-center justify-around gap-2">
         <button
           @click="setTheme('dark')"
@@ -10,7 +10,7 @@
             themeStore.currentTheme === 'dark' ? 'ring-2 ring-blue-500' : '',
           ]"
         >
-          默认
+          {{ t('more.ability.display.background.dark') }}
         </button>
         <button
           @click="setTheme('light')"
@@ -19,7 +19,7 @@
             themeStore.currentTheme === 'light' ? 'ring-2 ring-blue-500' : '',
           ]"
         >
-          灯
+          {{ t('more.ability.display.background.light') }}
         </button>
         <button
           @click="setTheme('dim')"
@@ -28,7 +28,7 @@
             themeStore.currentTheme === 'dim' ? 'ring-2 ring-blue-500' : '',
           ]"
         >
-          昏暗
+          {{ t('more.ability.display.background.dim') }}
         </button>
       </div>
     </div>
@@ -36,8 +36,11 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 import { useThemeStore } from '@/stores'
 
+const { t } = useI18n()
 const themeStore = useThemeStore()
 
 const setTheme = (themeName: 'light' | 'dim' | 'dark') => {

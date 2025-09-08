@@ -126,6 +126,7 @@ const useUserStore = defineStore(
       } finally {
         user.value = null
         accessToken.value = null
+        location.reload()
       }
     }
 

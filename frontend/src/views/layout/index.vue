@@ -4,7 +4,7 @@
       <!-- 桌面端菜单 -->
       <header
         v-if="!windowStore.isMobile"
-        class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center sm:flex xl:w-[17rem] xl:items-start"
+        class="sticky top-0 hidden h-[100dvh] w-[5rem] flex-col items-center sm:flex xl:w-[17rem] xl:items-start"
       >
         <!-- 应用图标 -->
         <div class="relative z-10 flex h-[64px] w-full items-center">
@@ -14,59 +14,77 @@
         <Scrollbar maxHeight="100%">
           <SideBar :items="menuLists" @action="handleSidebarAction" />
         </Scrollbar>
-        <!-- 用户头像 -->
+        <!-- 用户卡片 -->
         <div class="relative mb-1 h-20 w-full">
           <!-- 头像和name -->
           <div
+            @click.stop="toggleAccountMenu"
             class="flex h-full w-full items-center justify-center gap-2 rounded-full px-3 transition-[background-color] hover:cursor-pointer hover:bg-gray-200 dark:hover:bg-[#181818]"
           >
-            <Avatar
-              :username="userStore.user?.username"
-              :src="userStore.user?.avatarUrl"
-              :alt="userStore.user?.displayName"
-              container-class="h-12 w-12"
-            />
+            <!-- 头像 -->
+            <div
+              class="group relative flex h-12 w-12 items-center justify-center rounded-full transition-all hover:cursor-pointer"
+            >
+              <img
+                :src="userStore.user?.avatarUrl || '/cat.svg'"
+                :alt="userStore.user?.displayName"
+                class="h-full w-full rounded-full object-cover transition-transform duration-300 ease-in-out select-none group-hover:scale-110 group-hover:-rotate-8"
+              />
+            </div>
             <div class="hidden w-full flex-1 text-[0.9rem] xl:block">
               <div class="flex w-full items-center justify-between">
                 <!-- userName -->
-                <div class="flex h-full flex-col justify-center">
-                  <span class="font-bold hover:underline">{{ userStore.user?.displayName ?? '未登录' }}</span>
-                  <span class="text-center text-gray-500">@{{ userStore.user?.username ?? '未登录' }}</span>
+                <div class="flex h-full flex-col justify-center text-start">
+                  <span class="font-bold hover:underline">{{
+                    userStore.user?.displayName ?? t('sidebar.authActions.notLoggedIn')
+                  }}</span>
+                  <span class="text-[0.8rem] text-gray-500"
+                    >@{{ userStore.user?.username ?? t('sidebar.authActions.notLoggedIn') }}</span
+                  >
                 </div>
                 <!-- setting -->
                 <button
-                  @click.prevent="handleAccountMenu"
-                  class="mr-2 flex h-full items-center justify-center rounded-full p-2 text-black transition-[background-color] hover:cursor-pointer hover:bg-gray-200 hover:text-amber-950 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                  class="mr-2 flex h-full items-center justify-center rounded-full p-2 text-black transition-[background-color] hover:cursor-pointer dark:text-white"
                 >
                   <MoreHorizontalIcon :size="20" />
                 </button>
               </div>
             </div>
           </div>
+          <!-- 账户菜单 -->
           <div
             v-if="showAccountMenu"
             ref="accountMenuRef"
-            class="absolute bottom-20 left-0 w-[10rem] rounded-2xl border-1 border-gray-200 bg-white py-3 xl:w-[16rem] dark:border-gray-700 dark:bg-black"
+            class="absolute bottom-20 left-4 w-[10rem] rounded-2xl border-1 border-gray-200 bg-white shadow-lg xl:left-4 xl:w-[16rem] dark:border-gray-700 dark:bg-black"
           >
-            <div class="flex w-full flex-col justify-start">
+            <div class="flex w-full flex-col">
               <button
-                @click="router.push({ path: '/login' })"
-                class="rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
-              >
-                <span>登录已有账号</span>
-              </button>
-              <button
+                v-if="userStore.isAuthenticated"
                 @click="userStore.logout()"
                 class="rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
               >
-                <span>登出@JAStenet</span>
+                <span>{{ t('sidebar.authActions.logout', { username: userStore.user?.username }) }}</span>
               </button>
+              <div v-else class="w-full">
+                <button
+                  @click="router.push({ path: '/login' })"
+                  class="w-full rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+                >
+                  <span>{{ t('sidebar.authActions.loginExistingAccount') }}</span>
+                </button>
+                <button
+                  @click="router.push({ path: '/register' })"
+                  class="w-full rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+                >
+                  <span>{{ t('sidebar.authActions.registerNewAccount') }}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
       <!-- 主体内容 路由出口 -->
-      <div class="flex w-full" :class="{ 'pb-16': windowStore.isMobile }">
+      <div class="flex w-full" :class="{ 'pb-16': windowStore.isMobile }" :inert="showAccountMenu">
         <router-view v-slot="{ Component }">
           <keep-alive>
             <component :is="Component" />
@@ -82,7 +100,7 @@
     </div>
 
     <!-- 返回顶部按钮 -->
-    <div v-if="!windowStore.isMobile" class="fixed right-4 bottom-4 z-11" :inert="showModal">
+    <div v-if="!windowStore.isMobile" class="fixed right-4 bottom-4 z-11">
       <button
         @click="scrollToTop"
         class="rounded-full bg-[#d4237a] p-2 text-white shadow-md transition-colors hover:cursor-pointer hover:bg-[#bf0e63]"
@@ -120,7 +138,6 @@ import { useRoute, useRouter } from 'vue-router'
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 import SideBar from '@/components/layout/SideBar.vue'
-import Avatar from '@/components/post/Avatar.vue'
 import { useWindowStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
 
@@ -207,11 +224,12 @@ const scrollToTop = () => {
 }
 
 // 控制账户菜单显示
-const handleAccountMenu = () => {
+const toggleAccountMenu = (event: Event) => {
+  event.stopImmediatePropagation()
   showAccountMenu.value = !showAccountMenu.value
 }
 
-onClickOutside(accountMenuRef, handleAccountMenu)
+onClickOutside(accountMenuRef, toggleAccountMenu)
 </script>
 
 <style>
@@ -264,30 +282,4 @@ onClickOutside(accountMenuRef, handleAccountMenu)
 .slide-up-leave-active .floating-send-button {
   transition-delay: 0s;
 }
-
-/* PostDetail 组件从右边进入和离开的动画 */
-/* .slide-right-enter-active {
-  transition:
-    transform 0.3s cubic-bezier(0, 0, 0.2, 1),
-    opacity 0.3s cubic-bezier(0, 0, 0.2, 1);
-}
-
-.slide-right-leave-active {
-  transition:
-    transform 0.3s cubic-bezier(0.4, 0, 1, 1),
-    opacity 0.3s cubic-bezier(0.4, 0, 1, 1);
-}
-.slide-right-enter-from {
-  transform: translateX(30%);
-  opacity: 0;
-}
-.slide-right-leave-to {
-  transform: translateX(30%);
-  opacity: 0;
-}
-.slide-right-enter-to,
-.slide-right-leave-from {
-  transform: translateX(0);
-  opacity: 1;
-} */
 </style>

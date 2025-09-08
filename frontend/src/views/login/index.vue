@@ -271,7 +271,9 @@ const handleLogin = async () => {
   try {
     await userStore.login(formValue)
     message.success('登录成功')
-    router.push('/')
+    // 跳转到 /home 并刷新页面
+    await router.push('/home')
+    window.location.reload()
     generatedCode.value = ''
   } catch (err: any) {
     message.error(err.message || '发生了一个意料之外的错误')

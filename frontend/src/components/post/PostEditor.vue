@@ -11,7 +11,7 @@
 
     <!-- 输入框区域 -->
     <div class="relative flex h-full w-full items-center">
-      <Scrollbar visibility="always" :propsClass="scrollbarClass">
+      <Scrollbar visibility="always" :propsClass="scrollbarClass" class="flex-1">
         <textarea
           ref="textareaRef"
           v-model="internalContent"

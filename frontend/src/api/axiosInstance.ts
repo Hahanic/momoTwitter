@@ -68,8 +68,6 @@ axiosInstance.interceptors.response.use(
               return Promise.reject(refreshError)
             }
           } else {
-            const userStore = useUserStore()
-            userStore.logout()
             userFriendlyMessage = data?.message || '认证失败，请重新登录'
           }
           break

@@ -1,13 +1,15 @@
 <template>
-  <div class="p-4">
-    <ul>
+  <div class="px-4 py-2">
+    <ul class="rounded-lg shadow-lg">
       <li
         v-for="lang in languages"
         :key="lang.code"
         @click="setLanguage(lang.code)"
-        class="cursor-pointer rounded-lg p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+        class="cursor-pointer text-start transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
       >
-        {{ lang.name }}
+        <span class="block py-1 pl-4" :class="locale === lang.code ? 'font-semibold' : ''">
+          {{ lang.name }}
+        </span>
       </li>
     </ul>
   </div>

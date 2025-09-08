@@ -7,8 +7,12 @@
       class="main-header dark:border-borderDark border-borderWhite sticky top-0 left-0 z-21 h-[3.2rem] w-full border-b-1 bg-white will-change-transform dark:bg-black"
     >
       <div class="relative flex h-full w-full items-center justify-center">
-        <div class="absolute left-0 flex h-full items-center justify-center pl-4">
-          <Avatar container-class="h-6 w-6" :src="userStore.user?.avatarUrl" />
+        <div @click="handleMenuOpen" class="absolute left-0 flex h-full items-center justify-center p-4">
+          <img
+            :src="userStore.user?.avatarUrl || '/cat.svg'"
+            :alt="userStore.user?.displayName"
+            class="h-6 w-6 rounded-full object-cover"
+          />
         </div>
         <div @click="scrollToTop">
           <img class="h-[2.5rem]" src="/warp.svg" />
@@ -85,19 +89,21 @@
 import { LoaderIcon } from 'lucide-vue-next'
 import { ref, computed, onActivated, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter, useRoute } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import AsideContent from '@/components/layout/AsideContent.vue'
 import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
-import Avatar from '@/components/post/Avatar.vue'
 import Posts from '@/components/post/index.vue'
 import PostCreate from '@/components/post/PostCreate.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { usePostFeedStore, useUserStore, useWindowStore } from '@/stores'
 
+const router = useRouter()
+const route = useRoute()
 const feedStore = usePostFeedStore()
 const userStore = useUserStore()
 const windowStore = useWindowStore()
@@ -199,4 +205,8 @@ onActivated(async () => {
     await loadInitialPosts()
   }
 })
+
+const handleMenuOpen = async () => {
+  router.push({ path: route.path, query: { ...route.query, modal: 'menu' } })
+}
 </script>

@@ -17,7 +17,13 @@
     "groups": "Groups",
     "profile": "Profile",
     "more": "More",
-    "post": "Post"
+    "post": "Post",
+    "authActions": {
+      "notLoggedIn": "Not logged in",
+      "logout": "Log out {username}",
+      "loginExistingAccount": "Log in to existing account",
+      "registerNewAccount": "Create new account"
+    }
   },
   "premium": {
     "title": "Subscribe to Premium",
@@ -77,7 +83,13 @@
       },
       "display": {
         "label": "Display",
-        "value": "Manage font size, color, and background. These settings affect all X accounts on this browser."
+        "value": "Manage font size, color, and background. These settings affect all momo accounts on this browser.",
+        "background": {
+          "title": "Background",
+          "dark": "Dark",
+          "light": "Light",
+          "dim": "Dim"
+        }
       },
       "languages": {
         "label": "Languages",

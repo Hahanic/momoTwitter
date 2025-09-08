@@ -6,7 +6,7 @@
       'bg-black text-white hover:cursor-pointer dark:bg-white': !disabled,
       'bg-[#87898c] dark:bg-[#787a7a]': disabled,
     }"
-    class="h-9 w-14 rounded-4xl font-semibold text-white transition-all dark:text-[#000]"
+    class="h-9 rounded-4xl px-2 font-semibold text-white transition-all dark:text-[#000]"
   >
     {{ text }}
   </button>

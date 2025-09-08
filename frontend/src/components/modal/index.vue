@@ -2,7 +2,7 @@
   <!-- 背景蒙层 -->
   <div
     class="modal-backdrop fixed inset-0 z-50 bg-white backdrop-blur-sm sm:bg-black/40"
-    :class="{ 'dark:bg-black': windowStore.isMobile }"
+    :class="{ 'dark:bg-black/40': windowStore.isMobile }"
   >
     <component
       :class="!windowStore.isMobile ? 'modal-desktop' : 'modal-mobile'"
@@ -37,6 +37,7 @@ const emit = defineEmits(['close'])
 const modalContentMap = {
   compose: defineAsyncComponent(() => import('./ComposeModal.vue')),
   profile: defineAsyncComponent(() => import('./ProfileModal.vue')),
+  menu: defineAsyncComponent(() => import('./MenuModal.vue')),
 }
 // 存储组件实例
 const currentComponent = shallowRef<Component | null>(null)
@@ -93,7 +94,7 @@ const handleClose = () => {
 
 /* 移动端模态框滑入动画 */
 .modal-mobile {
-  animation: modalMobileSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
+  animation: modalMobileMenuSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
   transform-origin: bottom;
 }
 
@@ -103,6 +104,15 @@ const handleClose = () => {
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes modalMobileMenuSlideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
 </style>

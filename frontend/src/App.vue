@@ -9,12 +9,14 @@ import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import MessageProvider from './components/common/MessageProvider.vue'
-import useUserStore from './stores/userUserStore.ts'
-import useWindowStore from './stores/useWindowStore.ts'
+import { useWindowStore, useUserStore, useThemeStore } from './stores'
 
 const windowStore = useWindowStore()
 const userStore = useUserStore()
 const route = useRoute()
+
+// 初始化主题store
+useThemeStore()
 
 // Token刷新检查函数
 const checkTokenValidity = () => {

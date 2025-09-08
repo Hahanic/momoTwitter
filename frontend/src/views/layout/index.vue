@@ -6,21 +6,68 @@
         v-if="!windowStore.isMobile"
         class="sticky top-0 hidden h-screen w-[5rem] flex-col items-center sm:flex xl:w-[17rem] xl:items-start"
       >
+        <!-- 应用图标 -->
         <div class="relative z-10 flex h-[64px] w-full items-center">
-          <img class="absolute left-[8px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[59px]" src="/warp.svg" />
+          <img class="absolute left-[16px] h-[2.3rem] w-[2.3rem] hover:cursor-pointer xl:left-[12px]" src="/warp.svg" />
         </div>
+        <!-- 菜单栏 -->
         <Scrollbar maxHeight="100%">
           <SideBar :items="menuLists" @action="handleSidebarAction" />
         </Scrollbar>
+        <!-- 用户头像 -->
+        <div class="relative mb-1 h-20 w-full">
+          <!-- 头像和name -->
+          <div
+            class="flex h-full w-full items-center justify-center gap-2 rounded-full px-3 transition-[background-color] hover:cursor-pointer hover:bg-gray-200 dark:hover:bg-[#181818]"
+          >
+            <Avatar
+              :username="userStore.user?.username"
+              :src="userStore.user?.avatarUrl"
+              :alt="userStore.user?.displayName"
+              container-class="h-12 w-12"
+            />
+            <div class="hidden w-full flex-1 text-[0.9rem] xl:block">
+              <div class="flex w-full items-center justify-between">
+                <!-- userName -->
+                <div class="flex h-full flex-col justify-center">
+                  <span class="font-bold hover:underline">{{ userStore.user?.displayName ?? '未登录' }}</span>
+                  <span class="text-center text-gray-500">@{{ userStore.user?.username ?? '未登录' }}</span>
+                </div>
+                <!-- setting -->
+                <button
+                  @click.prevent="handleAccountMenu"
+                  class="mr-2 flex h-full items-center justify-center rounded-full p-2 text-black transition-[background-color] hover:cursor-pointer hover:bg-gray-200 hover:text-amber-950 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white"
+                >
+                  <MoreHorizontalIcon :size="20" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="showAccountMenu"
+            ref="accountMenuRef"
+            class="absolute bottom-20 left-0 w-[10rem] rounded-2xl border-1 border-gray-200 bg-white py-3 xl:w-[16rem] dark:border-gray-700 dark:bg-black"
+          >
+            <div class="flex w-full flex-col justify-start">
+              <button
+                @click="router.push({ path: '/login' })"
+                class="rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+              >
+                <span>登录已有账号</span>
+              </button>
+              <button
+                @click="userStore.logout()"
+                class="rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+              >
+                <span>登出@JAStenet</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </header>
       <!-- 主体内容 路由出口 -->
       <div class="flex w-full" :class="{ 'pb-16': windowStore.isMobile }">
         <router-view v-slot="{ Component }">
-          <!-- 移动端且路由为 PostDetail 时，执行特定动画 -->
-          <!-- <transition v-if="windowStore.isMobile && route.name === 'PostDetail'" name="slide-right" mode="out-in">
-            <component :is="Component" :key="route.fullPath" />
-          </transition> -->
-          <!-- 其它情况保留 keep-alive 缓存 -->
           <keep-alive>
             <component :is="Component" />
           </keep-alive>
@@ -52,7 +99,20 @@
 </template>
 
 <script lang="ts" setup>
-import { HomeIcon, Search, Bell, Mail, BotIcon, Users2, User2, CircleEllipsis, Send, ArrowUp } from 'lucide-vue-next'
+import { onClickOutside } from '@vueuse/core'
+import {
+  HomeIcon,
+  Search,
+  Bell,
+  Mail,
+  BotIcon,
+  Users2,
+  User2,
+  Send,
+  ArrowUp,
+  CircleEllipsis,
+  MoreHorizontalIcon,
+} from 'lucide-vue-next'
 import { defineAsyncComponent, ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -60,6 +120,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 import SideBar from '@/components/layout/SideBar.vue'
+import Avatar from '@/components/post/Avatar.vue'
 import { useWindowStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
 
@@ -69,7 +130,9 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 
-// 模态框
+const showAccountMenu = ref(false)
+const accountMenuRef = ref<HTMLElement | null>(null)
+
 const AppModal = defineAsyncComponent(() => import('@/components/modal/index.vue'))
 const showModal = ref(false)
 const currentModalType = ref<string | null>(null)
@@ -88,7 +151,7 @@ watch(
   },
   { immediate: true }
 )
-// 监听模态框状态，控制body滚动
+// 监听模态框状态，控制滚动条显示与否
 watch(
   showModal,
   (isModalOpen) => {
@@ -133,7 +196,7 @@ const menuLists = computed(() => {
     { icon: Mail, label: t('sidebar.messages'), href: '/messages' },
     { icon: BotIcon, label: t('sidebar.bot'), href: '/bot' },
     { icon: Users2, label: t('sidebar.groups'), href: '/groups' },
-    { icon: User2, label: t('sidebar.profile'), href: username ? `/profile/${username}` : '/login' },
+    { icon: User2, label: t('sidebar.profile'), href: username ? `/profile/${username}` : '/' },
     { icon: CircleEllipsis, label: t('sidebar.more'), href: '/more' },
     { icon: Send, label: t('sidebar.post'), href: null, action: 'compose' },
   ]
@@ -142,6 +205,13 @@ const menuLists = computed(() => {
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+// 控制账户菜单显示
+const handleAccountMenu = () => {
+  showAccountMenu.value = !showAccountMenu.value
+}
+
+onClickOutside(accountMenuRef, handleAccountMenu)
 </script>
 
 <style>

@@ -23,7 +23,6 @@ const useThemeStore = defineStore('theme', () => {
     if (theme === 'dim') return
     currentTheme.value = theme ? theme : currentTheme.value === 'dark' ? 'light' : 'dark'
   }
-
   watch(
     currentTheme,
     (newTheme) => {

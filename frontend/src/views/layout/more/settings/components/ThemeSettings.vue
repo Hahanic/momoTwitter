@@ -3,13 +3,31 @@
     <div class="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
       <p class="mb-2 font-semibold">背景</p>
       <div class="flex items-center justify-around gap-2">
-        <button @click="setTheme('dark')" class="flex-1 rounded-md bg-black p-2 text-white hover:bg-gray-900">
+        <button
+          @click="setTheme('dark')"
+          :class="[
+            'flex-1 rounded-md bg-black p-2 text-white hover:bg-gray-900',
+            themeStore.currentTheme === 'dark' ? 'ring-2 ring-blue-500' : '',
+          ]"
+        >
           默认
         </button>
-        <button @click="setTheme('light')" class="flex-1 rounded-md bg-white p-2 text-black ring-2 ring-blue-500">
+        <button
+          @click="setTheme('light')"
+          :class="[
+            'flex-1 rounded-md bg-white p-2 text-black',
+            themeStore.currentTheme === 'light' ? 'ring-2 ring-blue-500' : '',
+          ]"
+        >
           灯
         </button>
-        <button @click="setTheme('dim')" class="flex-1 rounded-md bg-gray-800 p-2 text-white hover:bg-gray-700">
+        <button
+          @click="setTheme('dim')"
+          :class="[
+            'flex-1 rounded-md bg-gray-800 p-2 text-white hover:bg-gray-700',
+            themeStore.currentTheme === 'dim' ? 'ring-2 ring-blue-500' : '',
+          ]"
+        >
           昏暗
         </button>
       </div>

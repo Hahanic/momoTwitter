@@ -5,7 +5,6 @@
       class="scrollbar-container h-full w-full overflow-y-auto"
       :class="[scrollbarClasses, propsClass]"
       :style="{ maxHeight: maxHeight }"
-      @scroll="onScroll"
     >
       <slot />
     </div>
@@ -26,10 +25,6 @@ const props = withDefaults(
   }
 )
 
-const emit = defineEmits(['scroll'])
-const onScroll = (event: Event) => {
-  emit('scroll', event)
-}
 const scrollbarClasses = computed(() => {
   switch (props.visibility) {
     case 'hidden':

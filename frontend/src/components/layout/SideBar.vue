@@ -1,34 +1,27 @@
 <template>
-  <nav class="relative z-10 mr-3 flex justify-end xl:justify-start">
-    <ul class="relative z-[3] flex flex-col gap-1">
+  <nav class="w-full pl-[5px]">
+    <ul class="flex w-full flex-col gap-1">
       <li
         v-for="(item, index) in items"
         :key="index"
-        class="relative cursor-pointer rounded-full text-amber-950 transition-all dark:text-white"
+        class="flex h-[3.2rem] w-full cursor-pointer items-center justify-center text-amber-950 transition-all dark:text-white"
       >
-        <RouterLink
-          v-if="item.href"
-          :to="item.href"
-          class="relative z-10 flex h-[3.2rem] items-center px-3 outline-none xl:px-[4.6rem]"
-        >
-          <span class="absolute left-[7rem] hidden text-nowrap xl:block">{{ item.label }}</span>
-          <component
-            :is="item.icon"
-            :size="'1.7rem'"
-            :class="['left-[4rem] xl:absolute', { 'active-icon': activeIndex === index }]"
-          />
+        <RouterLink v-if="item.href" :to="item.href" class="flex h-full w-[3.2rem] xl:w-full">
+          <div class="relative flex h-[3.2rem] items-center justify-center rounded-full sm:w-[3.2rem]">
+            <component :is="item.icon" :size="'1.7rem'" :class="[{ 'active-icon': activeIndex === index }]" />
+            <span class="absolute left-[3.4rem] hidden text-nowrap xl:block">{{ item.label }}</span>
+          </div>
         </RouterLink>
-        <button
-          v-else
-          @click="handleAction(item.action)"
-          class="relative z-10 flex h-[3.2rem] w-full cursor-pointer items-center px-3 text-left outline-none xl:px-[4.6rem]"
-        >
-          <span class="absolute left-[7rem] hidden xl:block">{{ item.label }}</span>
-          <component
-            :is="item.icon"
-            :size="'1.7rem'"
-            :class="['left-[4rem] xl:absolute', { 'active-icon': activeIndex === initialActiveIndex }]"
-          />
+
+        <button v-else @click="handleAction(item.action)" class="flex h-full w-[3.2rem] xl:w-full">
+          <div class="relative flex h-[3.2rem] items-center justify-center rounded-full sm:w-[3.2rem]">
+            <component
+              :is="item.icon"
+              :size="'1.7rem'"
+              :class="[{ 'active-icon': activeIndex === initialActiveIndex }]"
+            />
+            <span class="absolute left-[3.4rem] hidden text-nowrap xl:block">{{ item.label }}</span>
+          </div>
         </button>
       </li>
     </ul>

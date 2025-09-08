@@ -7,7 +7,7 @@
       class="main-header dark:border-borderDark border-borderWhite sticky top-0 left-0 z-21 h-[3.2rem] w-full border-b-1 bg-white will-change-transform dark:bg-black"
     >
       <div class="relative flex h-full w-full items-center justify-center">
-        <div @click="handleMenuOpen" class="absolute left-0 flex h-full items-center justify-center p-4">
+        <div @click="handleMobileMenuOpen" class="absolute left-0 flex h-full items-center justify-center p-4">
           <img
             :src="userStore.user?.avatarUrl || '/cat.svg'"
             :alt="userStore.user?.displayName"
@@ -206,7 +206,7 @@ onActivated(async () => {
   }
 })
 
-const handleMenuOpen = async () => {
-  router.push({ path: route.path, query: { ...route.query, modal: 'menu' } })
+const handleMobileMenuOpen = async () => {
+  router.push({ path: route.path, query: { ...route.query, modal: 'mobileMenu' } })
 }
 </script>

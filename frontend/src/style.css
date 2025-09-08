@@ -51,3 +51,63 @@ li {
   padding: 0;
   margin: 0;
 }
+
+/* 背景蒙层淡入动画 */
+.modal-backdrop {
+  animation: backdropFadeIn 0.3s ease-out;
+}
+
+/* 桌面端模态框弹出动画 */
+.modal-desktop {
+  animation: modalDesktopSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: center;
+}
+
+/* 移动端模态框滑入动画 */
+.modal-mobile {
+  animation: modalMobileSlideTop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
+  transform-origin: bottom;
+}
+/* 移动端模态框菜单滑入动画 */
+.modal-mobile-menu {
+  animation: modalMobileMenuSlideLeft 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
+  transform-origin: bottom;
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalDesktopSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalMobileSlideTop {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalMobileMenuSlideLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}

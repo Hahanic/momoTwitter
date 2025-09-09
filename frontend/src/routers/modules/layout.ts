@@ -52,6 +52,11 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         ],
       },
       {
+        path: '/bot',
+        name: 'Bot',
+        component: () => import('@/views/layout/bot/index.vue'),
+      },
+      {
         path: '/explore',
         name: 'Explore',
         redirect: '/explore/for_you',

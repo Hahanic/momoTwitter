@@ -32,12 +32,10 @@
   <StickyAside>
     <div class="dark:border-borderDark border-borderWhite mt-4 border-t-1"></div>
     <!-- 推送 -->
-    <Scrollbar max-height="calc(100dvh - 40px)">
-      <div class="mt-[0.8rem] flex w-full flex-col gap-[1.2rem]">
-        <div class="dark:border-borderDark border-borderWhite h-[9rem] rounded-xl border-1"></div>
-        <div class="dark:border-borderDark border-borderWhite h-[35rem] rounded-xl border-1"></div>
-      </div>
-    </Scrollbar>
+    <div class="mt-[0.8rem] flex w-full flex-col gap-[1.2rem]">
+      <div class="dark:border-borderDark border-borderWhite h-[9rem] rounded-xl border-1"></div>
+      <div class="dark:border-borderDark border-borderWhite h-[35rem] rounded-xl border-1"></div>
+    </div>
   </StickyAside>
 </template>
 
@@ -46,7 +44,6 @@ import { SettingsIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import Scrollbar from '@/components/common/Scrollbar.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'

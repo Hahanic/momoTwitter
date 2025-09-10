@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import UserPostList from '@/components/profile/UserPostList.vue'
+import UserPostList from '../components/UserPostList.vue'
 </script>
 
 <script lang="ts">

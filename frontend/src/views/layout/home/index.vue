@@ -54,34 +54,32 @@
   </MainContainer>
 
   <StickyAside>
-    <!-- 搜索框 -->
     <SearchInput />
+    <!-- 搜索框 -->
     <!-- 推送 -->
-    <Scrollbar max-height="calc(100% - 3.2rem)">
-      <div class="flex w-full flex-col gap-4 pt-4">
-        <AsideContent>
-          <div class="p-4">
-            <div class="font-bold">{{ t('premium.title') }}</div>
-            <div class="mt-2">{{ t('premium.description') }}</div>
-            <button class="mt-2 h-[2.5rem] w-fit min-w-[5rem] rounded-4xl bg-blue-400 px-2 font-bold">
-              {{ t('premium.button') }}
-            </button>
-          </div>
-        </AsideContent>
-        <AsideContent>
-          <div class="p-4">
-            <div class="mb-4 font-bold">{{ t('explore.news.title') }}</div>
-            <ul class="flex flex-col gap-4">
-              <RankItem />
-              <RankItem />
-              <RankItem />
-              <RankItem />
-              <RankItem />
-            </ul>
-          </div>
-        </AsideContent>
-      </div>
-    </Scrollbar>
+    <div class="flex w-full flex-col gap-4 pt-4">
+      <AsideContent>
+        <div class="p-4">
+          <div class="font-bold">{{ t('premium.title') }}</div>
+          <div class="mt-2">{{ t('premium.description') }}</div>
+          <button class="mt-2 h-[2.5rem] w-fit min-w-[5rem] rounded-4xl bg-blue-400 px-2 font-bold">
+            {{ t('premium.button') }}
+          </button>
+        </div>
+      </AsideContent>
+      <AsideContent>
+        <div class="p-4">
+          <div class="mb-4 font-bold">{{ t('explore.news.title') }}</div>
+          <ul class="flex flex-col gap-4">
+            <RankItem />
+            <RankItem />
+            <RankItem />
+            <RankItem />
+            <RankItem />
+          </ul>
+        </div>
+      </AsideContent>
+    </div>
   </StickyAside>
 </template>
 
@@ -91,7 +89,6 @@ import { ref, computed, onActivated, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 
-import Scrollbar from '@/components/common/Scrollbar.vue'
 import AsideContent from '@/components/layout/AsideContent.vue'
 import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'

@@ -105,29 +105,27 @@
     <!-- 搜索框 -->
     <SearchInput />
     <!-- 下方推送 -->
-    <Scrollbar max-height="calc(100% - 3.2rem)">
-      <div class="flex w-full flex-col gap-4 pt-4">
-        <AsideContent>
-          <div class="p-4">
-            <div class="font-bold">订阅Premium</div>
-            <div class="mt-2">订阅以解锁新功能，若符合条件，还可获得收入分成。</div>
-            <button class="mt-2 h-[2.5rem] w-[5rem] rounded-4xl bg-blue-400 font-bold">订阅</button>
-          </div>
-        </AsideContent>
-        <AsideContent>
-          <div class="p-4">
-            <div class="mb-4 font-bold">有什么新鲜事</div>
-            <ul class="flex flex-col gap-4">
-              <RankItem />
-              <RankItem />
-              <RankItem />
-              <RankItem />
-              <RankItem />
-            </ul>
-          </div>
-        </AsideContent>
-      </div>
-    </Scrollbar>
+    <div class="flex w-full flex-col gap-4 pt-4">
+      <AsideContent>
+        <div class="p-4">
+          <div class="font-bold">订阅Premium</div>
+          <div class="mt-2">订阅以解锁新功能，若符合条件，还可获得收入分成。</div>
+          <button class="mt-2 h-[2.5rem] w-[5rem] rounded-4xl bg-blue-400 font-bold">订阅</button>
+        </div>
+      </AsideContent>
+      <AsideContent>
+        <div class="p-4">
+          <div class="mb-4 font-bold">有什么新鲜事</div>
+          <ul class="flex flex-col gap-4">
+            <RankItem />
+            <RankItem />
+            <RankItem />
+            <RankItem />
+            <RankItem />
+          </ul>
+        </div>
+      </AsideContent>
+    </div>
   </StickyAside>
 </template>
 <script lang="ts">
@@ -141,13 +139,13 @@ import { storeToRefs } from 'pinia'
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import Scrollbar from '@/components/common/Scrollbar.vue'
+import FollowButton from './components/FollowButton.vue'
+
 import AsideContent from '@/components/layout/AsideContent.vue'
 import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
-import FollowButton from '@/components/profile/FollowButton.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import { useUserStore, useWindowStore } from '@/stores'
 import useUserPostStore from '@/stores/useUserPostStore'

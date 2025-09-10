@@ -1,8 +1,6 @@
 <template>
-  <div
-    class="sticky top-0 ml-7 hidden h-[100dvh] w-[15rem] border-1 border-amber-500 transition-all md:block lg:w-[25rem]"
-  >
-    <div ref="innerContentRef" class="border-1 border-amber-300" :style="innerContentStyle">
+  <div class="sticky top-0 ml-7 hidden h-[100dvh] w-[15rem] transition-all md:block lg:w-[25rem]">
+    <div ref="innerContentRef" :style="innerContentStyle">
       <slot />
     </div>
   </div>
@@ -14,7 +12,7 @@ import { ref, computed, type StyleValue, watch } from 'vue'
 
 import { useWindowStore } from '@/stores'
 
-const topMargin = 20
+const topMargin = 0
 const bottomMargin = 20
 
 const windowStore = useWindowStore()

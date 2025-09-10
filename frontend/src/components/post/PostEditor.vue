@@ -11,7 +11,7 @@
 
     <!-- 输入框区域 -->
     <div class="relative flex h-full w-full items-center">
-      <Scrollbar visibility="always" :propsClass="scrollbarClass" class="flex-1">
+      <Scrollbar visibility="always" :propsClass="scrollbarClass" :maxHeight="props.maxHeight" class="flex-1">
         <textarea
           ref="textareaRef"
           v-model="internalContent"
@@ -49,6 +49,7 @@ interface Props {
   modelValue: string
   placeholder?: string
   scrollbarClass?: string
+  maxHeight?: string
   textareaClass?: string
   localStorageKey?: string
 }

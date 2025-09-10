@@ -10,12 +10,13 @@
         </div>
       </div>
     </template>
-    <template #content>
+    <template #content="{ mobileScrollHeight }">
       <PostEditor
         ref="PostEditorRef"
         local-storage-key="messsageContent"
         v-model="messageContent"
-        :scrollbarClass="'sm:min-h-[450px] min-h-[400px] sm:max-h-[60dvh] max-h-[50dvh]'"
+        :scrollbarClass="`sm:min-h-[200px] sm:max-h-[500px]`"
+        :maxHeight="windowStore.isMobile ? `calc(100dvh - ${mobileScrollHeight}px - 4rem)` : undefined"
         :placeholder="t('post.whatsHappening')"
       >
       </PostEditor>
@@ -27,7 +28,7 @@
         @remove-image="removeImage"
         @reorder-images="handleReorderImages"
       />
-      <div class="flex justify-between px-1 py-2 sm:px-5">
+      <div class="flex h-[3.5rem] justify-between px-1 py-2 sm:px-5">
         <div ref="emojiWrapperRef" class="relative">
           <MediaToolbar
             @files-selected="handleFilesSelected"
@@ -62,14 +63,14 @@ import SubmitButton from '../post/SubmitButton.vue'
 import FormModal from './FormModal.vue'
 
 import { usePostHandler } from '@/composables/usePostHandler'
-import { usePostInteractionStore, usePostFeedStore } from '@/stores'
+import { usePostInteractionStore, usePostFeedStore, useWindowStore } from '@/stores'
 
 const emit = defineEmits(['close'])
 
 const { t } = useI18n()
-// 只需要引入这两个 store 来定义提交逻辑
 const postInteractionStore = usePostInteractionStore()
 const postFeedStore = usePostFeedStore()
+const windowStore = useWindowStore()
 
 // 表情选择器相关状态
 const PostEditorRef = ref<InstanceType<typeof PostEditor> | null>(null)

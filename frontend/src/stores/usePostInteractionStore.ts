@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import useUserStore from './userUserStore.ts'
 
-import { likePost, bookmarkPost, createPost, recordPostView, translatePost } from '@/api/index.ts'
+import { likePost, bookmarkPost, createPost, recordPostView, translatePost, deletePost } from '@/api/index.ts'
 import type { CreatePostPayload } from '@/types'
 
 const usePostInteractionStore = defineStore('postInteraction', () => {
@@ -208,6 +208,30 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     return
   }
 
+  // 删除帖子
+  async function handleDeletePost(postId: string) {
+    if (!userStore.isAuthenticated) {
+      throw new Error('用户未登录，无法删除帖子')
+    }
+    const post = postCacheStore.getPost(postId)
+    if (!post) {
+      throw new Error('帖子不存在')
+    }
+    if (post.authorInfo.username !== userStore.user?.username) {
+      throw new Error('只能删除自己的帖子')
+    }
+    try {
+      const res = await deletePost(postId)
+      if (res.deletedCount > 0) {
+        postCacheStore.removePost(postId)
+      }
+      return res
+    } catch (error) {
+      console.error('删除帖子失败:', error)
+      throw error
+    }
+  }
+
   // 翻译帖子
   async function handleTranslatePost(postId: string) {
     if (!userStore.isAuthenticated) {
@@ -301,6 +325,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     handleTranslatePost,
     handleCreateReply,
     handleCreatePost,
+    handleDeletePost,
     viewPost,
 
     // state

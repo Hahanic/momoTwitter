@@ -5,6 +5,26 @@ import User from '../db/model/User.js'
 import { verifyAccessToken } from '../utils/index.js'
 
 export class PostService {
+  // 获取某个帖子下所有层级的回复ID（不包含根本身）
+  static async getDescendantReplyIds(rootPostId) {
+    const queue = [rootPostId]
+    const allIds = []
+
+    while (queue.length) {
+      const batch = await Post.find({ parentPostId: { $in: queue }, postType: 'reply' })
+        .select('_id')
+        .lean()
+      if (!batch.length) break
+      const childIds = batch.map((d) => d._id)
+      allIds.push(...childIds)
+
+      // 准备下一层
+      queue.length = 0
+      queue.push(...childIds)
+    }
+
+    return allIds
+  }
   // 获取用户交互信息
   static async getUserInteractions(currentUserId, postIds) {
     const [userLikes, userBookmarks, userRetweets] = await Promise.all([

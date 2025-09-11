@@ -20,17 +20,17 @@
       ></div>
     </div>
     <!-- 内容 -->
-    <div class="w-full">
+    <div class="mt-2.5 w-full">
       <!-- 名字/用户id/日期 -->
-      <div class="mt-2.5 flex text-[0.9rem]">
-        <span @click.stop="() => console.log('displayname点击')" class="font-semibold hover:underline">{{
-          post.authorInfo.displayName
-        }}</span>
-        <div style="color: #71767b">
-          <span @click.stop="() => console.log('username点击')" class="ml-1">@{{ post.authorInfo.username }}</span>
-          <span class="mx-1">·</span>
-          <span>{{ formatDate(post.createdAt) }}</span>
-        </div>
+      <div class="flex w-full flex-1 items-center justify-between pr-4 text-[0.9rem]">
+        <AuthorAndSettings
+          :username="post.authorInfo.username"
+          :userDisplayName="post.authorInfo.displayName"
+          :createdAt="post.createdAt"
+          :postId="post._id"
+          type="default"
+          :iconSize="20"
+        />
       </div>
       <!-- 文本 -->
       <div class="font-Rounded mr-4 text-[1rem]">
@@ -57,6 +57,7 @@
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
 
+import AuthorAndSettings from './AuthorAndSettings.vue'
 import PostImage from './PostImage.vue'
 
 import Avatar from '@/components/post/Avatar.vue'
@@ -65,7 +66,6 @@ import { useMessage } from '@/composables/useMessage'
 // import ImagePreview from '@/components/ui/ImagePreview.vue'
 import { usePostInteractionStore } from '@/stores'
 import { type Post } from '@/types'
-import { formatDate } from '@/utils'
 
 const router = useRouter()
 const postInteractionStore = usePostInteractionStore()

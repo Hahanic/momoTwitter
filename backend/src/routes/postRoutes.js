@@ -4,6 +4,7 @@ const router = express.Router()
 import {
   createPost,
   getPost,
+  deletePost,
   getPostReplies,
   likePost,
   bookmarkPost,
@@ -22,6 +23,8 @@ router.get('/', asyncHandler(getPost))
 router.post('/', protectAuthRoute, asyncHandler(createPost))
 // 获取单条帖子
 router.get('/:postId', asyncHandler(getOnePost))
+// 删除帖子/回复
+router.delete('/:postId', protectAuthRoute, asyncHandler(deletePost))
 // 获取回复
 router.get('/:postId/replies', asyncHandler(getPostReplies))
 // 获取父帖子

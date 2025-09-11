@@ -17,7 +17,6 @@ const SessionSchema = new mongoose.Schema({
   deviceInfo: {
     browser: { type: String },
     os: { type: String },
-    // type 会是 'mobile', 'tablet', 'desktop' 等
     deviceType: { type: String, default: 'desktop' },
     deviceVendor: { type: String },
     deviceModel: { type: String },

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-[3.2rem] w-full items-center justify-center">
+  <div class="flex h-[3.2rem] items-center justify-center">
     <div class="dark:border-borderDark relative flex w-full items-center rounded-2xl">
       <SearchIcon :size="17.6" class="absolute left-3" />
       <input

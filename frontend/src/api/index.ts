@@ -72,6 +72,11 @@ export const createPost = (payload: CreatePostPayload): Promise<{ message: strin
   return axiosInstance.post('/posts', payload)
 }
 
+// 删除帖子/回复
+export const deletePost = (postId: string): Promise<{ message: string; deletedCount: number }> => {
+  return axiosInstance.delete(`/posts/${postId}`)
+}
+
 // 获取单条帖子
 export const fetchPostById = (postId: string): Promise<Post> => {
   return axiosInstance.get(`/posts/${postId}`)

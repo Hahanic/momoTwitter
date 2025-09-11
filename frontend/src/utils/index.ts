@@ -19,6 +19,7 @@ export function throttle<T extends (...args: any[]) => any>(
 }
 // 格式化日期
 export const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
   const date = new Date(dateStr)
   const now = new Date()
   const diff = now.getTime() - date.getTime()

@@ -397,3 +397,60 @@ export const translatePost = async (req, res) => {
     sendResponse(res, 500, '翻译失败', { error: error.message })
   }
 }
+
+export const deletePost = async (req, res) => {
+  const { postId } = req.params
+  const currentUserId = req.user.id
+
+  // 验证帖子是否存在
+  const post = await Post.findById(postId)
+  if (!post) {
+    return sendResponse(res, 404, '帖子不存在')
+  }
+
+  // 检查当前用户是否是帖子作者
+  if (post.authorId.toString() !== currentUserId) {
+    return sendResponse(res, 403, '你没有权限删除此帖子')
+  }
+
+  // 计算需删除的所有帖子ID（根 + 所有层级回复）
+  const descendantIds = await PostService.getDescendantReplyIds(postId)
+  const toDeleteIds = [post._id, ...descendantIds]
+
+  // 统计每位作者将被删除的帖子数量，用于同步维护 users.stats.postsCount
+  const postsToRemove = await Post.find({ _id: { $in: toDeleteIds } })
+    .select('authorId')
+    .lean()
+  const authorDeleteCountMap = new Map()
+  for (const p of postsToRemove) {
+    const key = p.authorId.toString()
+    authorDeleteCountMap.set(key, (authorDeleteCountMap.get(key) || 0) + 1)
+  }
+
+  // 清理关联的点赞和收藏
+  await Promise.all([
+    Like.deleteMany({ postId: { $in: toDeleteIds } }),
+    Bookmark.deleteMany({ postId: { $in: toDeleteIds } }),
+  ])
+
+  // 批量删除帖子
+  await Post.deleteMany({ _id: { $in: toDeleteIds } })
+
+  // 批量更新被影响用户的 postsCount
+  if (authorDeleteCountMap.size > 0) {
+    const ops = Array.from(authorDeleteCountMap.entries()).map(([userId, cnt]) => ({
+      updateOne: {
+        filter: { _id: userId },
+        update: { $inc: { 'stats.postsCount': -cnt } },
+      },
+    }))
+    await User.bulkWrite(ops)
+  }
+
+  // 如果删除的是回复，需让所有祖先帖子的 repliesCount 同步减少（根回复 + 其所有层级子回复都会计入祖先统计）
+  if (post.postType === 'reply' && post.parentPostId) {
+    await PostService.updateAncestorRepliesCount(post.parentPostId, -toDeleteIds.length)
+  }
+
+  return sendResponse(res, 200, '删除成功', { deletedCount: toDeleteIds.length })
+}

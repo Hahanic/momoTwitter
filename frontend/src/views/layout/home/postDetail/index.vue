@@ -32,17 +32,14 @@
                 :alt="currentPost.authorInfo.displayName"
                 container-class="h-12 w-12"
               />
-              <div class="flex w-full flex-1 items-center justify-between text-[0.9rem]">
-                <!-- userName -->
-                <div class="flex h-full flex-col justify-center">
-                  <span class="font-bold hover:underline">{{ currentPost.authorInfo.displayName }}</span>
-                  <span class="text-center text-gray-500">@{{ currentPost.authorInfo.username }}</span>
-                </div>
-                <!-- setting -->
-                <div class="flex h-full items-center justify-center text-gray-500">
-                  <MoreHorizontalIcon :size="20" />
-                </div>
-              </div>
+              <AuthorAndSettings
+                :username="currentPost.authorInfo.username"
+                :userDisplayName="currentPost.authorInfo.displayName"
+                :createdAt="currentPost.createdAt"
+                :postId="currentPost._id"
+                type="detail"
+                :iconSize="20"
+              />
             </div>
             <div class="mt-2 w-full flex-1">
               <!-- 内容 -->
@@ -184,7 +181,6 @@
 
 <script setup lang="ts">
 import { ArrowLeft } from 'lucide-vue-next'
-import { MoreHorizontalIcon } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { watch, ref, nextTick, computed, onActivated } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -195,6 +191,7 @@ import RankItem from '@/components/layout/RankItem.vue'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
+import AuthorAndSettings from '@/components/post/AuthorAndSettings.vue'
 import Avatar from '@/components/post/Avatar.vue'
 import Post from '@/components/post/index.vue'
 import PostAction from '@/components/post/PostAction.vue'

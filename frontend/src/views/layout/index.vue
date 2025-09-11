@@ -32,30 +32,20 @@
               />
             </div>
             <div class="hidden w-full flex-1 text-[0.9rem] xl:block">
-              <div class="flex w-full items-center justify-between">
-                <!-- userName -->
-                <div class="flex h-full flex-col justify-center text-start">
-                  <span class="font-bold hover:underline">{{
-                    userStore.user?.displayName ?? t('sidebar.authActions.notLoggedIn')
-                  }}</span>
-                  <span class="text-[0.8rem] text-gray-500"
-                    >@{{ userStore.user?.username ?? t('sidebar.authActions.notLoggedIn') }}</span
-                  >
-                </div>
-                <!-- setting -->
-                <button
-                  class="mr-2 flex h-full items-center justify-center rounded-full p-2 text-black transition-[background-color] hover:cursor-pointer dark:text-white"
-                >
-                  <MoreHorizontalIcon :size="20" />
-                </button>
-              </div>
+              <AuthorAndSettings
+                :userDisplayName="userStore.user?.displayName ?? t('sidebar.authActions.notLoggedIn')"
+                :username="`${userStore.user?.username ?? t('sidebar.authActions.notLoggedIn')}`"
+                type="card"
+                :iconSize="20"
+                :iconColor="'white'"
+              />
             </div>
           </div>
           <!-- 账户菜单 -->
           <div
             v-if="showAccountMenu"
             ref="accountMenuRef"
-            class="absolute bottom-20 left-4 w-[10rem] rounded-2xl border-1 border-gray-200 bg-white shadow-lg xl:left-4 xl:w-[16rem] dark:border-gray-700 dark:bg-black"
+            class="absolute bottom-20 left-4 w-[10rem] rounded-md border-1 border-gray-200 bg-white shadow-lg xl:left-4 xl:w-[16rem] dark:border-gray-700 dark:bg-black"
           >
             <div class="flex w-full flex-col">
               <button
@@ -118,19 +108,7 @@
 
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
-import {
-  HomeIcon,
-  Search,
-  Bell,
-  Mail,
-  BotIcon,
-  Users2,
-  User2,
-  Send,
-  ArrowUp,
-  CircleEllipsis,
-  MoreHorizontalIcon,
-} from 'lucide-vue-next'
+import { HomeIcon, Search, Bell, Mail, BotIcon, Users2, User2, Send, ArrowUp, CircleEllipsis } from 'lucide-vue-next'
 import { defineAsyncComponent, ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -138,6 +116,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import BottomNavigation from '@/components/layout/BottomNavigation.vue'
 import SideBar from '@/components/layout/SideBar.vue'
+import AuthorAndSettings from '@/components/post/AuthorAndSettings.vue'
 import { useWindowStore } from '@/stores'
 import useUserStore from '@/stores/userUserStore'
 

@@ -129,7 +129,7 @@ const { t } = useI18n()
 const showAccountMenu = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
 
-const AppModal = defineAsyncComponent(() => import('@/components/modal/index.vue'))
+const AppModal = defineAsyncComponent(() => import('@/components/modal/BaseModal.vue'))
 const showModal = ref(false)
 const currentModalType = ref<string | null>(null)
 

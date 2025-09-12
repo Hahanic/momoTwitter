@@ -18,7 +18,7 @@ export const protectAuthRoute = (req, res, next) => {
     req.user = { id: userId }
     next()
   } catch (error) {
-    // 如果是access token过期，返回特殊的错误码让前端知道需要刷新token
+    // 如果是 Token 无效或已过期 ，返回特殊的错误码让前端知道需要刷新token
     if (error.message.includes('Token 无效或已过期')) {
       return res.status(401).json({
         message: 'authMiddleware: 访问令牌已过期或无效',

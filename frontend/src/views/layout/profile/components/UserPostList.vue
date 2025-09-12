@@ -33,7 +33,7 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
-import Post from '@/components/post/index.vue'
+import Post from '@/components/post/PostItem.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useUserPostStore, useUserStore, usePostDetailStore } from '@/stores'
 import { type Post as PostType } from '@/types'

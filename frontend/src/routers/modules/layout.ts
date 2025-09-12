@@ -70,7 +70,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
           {
             path: ':pathMatch(.*)*',
             name: 'ExploreNotFound',
-            component: () => import('@/components/404/exploreNotFound.vue'),
+            component: () => import('@/components/status/exploreNotFound.vue'),
           },
         ],
       },
@@ -99,7 +99,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
       {
         path: ':pathMatch(.*)*',
         name: 'GlobalNotFound',
-        component: () => import('@/components/404/globalNotFound.vue'),
+        component: () => import('@/components/status/globalNotFound.vue'),
       },
     ],
   },

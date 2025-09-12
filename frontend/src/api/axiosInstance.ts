@@ -1,23 +1,39 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'
 
-import { refreshAccessToken } from '.'
+import { refreshAccessToken } from './auth.ts'
 
 import { useUserStore } from '@/stores'
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 20000, //20秒
+  timeout: 60000, // 60秒
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true,
 })
 
+// 标记是否正在刷新token
+let isRefreshingToken = false
+// 存储在刷新token期间收到的请求
+let failedQueue: any[] = []
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+  failedQueue = []
+}
+
 // 请求拦截器 (Request Interceptor)
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const userStore = useUserStore()
-    // 从 store 中获取 AccessToken
+    // 将 AccessToken 放到请求头
     if (userStore.isAuthenticated) {
       config.headers.Authorization = `Bearer ${userStore.accessToken}`
     }
@@ -46,26 +62,47 @@ axiosInstance.interceptors.response.use(
       switch (status) {
         case 401:
           if (data?.code === 'TOKEN_EXPIRED' && !originalRequest._retry) {
+            // 如果 Token 正在刷新，则将请求加入队列
+            if (isRefreshingToken) {
+              return new Promise((resolve, reject) => {
+                failedQueue.push({ resolve, reject })
+              })
+                .then((token) => {
+                  originalRequest.headers.Authorization = `Bearer ${token}`
+                  return axiosInstance(originalRequest)
+                })
+                .catch((err) => {
+                  return Promise.reject(err)
+                })
+            }
+
+            isRefreshingToken = true
+
             const userStore = useUserStore()
-            console.log('未授权访问, 尝试刷新token')
             originalRequest._retry = true
+            console.log('未授权访问, 尝试刷新token')
 
             try {
-              const refreshResponse = await refreshAccessToken()
+              const { accessToken, user } = await refreshAccessToken()
 
-              if (refreshResponse.accessToken) {
-                userStore.setUser(refreshResponse.user)
-                userStore.setAccessToken(refreshResponse.accessToken)
+              if (accessToken) {
+                userStore.setUser(user)
+                userStore.setAccessToken(accessToken)
                 // 更新原始请求的Authorization头
-                originalRequest.headers.Authorization = `Bearer ${refreshResponse.accessToken}`
-
+                originalRequest.headers.Authorization = `Bearer ${accessToken}`
+                // 执行挂起的请求
+                processQueue(null, accessToken)
                 // 重试原始请求
                 return axiosInstance(originalRequest)
               }
             } catch (refreshError) {
+              processQueue(refreshError, null)
               const userStore = useUserStore()
               userStore.logout()
               return Promise.reject(refreshError)
+            } finally {
+              // 重置刷新状态
+              isRefreshingToken = false
             }
           } else {
             userFriendlyMessage = data?.message || '认证失败，请重新登录'
@@ -115,5 +152,4 @@ axiosInstance.interceptors.response.use(
   }
 )
 
-// 4. 导出实例
 export default axiosInstance

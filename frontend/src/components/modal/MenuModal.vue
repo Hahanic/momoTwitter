@@ -30,7 +30,7 @@
                 <button
                   v-if="userStore.isAuthenticated"
                   @click="userStore.logout()"
-                  class="rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+                  class="rounded-2xl p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
                 >
                   <span>{{ t('sidebar.authActions.logout', { username: userStore.user?.username }) }}</span>
                 </button>

@@ -12,7 +12,7 @@ import { ref, computed, type StyleValue, watch } from 'vue'
 
 import { useWindowStore } from '@/stores'
 
-const topMargin = 20
+const topMargin = 0
 const bottomMargin = 20
 
 const windowStore = useWindowStore()

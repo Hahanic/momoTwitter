@@ -21,7 +21,7 @@ useThemeStore()
 // Token刷新检查函数
 const checkTokenValidity = () => {
   if (userStore.isAuthenticated) {
-    userStore.ensureValidToken()
+    // userStore.ensureValidToken()
   }
 }
 

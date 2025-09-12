@@ -4,7 +4,7 @@
       <!-- 桌面端菜单 -->
       <header
         v-if="!windowStore.isMobile"
-        class="sticky top-0 hidden h-[100dvh] w-[5rem] flex-col items-center sm:flex xl:w-[17rem] xl:items-start"
+        class="sticky top-0 z-20 hidden h-[100dvh] w-[5rem] flex-col items-center sm:flex xl:w-[17rem] xl:items-start"
       >
         <!-- 应用图标 -->
         <div class="relative z-10 flex h-[64px] w-full items-center">
@@ -45,7 +45,7 @@
           <div
             v-if="showAccountMenu"
             ref="accountMenuRef"
-            class="absolute bottom-20 left-4 w-[10rem] rounded-md border-1 border-gray-200 bg-white shadow-lg xl:left-4 xl:w-[16rem] dark:border-gray-700 dark:bg-black"
+            class="absolute bottom-20 left-4 z-21 w-[10rem] rounded-md border-1 border-gray-200 bg-white shadow-lg xl:left-4 xl:w-[16rem] dark:border-gray-700 dark:bg-black"
           >
             <div class="flex w-full flex-col">
               <button

@@ -36,7 +36,7 @@ export const verifyRefreshToken = (token) => {
     return decoded.sessionId
   } catch (error) {
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      throw new Error('Token 无效或已过期')
+      throw new Error('RefreshToken已过期或无效，请重新登陆')
     }
     throw error
   }
@@ -55,7 +55,7 @@ export const verifyAccessToken = (token) => {
     return decoded.userId
   } catch (error) {
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      throw new Error('Token 无效或已过期')
+      throw new Error('AccessToken无效或已过期')
     }
     throw error
   }

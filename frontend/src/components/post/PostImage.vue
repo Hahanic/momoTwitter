@@ -79,13 +79,16 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 import { useWindowStore } from '@/stores'
 import { type Post } from '@/types'
 
 const windowStore = useWindowStore()
+const router = useRouter()
+const route = useRoute()
 
-defineProps<{
+const props = defineProps<{
   post: Post
 }>()
 
@@ -97,13 +100,19 @@ const previewIndex = ref(0)
 const handleImageClick = (_imageUrl: string, index: number) => {
   previewIndex.value = index
   showImagePreview.value = true
+
+  router.push({
+    path: route.path,
+    query: { ...route.query, modal: 'ImagePreview', postId: props.post._id, imageIndex: index },
+  })
 }
 
 // 处理图片加载错误
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
   console.warn('图片加载失败:', img.src)
-  // 可以设置一个默认的错误图片
+  // TODO
+  // 设置一个默认的错误图片
   // img.src = '/path/to/default-error-image.png'
 }
 

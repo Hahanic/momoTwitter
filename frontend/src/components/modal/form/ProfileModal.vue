@@ -1,5 +1,5 @@
 <template>
-  <FormModal>
+  <BaseFormModal>
     <template #header>
       <div class="flex h-full w-full items-center justify-between px-2">
         <div class="flex items-center gap-8">
@@ -151,16 +151,15 @@
     <template #footer>
       <div class="h-1 w-full"></div>
     </template>
-  </FormModal>
+  </BaseFormModal>
 </template>
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
 
-import Scrollbar from '../common/Scrollbar.vue'
+import BaseFormModal from './BaseFormModal.vue'
 
-import FormModal from './FormModal.vue'
-
+import Scrollbar from '@/components/common/Scrollbar.vue'
 import { handleFileUpload } from '@/composables/useMediaUpload'
 import { useMessage } from '@/composables/useMessage'
 import { useUserStore, useWindowStore } from '@/stores'

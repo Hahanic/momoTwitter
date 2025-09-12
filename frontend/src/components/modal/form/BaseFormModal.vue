@@ -1,5 +1,8 @@
 <template>
-  <div class="h-full w-full sm:flex sm:justify-center sm:pt-3">
+  <div
+    class="h-full w-full sm:flex sm:justify-center sm:pt-3"
+    :class="windowStore.isMobile ? 'modal-mobile' : 'modal-desktop'"
+  >
     <div :class="{ 'h-full bg-white dark:bg-black': windowStore.isMobile }">
       <div
         class="relative w-full border-0 bg-white sm:min-h-fit sm:w-[38rem] sm:rounded-2xl dark:border-gray-800 dark:bg-black sm:dark:border-1"

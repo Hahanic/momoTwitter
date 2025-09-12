@@ -44,14 +44,6 @@
       </div>
     </div>
   </div>
-
-  <!-- 图片预览组件 -->
-  <!-- <ImagePreview
-    :visible="showImagePreview"
-    :images="post.media.map((m) => m.url)"
-    :initial-index="previewIndex"
-    @close="showImagePreview = false"
-  /> -->
 </template>
 
 <script lang="ts" setup>
@@ -63,7 +55,6 @@ import PostImage from './PostImage.vue'
 import Avatar from '@/components/post/Avatar.vue'
 import PostAction from '@/components/post/PostAction.vue'
 import { useMessage } from '@/composables/useMessage'
-// import ImagePreview from '@/components/ui/ImagePreview.vue'
 import { usePostInteractionStore } from '@/stores'
 import { type Post } from '@/types'
 

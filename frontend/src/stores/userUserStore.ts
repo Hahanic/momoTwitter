@@ -42,8 +42,8 @@ const useUserStore = defineStore(
           needsRefresh = true
         } else {
           const now = Math.floor(Date.now() / 1000)
-          if (payload.exp - now < 300) {
-            // 5分钟缓冲期
+          if (payload.exp - now < 120) {
+            // 2分钟缓冲期
             needsRefresh = true
           }
         }

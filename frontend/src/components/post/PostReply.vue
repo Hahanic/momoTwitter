@@ -62,7 +62,7 @@
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
 import { MapPin } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import EmojiPicker from './EmojiPicker.vue'
@@ -72,7 +72,7 @@ import MediaToolbar from '@/components/post/MediaToolbar.vue'
 import PostEditor from '@/components/post/PostEditor.vue'
 import SubmitButton from '@/components/post/SubmitButton.vue'
 import { usePostHandler } from '@/composables/usePostHandler'
-import { usePostDetailStore, useWindowStore } from '@/stores'
+import { useWindowStore } from '@/stores'
 
 // 组件自身独有的状态，保留在组件内
 const hasUserFocused = ref<boolean>(false)
@@ -98,7 +98,10 @@ onClickOutside(emojiWrapperRef, () => {
   showEmojiPicker.value = false
 })
 
-const postDetailStore = usePostDetailStore()
+// 从父级 PostDetail.vue 注入组合式实例，确保与页面详情状态一致
+const injected = inject<any>('postDetail', null)
+// 类型与空值处理：正常情况下应总能注入到；若为空则降级为不可用状态
+const postDetailStore = injected
 const windowStore = useWindowStore()
 const { t } = useI18n()
 
@@ -113,7 +116,7 @@ const {
   handleFileRejected,
   handleReorderImages,
 } = usePostHandler({
-  // 1. 传入回复的 action，注意参数格式匹配
+  // 1. 传入回复的 action
   submitAction: async ({ content, media }) => {
     await postDetailStore.createAndAddPost({
       content,
@@ -124,7 +127,11 @@ const {
     hasUserFocused.value = false
   },
   // 2. 传入回复场景下特有的提交检查条件
-  additionalCanSubmitChecks: () => !!(postDetailStore.currentPostId && !postDetailStore.isLoadingReplies),
+  additionalCanSubmitChecks: () => {
+    if (!postDetailStore) return false
+    // currentPostId/isLoadingReplies 均为 ref，需要取 .value
+    return !!(postDetailStore.currentPostId.value && !postDetailStore.isLoadingReplies.value)
+  },
 })
 </script>
 

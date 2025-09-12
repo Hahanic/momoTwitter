@@ -4,11 +4,7 @@
     class="modal-backdrop fixed inset-0 z-50 bg-white/10 backdrop-blur-sm sm:bg-black/40"
     :class="{ 'dark:bg-black/40': windowStore.isMobile }"
   >
-    <component
-      :class="!windowStore.isMobile ? 'modal-desktop' : 'modal-mobile'"
-      @close="handleClose"
-      :is="currentComponent"
-    />
+    <component @close="handleClose" :is="currentComponent" />
   </div>
 </template>
 
@@ -35,9 +31,10 @@ const emit = defineEmits(['close'])
 
 // 定义模态框内容映射
 const modalContentMap = {
-  compose: defineAsyncComponent(() => import('./ComposeModal.vue')),
-  profile: defineAsyncComponent(() => import('./ProfileModal.vue')),
-  mobileMenu: defineAsyncComponent(() => import('./MenuModal.vue')),
+  compose: defineAsyncComponent(() => import('./form/ComposeModal.vue')),
+  profile: defineAsyncComponent(() => import('./form/ProfileModal.vue')),
+  mobileMenu: defineAsyncComponent(() => import('./MobileMenuModal.vue')),
+  ImagePreview: defineAsyncComponent(() => import('./ImagePreviewModal.vue')),
 }
 // 存储组件实例
 const currentComponent = shallowRef<Component | null>(null)

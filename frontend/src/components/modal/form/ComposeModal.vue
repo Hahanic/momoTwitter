@@ -1,5 +1,5 @@
 <template>
-  <FormModal>
+  <BaseFormModal>
     <template #header>
       <div class="flex h-full w-full items-center justify-between px-2">
         <button @click="handleClose" class="cursor-pointer rounded-full p-1 transition-colors hover:bg-blue-500/30">
@@ -46,7 +46,7 @@
         <SubmitButton :disabled="!canSubmit" @click="handlePosting" :text="t('post.submit')" />
       </div>
     </template>
-  </FormModal>
+  </BaseFormModal>
 </template>
 <script setup lang="ts">
 import { onClickOutside } from '@vueuse/core'
@@ -54,14 +54,13 @@ import { X } from 'lucide-vue-next'
 import { nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import EmojiPicker from '../post/EmojiPicker.vue'
-import MediaToolbar from '../post/MediaToolbar.vue'
-import PostEditor from '../post/PostEditor.vue'
-import PostImagePre from '../post/PostImagePre.vue'
-import SubmitButton from '../post/SubmitButton.vue'
+import BaseFormModal from './BaseFormModal.vue'
 
-import FormModal from './FormModal.vue'
-
+import EmojiPicker from '@/components/post/EmojiPicker.vue'
+import MediaToolbar from '@/components/post/MediaToolbar.vue'
+import PostEditor from '@/components/post/PostEditor.vue'
+import PostImagePre from '@/components/post/PostImagePre.vue'
+import SubmitButton from '@/components/post/SubmitButton.vue'
 import { usePostHandler } from '@/composables/usePostHandler'
 import { usePostInteractionStore, usePostFeedStore, useWindowStore } from '@/stores'
 

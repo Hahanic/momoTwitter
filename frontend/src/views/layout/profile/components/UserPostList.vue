@@ -35,7 +35,8 @@ import { useRoute } from 'vue-router'
 
 import Post from '@/components/post/PostItem.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
-import { useUserPostStore, useUserStore, usePostDetailStore } from '@/stores'
+import { usePostDetail } from '@/composables/usePostDetail'
+import { useUserPostStore, useUserStore } from '@/stores'
 import { type Post as PostType } from '@/types'
 
 type FeedCategory = 'posts' | 'replies' | 'likes' | 'bookmarks'
@@ -48,7 +49,8 @@ const props = defineProps<Props>()
 
 const userPostStore = useUserPostStore()
 const userStore = useUserStore()
-const postDetailStore = usePostDetailStore()
+// 只复用工具方法 getParentPosts
+const postDetailUtil = usePostDetail(ref(null))
 const route = useRoute()
 const { t } = useI18n()
 
@@ -94,7 +96,7 @@ const loadParentChains = async () => {
     if (parentChains.value[reply._id]) continue
 
     try {
-      const { posts } = await postDetailStore.getParentPosts(reply._id)
+      const { posts } = await postDetailUtil.getParentPosts(reply._id)
       posts.pop() // 去掉回复本身
       parentChains.value[reply._id] = posts
     } catch (error) {

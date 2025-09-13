@@ -74,7 +74,7 @@
         </div>
       </header>
       <!-- 主体内容 路由出口 -->
-      <div class="flex w-full" :class="{ 'pb-16': windowStore.isMobile }" :inert="showAccountMenu">
+      <div class="flex w-full" :inert="showAccountMenu">
         <router-view v-slot="{ Component }">
           <keep-alive>
             <component :is="Component" />
@@ -83,7 +83,7 @@
       </div>
       <!-- 移动端菜单 -->
       <transition name="slide-up">
-        <footer v-if="windowStore.isMobile && windowStore.showNav" class="fixed right-0 bottom-0 left-0 z-50 w-full">
+        <footer v-if="shouldShowFooter" class="fixed right-0 bottom-0 left-0 z-50 w-full">
           <BottomNavigation />
         </footer>
       </transition>
@@ -128,6 +128,9 @@ const { t } = useI18n()
 
 const showAccountMenu = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
+const shouldShowFooter = computed(() => {
+  return windowStore.isMobile && windowStore.showNav && route.path !== '/bot'
+})
 
 const AppModal = defineAsyncComponent(() => import('@/components/modal/BaseModal.vue'))
 const showModal = ref(false)

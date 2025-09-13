@@ -90,7 +90,10 @@
             <Settings :size="24" />
             <span>设置</span>
           </div>
-          <div class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <div
+            @click="router.push('/bot')"
+            class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
             <BotIcon :size="24" />
             <span>人工智能</span>
           </div>

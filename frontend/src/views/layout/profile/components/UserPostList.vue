@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { LoaderIcon } from 'lucide-vue-next'
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
@@ -118,14 +118,6 @@ const { targetEl: observerEl, canLoadMore } = useInfiniteScroll({
   rootMargin: '0px 0px 200px 0px',
   debounceMs: 300,
 })
-
-// 监听类别变化，重置父帖子链
-watch(
-  () => props.category,
-  () => {
-    parentChains.value = {}
-  }
-)
 
 onMounted(async () => {
   const username = route.params.username as string

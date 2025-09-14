@@ -77,12 +77,32 @@ export const chatWithBot = async (req, res) => {
             if (delta) {
               fullContent += delta
               if (initialChunk) {
-                const payloadWithId = { ...data, conversationId: conversation._id }
-                res.write(`data: ${JSON.stringify(payloadWithId)}\n\n`)
+                // 第一块数据包含 conversationId 和 role (assistant)
+                const simplifiedData = {
+                  choices: [
+                    {
+                      delta: {
+                        role: data.choices[0].delta.role,
+                        content: delta,
+                      },
+                    },
+                  ],
+                  conversationId: conversation._id,
+                }
+                res.write(`data: ${JSON.stringify(simplifiedData)}\n\n`)
                 initialChunk = false
-                //  {"id":"chatcmpl-cedd71fccd0e46d3a29e3273bd151f15","object":"chat.completion.chunk","created":1757860960,"model":"deepseek-v3","choices":[{"index":0,"delta":{"role":"assistant","content":"好的"},"finish_reason":null}],"conversationId":"68c6d22a61c0b1f3bfa523b0"}
               } else {
-                res.write(`data: ${JSON.stringify(data)}\n\n`)
+                // 后续数据只包含 content
+                const simplifiedData = {
+                  choices: [
+                    {
+                      delta: {
+                        content: delta,
+                      },
+                    },
+                  ],
+                }
+                res.write(`data: ${JSON.stringify(simplifiedData)}\n\n`)
               }
             }
           } catch (parseError) {
@@ -110,7 +130,7 @@ export const chatWithBot = async (req, res) => {
 
   stream.on('error', (err) => {
     console.error('AI Stream Error:', err)
-    res.end() // 发生错误时关闭连接
+    res.end()
   })
 }
 
@@ -119,7 +139,16 @@ export const getConversations = async (req, res) => {
   const userId = req.user.id
 
   const conversations = await AiConversation.find({ userId: userId }).sort({ updatedAt: -1 })
-  return sendResponse(res, 200, { conversations: conversations })
+
+  const conversationList = conversations.map((conv) => ({
+    _id: conv._id,
+    userId: conv.userId,
+    title: conv.title,
+    createdAt: conv.createdAt,
+    updatedAt: conv.updatedAt,
+  }))
+
+  return sendResponse(res, 200, { conversations: conversationList })
 }
 
 // 获取单个对话历史
@@ -132,5 +161,7 @@ export const getConversationHistory = async (req, res) => {
     return sendResponse(res, 404, { message: '对话未找到' })
   }
 
-  return sendResponse(res, 200, { messages: conversation.messages })
+  const userMessages = conversation.messages.filter((msg) => msg.role !== 'system')
+
+  return sendResponse(res, 200, { messages: userMessages })
 }

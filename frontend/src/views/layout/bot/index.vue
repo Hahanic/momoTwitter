@@ -140,9 +140,10 @@
 
 <script setup lang="ts">
 import { ArrowLeft, ChevronsRight, ChevronsLeft } from 'lucide-vue-next'
-import { ref, nextTick, onActivated } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { createNewChatStream, getConversations } from '@/api'
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import Avatar from '@/components/post/Avatar.vue'
@@ -168,15 +169,43 @@ const adjustHeight = async () => {
 const sendMessage = async () => {
   if (!inputMessage.value.trim()) return
 
+  const userMessage = inputMessage.value.trim()
+  console.log('发送消息:', userMessage)
+
+  // 清空输入框
   inputMessage.value = ''
   await nextTick()
   if (textareaRef.value) {
     textareaRef.value.style.height = 'auto'
   }
+
+  try {
+    await createNewChatStream(
+      { message: userMessage },
+      (data) => {
+        // 打印流式响应
+        console.log('AI 响应数据:', data)
+        const content = data.choices[0].delta.content
+        if (content) {
+          console.log('AI 回复内容:', content)
+        }
+      },
+      (error) => {
+        console.error('AI 聊天错误:', error)
+      },
+      () => {
+        console.log('AI 回复完成')
+      }
+    )
+  } catch (error) {
+    console.error('发送消息失败:', error)
+  }
 }
 
-onActivated(() => {
-  console.log('Bot view actived')
+onMounted(() => {
+  getConversations().then((conversations) => {
+    console.log('已有对话:', conversations)
+  })
 })
 </script>
 

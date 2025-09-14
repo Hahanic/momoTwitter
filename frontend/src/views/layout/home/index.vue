@@ -54,8 +54,8 @@
   </MainContainer>
 
   <StickyAside>
-    <SearchInput />
     <!-- 搜索框 -->
+    <SearchInput />
     <!-- 推送 -->
     <div class="flex w-full flex-col gap-4 pt-4">
       <AsideContent>

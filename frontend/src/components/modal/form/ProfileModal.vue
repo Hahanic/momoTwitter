@@ -18,7 +18,7 @@
     <template #content="{ mobileScrollHeight }">
       <Scrollbar
         visibility="always"
-        :propsClass="`sm:min-h-[200px] sm:max-h-[700px]`"
+        :propsClass="`sm:min-h-[200px] sm:max-h-[600px]`"
         :maxHeight="windowStore.isMobile ? `calc(100dvh - ${mobileScrollHeight}px - 4rem)` : undefined"
       >
         <div class="flex flex-col pb-8">
@@ -130,7 +130,7 @@
                 class="block w-full rounded-md border-1 border-gray-300 p-3 shadow-sm outline-none focus:ring-1 focus:ring-blue-300 dark:border-gray-600 dark:bg-transparent"
               />
             </div>
-            <div class="relative p-1">
+            <div v-for="i in 10" :key="i" class="relative p-1">
               <label
                 for="website"
                 class="absolute -top-2 left-2 inline-block bg-white px-1 text-xs font-medium text-gray-500 dark:bg-black"
@@ -149,7 +149,7 @@
       </Scrollbar>
     </template>
     <template #footer>
-      <div class="h-1 w-full"></div>
+      <div class="h-0 w-full"></div>
     </template>
   </BaseFormModal>
 </template>

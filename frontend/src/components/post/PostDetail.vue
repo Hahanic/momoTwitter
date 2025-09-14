@@ -134,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, nextTick, computed, onActivated, provide } from 'vue'
+import { watch, ref, nextTick, computed, provide } from 'vue'
 import { useRoute } from 'vue-router'
 
 import AuthorAndSettings from '@/components/post/AuthorAndSettings.vue'
@@ -227,6 +227,7 @@ const handleTranslate = async () => {
 watch(
   () => effectivePostId.value,
   async (newPostId, _oldPostId) => {
+    console.log('PostDetail.vue: postId changed to', newPostId)
     displayTranslation.value = false
 
     // 若 param 未变化（某些情况下触发，比如刷新响应式）则直接返回
@@ -280,13 +281,19 @@ watch(
   }
 )
 
+// 下面的已经不需要了
+
 // 这里是因为从该帖子返回然后再次进入该帖子时确保本帖子在顶部
 // 因为PostId，watch没有继续往下执行scrollIntoView
-onActivated(() => {
-  if (windowStore.navType === 'forward') {
-    if (currentPostRef.value) {
-      currentPostRef.value.scrollIntoView({ behavior: 'auto', block: 'start' })
-    }
-  }
-})
+// onActivated(() => {
+//   if (windowStore.navType === 'forward') {
+//     if (currentPostRef.value) {
+//       console.log('onActivated in PostDetail.vue')
+//       currentPostRef.value.scrollIntoView({ behavior: 'auto', block: 'start' })
+//     }
+//   }
+// })
+// onMounted(() => {
+//   console.log('onMounted in PostDetail.vue')
+// })
 </script>

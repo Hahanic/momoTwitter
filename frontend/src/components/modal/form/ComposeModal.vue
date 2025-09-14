@@ -22,28 +22,30 @@
       </PostEditor>
     </template>
     <template #footer>
-      <PostImagePre
-        class="px-2 sm:px-5"
-        :images="selectedImages"
-        @remove-image="removeImage"
-        @reorder-images="handleReorderImages"
-      />
-      <div class="flex h-[3.5rem] justify-between px-1 py-2 sm:px-5">
-        <div ref="emojiWrapperRef" class="relative">
-          <MediaToolbar
-            @files-selected="handleFilesSelected"
-            @file-rejected="handleFileRejected"
-            @emoji="handleToggleEmoji"
-            :current-count="selectedImages.length"
-            :max-count="MAX_IMAGES"
-          />
-          <EmojiPicker
-            v-if="showEmojiPicker"
-            class="absolute bottom-full z-10 mb-2"
-            @emoji-selected="handleEmojiSelected"
-          />
+      <div class="border-t border-gray-200 backdrop-blur-sm sm:rounded-b-2xl dark:border-gray-800">
+        <PostImagePre
+          class="px-2 sm:px-5"
+          :images="selectedImages"
+          @remove-image="removeImage"
+          @reorder-images="handleReorderImages"
+        />
+        <div class="flex h-[3.5rem] justify-between px-1 py-2 sm:px-5">
+          <div ref="emojiWrapperRef" class="relative">
+            <MediaToolbar
+              @files-selected="handleFilesSelected"
+              @file-rejected="handleFileRejected"
+              @emoji="handleToggleEmoji"
+              :current-count="selectedImages.length"
+              :max-count="MAX_IMAGES"
+            />
+            <EmojiPicker
+              v-if="showEmojiPicker"
+              class="absolute bottom-full z-10 mb-2"
+              @emoji-selected="handleEmojiSelected"
+            />
+          </div>
+          <SubmitButton :disabled="!canSubmit" @click="handlePosting" :text="t('post.submit')" />
         </div>
-        <SubmitButton :disabled="!canSubmit" @click="handlePosting" :text="t('post.submit')" />
       </div>
     </template>
   </BaseFormModal>

@@ -1,0 +1,136 @@
+import AiConversation from '../db/model/AiConversation.js'
+import { chatWithAI } from '../services/aiService.js'
+import { sendResponse } from '../utils/index.js'
+
+// 最大上下文消息数
+const MAX_CONTEXT_MESSAGES = 50
+
+export const chatWithBot = async (req, res) => {
+  const { message } = req.body
+  const conversationId = req.params.id
+  const userId = req.user.id
+
+  if (!message || typeof message !== 'string' || message.trim() === '') {
+    return sendResponse(res, 400, { message: '消息内容不能为空' })
+  }
+
+  let conversation
+  if (conversationId) {
+    conversation = await AiConversation.findOne({ _id: conversationId, userId: userId })
+    if (!conversation) {
+      return sendResponse(res, 404, { message: '对话未找到' })
+    }
+  } else {
+    conversation = new AiConversation({
+      userId: userId,
+      messages: [
+        {
+          role: 'system',
+          content:
+            '你是一个乐于助人的AI助手。你的回答必须是纯文本。不要使用任何Markdown格式，包括但不限于加粗的星号、作为列表的短横线或数字、标题的井号。所有内容都必须是无格式的文本。',
+        },
+      ],
+    })
+  }
+
+  const userMessage = { role: 'user', content: message }
+  conversation.messages.push(userMessage)
+
+  const systemMessage = conversation.messages.find((m) => m.role === 'system')
+  const recentMessages = conversation.messages.filter((m) => m.role !== 'system').slice(-MAX_CONTEXT_MESSAGES)
+  const messagesForApi = systemMessage ? [systemMessage, ...recentMessages] : recentMessages
+
+  // 设置SSE响应头
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.flushHeaders()
+
+  const stream = await chatWithAI(messagesForApi)
+
+  let fullContent = ''
+  let initialChunk = true
+  let buffer = ''
+
+  stream.on('data', (chunk) => {
+    buffer += chunk.toString('utf-8')
+
+    // 只要缓冲区中包含完整的消息分隔符，就持续处理
+    while (buffer.includes('\n\n')) {
+      const messageEndIndex = buffer.indexOf('\n\n')
+      // 提取一个完整的消息块
+      const messageBlock = buffer.substring(0, messageEndIndex)
+      // 从缓冲区移除已处理的消息
+      buffer = buffer.substring(messageEndIndex + 2)
+
+      const lines = messageBlock.split('\n')
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const dataStr = line.substring(6).trim()
+          if (dataStr === '[DONE]') {
+            continue
+          }
+          try {
+            const data = JSON.parse(dataStr)
+            const delta = data.choices?.[0]?.delta?.content
+
+            if (delta) {
+              fullContent += delta
+              if (initialChunk) {
+                const payloadWithId = { ...data, conversationId: conversation._id }
+                res.write(`data: ${JSON.stringify(payloadWithId)}\n\n`)
+                initialChunk = false
+                //  {"id":"chatcmpl-cedd71fccd0e46d3a29e3273bd151f15","object":"chat.completion.chunk","created":1757860960,"model":"deepseek-v3","choices":[{"index":0,"delta":{"role":"assistant","content":"好的"},"finish_reason":null}],"conversationId":"68c6d22a61c0b1f3bfa523b0"}
+              } else {
+                res.write(`data: ${JSON.stringify(data)}\n\n`)
+              }
+            }
+          } catch (parseError) {
+            console.error('JSON解析失败，跳过该数据块:', dataStr)
+          }
+        }
+      }
+    }
+  })
+
+  stream.on('end', async () => {
+    try {
+      if (fullContent) {
+        const assistantMessage = { role: 'assistant', content: fullContent }
+        conversation.messages.push(assistantMessage)
+        await conversation.save()
+      }
+    } catch (dbError) {
+      console.error('保存对话失败:', dbError)
+    } finally {
+      res.write('data: [DONE]\n\n') // 手动发送结束信号给前端
+      res.end()
+    }
+  })
+
+  stream.on('error', (err) => {
+    console.error('AI Stream Error:', err)
+    res.end() // 发生错误时关闭连接
+  })
+}
+
+// 获取对话列表
+export const getConversations = async (req, res) => {
+  const userId = req.user.id
+
+  const conversations = await AiConversation.find({ userId: userId }).sort({ updatedAt: -1 })
+  return sendResponse(res, 200, { conversations: conversations })
+}
+
+// 获取单个对话历史
+export const getConversationHistory = async (req, res) => {
+  const userId = req.user.id
+  const conversationId = req.params.id
+
+  const conversation = await AiConversation.findOne({ _id: conversationId, userId: userId })
+  if (!conversation) {
+    return sendResponse(res, 404, { message: '对话未找到' })
+  }
+
+  return sendResponse(res, 200, { messages: conversation.messages })
+}

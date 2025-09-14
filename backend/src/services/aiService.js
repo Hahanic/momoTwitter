@@ -6,6 +6,7 @@ dotenv.config()
 const openai_base_url = 'https://openai.qiniu.com/v1'
 const openai_api_key = process.env.QINIU_AI_API_KEY
 
+// 翻译帖子
 export const translateText = async (text, targetLanguage) => {
   if (!openai_api_key) {
     throw new Error('未配置七牛云 API Key')
@@ -49,5 +50,35 @@ export const translateText = async (text, targetLanguage) => {
   } catch (error) {
     console.error('调用七牛云翻译API失败:', error.response ? error.response.data : error.message)
     throw new Error('翻译服务暂时不可用')
+  }
+}
+
+// AI聊天
+export const chatWithAI = async (messages) => {
+  if (!openai_api_key) {
+    throw new Error('未配置七牛云 API Key')
+  }
+
+  try {
+    const response = await axios.post(
+      `${openai_base_url}/chat/completions`,
+      {
+        model: 'deepseek-v3',
+        messages: messages,
+        stream: true,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${openai_api_key}`,
+        },
+        responseType: 'stream',
+      }
+    )
+
+    return response.data
+  } catch (error) {
+    console.error('调用七牛云AI聊天API失败:', error.response ? error.response.data : error.message)
+    throw new Error('AI聊天服务暂时不可用')
   }
 }

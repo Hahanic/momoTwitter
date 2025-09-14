@@ -2,8 +2,8 @@ import Bookmark from '../db/model/Bookmark.js'
 import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
 import User from '../db/model/User.js'
+import { translateText } from '../services/aiService.js'
 import { PostService } from '../services/postService.js'
-import { translateText } from '../services/translationService.js'
 import { parseCursor, sendResponse, verifyAccessToken } from '../utils/index.js'
 
 // 发送帖子

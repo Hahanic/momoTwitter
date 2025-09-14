@@ -17,10 +17,7 @@
           <slot :mobileScrollHeight="mobileScrollHeight" name="content" />
         </div>
 
-        <div
-          ref="footerHeightRef"
-          class="sticky bottom-0 z-50 w-full border-t border-gray-200 backdrop-blur-sm sm:rounded-b-2xl dark:border-gray-800"
-        >
+        <div ref="footerHeightRef" class="sticky bottom-0 z-50 w-full">
           <slot name="footer" />
         </div>
       </div>

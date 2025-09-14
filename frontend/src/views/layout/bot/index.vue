@@ -19,7 +19,7 @@
             <div class="flex items-end space-x-2">
               <span class="block text-xs text-gray-500">刚刚</span>
               <div class="flex h-8 w-8 items-center justify-center rounded-full">
-                <Avatar :src="userStore.user?.avatarUrl" alt="User Avatar" />
+                <Avatar :username="userStore.user?.username" :src="userStore.user?.avatarUrl" alt="User Avatar" />
               </div>
             </div>
             <div class="flex">
@@ -140,7 +140,7 @@
 
 <script setup lang="ts">
 import { ArrowLeft, ChevronsRight, ChevronsLeft } from 'lucide-vue-next'
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 
 import MainContainer from '@/components/layout/ScrollContainer.vue'
@@ -174,6 +174,10 @@ const sendMessage = async () => {
     textareaRef.value.style.height = 'auto'
   }
 }
+
+onActivated(() => {
+  console.log('Bot view actived')
+})
 </script>
 
 <style scoped>

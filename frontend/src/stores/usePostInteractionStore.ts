@@ -30,8 +30,11 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     if (!post) {
       throw new Error('帖子不存在')
     }
-    if (!post.currentUserInteraction || !userStore.isAuthenticated) {
+    if (!userStore.isAuthenticated) {
       throw new Error('未登录')
+    }
+    if (!post.currentUserInteraction) {
+      throw new Error('帖子交互信息不存在，请刷新页面🐧')
     }
     const original = {
       isLiked: post.currentUserInteraction.isLiked,

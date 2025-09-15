@@ -3,13 +3,14 @@ import axiosInstance from './axiosInstance'
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
   content: string
-  timestamp?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Conversation {
   _id: string
-  title?: string
-  messages: ChatMessage[]
+  userId: string
+  title: string
   createdAt: string
   updatedAt: string
 }
@@ -29,25 +30,13 @@ export interface ChatRequest {
 }
 
 // 获取对话列表
-export const getConversations = async () => {
-  try {
-    const response = await axiosInstance.get('/bot/chat')
-    return response
-  } catch (error) {
-    console.error('获取对话列表失败:', error)
-    throw error
-  }
+export const getConversations = (): Promise<{ message: { conversationList: Conversation[] } }> => {
+  return axiosInstance.get('/bot/chat')
 }
 
 // 获取单个对话历史
-export const getConversationHistory = async (conversationId: string) => {
-  try {
-    const response = await axiosInstance.get(`/bot/chat/${conversationId}`)
-    return response
-  } catch (error) {
-    console.error('获取对话历史失败:', error)
-    throw error
-  }
+export const getConversationHistory = (conversationId: string): Promise<{ message: ChatMessage[] }> => {
+  return axiosInstance.get(`/bot/chat/${conversationId}`)
 }
 
 // AI 聊天流式接口，创建新对话
@@ -158,7 +147,7 @@ export const chatWithBot = async (message: string, conversationId?: string) => {
   try {
     const url = conversationId ? `/bot/chat/${conversationId}` : '/bot/chat'
     const response = await axiosInstance.post(url, { message })
-    return response.data
+    return response
   } catch (error) {
     console.error('AI 聊天失败:', error)
     throw error

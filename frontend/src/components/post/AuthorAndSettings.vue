@@ -17,7 +17,7 @@
     <!-- setting -->
     <div class="relative">
       <button @click="handleSettings" class="flex items-center justify-center">
-        <MoreHorizontalIcon :size="iconSize || 20" :class="iconColor ? iconColor : 'text-gray-500'" />
+        <MoreHorizontal :size="iconSize || 20" :class="iconColor ? iconColor : 'text-gray-500'" />
       </button>
 
       <div
@@ -47,7 +47,7 @@
 </template>
 <script lang="ts" setup>
 import { onClickOutside } from '@vueuse/core'
-import { MoreHorizontalIcon } from 'lucide-vue-next'
+import { MoreHorizontal } from 'lucide-vue-next'
 import { ref } from 'vue'
 
 import { useMessage } from '@/composables/useMessage'

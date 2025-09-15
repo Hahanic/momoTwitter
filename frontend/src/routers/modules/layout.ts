@@ -52,7 +52,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         ],
       },
       {
-        path: '/bot',
+        path: '/bot/:id?',
         name: 'Bot',
         component: () => import('@/views/layout/bot/index.vue'),
       },

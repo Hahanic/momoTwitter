@@ -148,7 +148,7 @@ export const getConversations = async (req, res) => {
     updatedAt: conv.updatedAt,
   }))
 
-  return sendResponse(res, 200, { conversations: conversationList })
+  return sendResponse(res, 200, { conversationList })
 }
 
 // 获取单个对话历史
@@ -163,5 +163,5 @@ export const getConversationHistory = async (req, res) => {
 
   const userMessages = conversation.messages.filter((msg) => msg.role !== 'system')
 
-  return sendResponse(res, 200, { messages: userMessages })
+  return sendResponse(res, 200, userMessages)
 }

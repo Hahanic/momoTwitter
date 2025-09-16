@@ -41,6 +41,38 @@ export const formatDate = (dateStr: string) => {
     day: 'numeric',
   })
 }
+export const formatTime = (timestamp?: string) => {
+  if (!timestamp) return '刚刚'
+
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+
+  // 小于1分钟
+  if (diff < 60000) {
+    return '刚刚'
+  }
+
+  // 小于1小时
+  if (diff < 3600000) {
+    const minutes = Math.floor(diff / 60000)
+    return `${minutes}分钟前`
+  }
+
+  // 小于24小时
+  if (diff < 86400000) {
+    const hours = Math.floor(diff / 3600000)
+    return `${hours}小时前`
+  }
+
+  // 大于24小时，显示具体时间
+  return date.toLocaleString('zh-CN', {
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 export const formatDatePostDetail = (dateStr: string) => {
   const date = new Date(dateStr)

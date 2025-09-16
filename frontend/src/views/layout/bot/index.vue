@@ -15,7 +15,7 @@
         </div>
       </div>
       <!-- 聊天消息区域 -->
-      <div class="w-full flex-1 px-2 pt-8 pb-24 sm:px-4">
+      <div class="w-full flex-1 px-2 pt-8 pb-4 sm:px-4">
         <div v-if="currentConversationId" class="w-full space-y-4">
           <!-- 加载状态 -->
           <div v-if="isLoadingMessages" class="flex justify-center py-8">
@@ -36,7 +36,7 @@
 
           <!-- 消息列表 -->
           <template v-else>
-            <div v-for="(message, index) in currentMessages" :key="index">
+            <div v-for="(message, index) in processedMessages" :key="index">
               <!-- 用户消息 -->
               <div v-if="message.role === 'user'" class="flex flex-col items-end space-y-2">
                 <div class="flex items-end space-x-2">
@@ -61,9 +61,13 @@
                   <span class="block text-xs text-gray-500">{{ formatTime(message.createdAt) }}</span>
                 </div>
                 <div class="flex-1">
-                  <div class="rounded-lg bg-white px-4 py-3 shadow-sm dark:bg-gray-800/50">
+                  <!-- <div class="rounded-lg bg-white px-4 py-3 shadow-sm dark:bg-gray-800/50">
                     <p class="whitespace-pre-wrap text-gray-800 dark:text-gray-200">{{ message.content }}</p>
-                  </div>
+                  </div> -->
+                  <div
+                    class="markdown-body rounded-lg bg-white px-4 py-3 shadow-sm dark:bg-gray-800/30"
+                    v-html="message.htmlContent"
+                  ></div>
                 </div>
               </div>
             </div>
@@ -223,8 +227,11 @@
 
 <script setup lang="ts">
 import { onClickOutside } from '@vueuse/core'
+import DOMPurify from 'dompurify'
+import hljs from 'highlight.js'
 import { ArrowLeft, ChevronsRight, ChevronsLeft, MoreHorizontal, SquarePen } from 'lucide-vue-next'
-import { ref, nextTick, onMounted, onActivated, onDeactivated, onBeforeUnmount, watch } from 'vue'
+import MarkdownIt from 'markdown-it'
+import { ref, nextTick, onMounted, onActivated, onDeactivated, onBeforeUnmount, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 import {
@@ -238,6 +245,26 @@ import {
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import Avatar from '@/components/post/Avatar.vue'
 import { useUserStore, useWindowStore } from '@/stores'
+import { formatTime } from '@/utils'
+
+interface ProcessedMessage extends ChatMessage {
+  htmlContent?: string
+}
+
+const md: MarkdownIt = new MarkdownIt({
+  highlight: function (str: string, lang: string): string {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return (
+          '<pre class-name="hljs"><code>' +
+          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+          '</code></pre>'
+        )
+      } catch (__) {}
+    }
+    return '<pre class-name="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>'
+  },
+})
 
 const userStore = useUserStore()
 const windowStore = useWindowStore()
@@ -252,6 +279,21 @@ const isStreaming = ref<boolean>(false)
 const streamingMessage = ref<string>('')
 const inputMessage = ref('')
 
+const processedMessages = computed((): ProcessedMessage[] => {
+  return currentMessages.value.map((message) => {
+    if (message.role === 'assistant' && message.content) {
+      // 使用 markdown-it 将 Markdown 转换为 HTML
+      const rawHtml = md.render(message.content)
+      // 使用 DOMPurify 清理 HTML，防止 XSS 攻击
+      const safeHtml = DOMPurify.sanitize(rawHtml)
+      // 返回一个新对象，包含渲染用的 HTML
+      return { ...message, htmlContent: safeHtml } as ProcessedMessage
+    }
+    // 其他类型的消息原样返回
+    return message as ProcessedMessage
+  })
+})
+
 const activeMenuIndex = ref<number | null>(null)
 const menuPosition = ref<{ top: string; left: string }>({ top: '0px', left: '0px' })
 
@@ -263,7 +305,7 @@ const isShowTextarea = ref<boolean>(true)
 
 // 自动滚动相关
 const isNearBottom = ref<boolean>(true)
-const scrollThreshold = 100 // 距离底部的阈值
+const scrollThreshold = 100
 let scrollTimer: number | null = null
 
 // 检查是否接近底部
@@ -361,7 +403,6 @@ const sendMessage = async () => {
         currentConversationId.value,
         { message: userMessage },
         (data) => {
-          console.log('AI 响应数据:', data)
           const content = data.choices[0].delta.content
           if (content) {
             streamingMessage.value += content
@@ -374,11 +415,9 @@ const sendMessage = async () => {
         },
         (error) => {
           console.error('AI 聊天错误:', error)
-          // 移除失败的AI消息
           currentMessages.value.splice(aiMessageIndex, 1)
         },
         () => {
-          console.log('AI 回复完成')
           isStreaming.value = false
           streamingMessage.value = ''
         }
@@ -388,8 +427,6 @@ const sendMessage = async () => {
       await createNewChatStream(
         { message: userMessage },
         (data) => {
-          console.log('AI 响应数据:', data)
-
           // 如果是新对话，保存conversationId并刷新对话列表
           if (data.conversationId && !currentConversationId.value) {
             currentConversationId.value = data.conversationId
@@ -424,7 +461,6 @@ const sendMessage = async () => {
           currentMessages.value.splice(aiMessageIndex, 1)
         },
         () => {
-          console.log('AI 回复完成')
           isStreaming.value = false
           streamingMessage.value = ''
         }
@@ -445,7 +481,6 @@ const loadConversationHistory = async (conversationId: string) => {
     isLoadingMessages.value = true
     const response = await getConversationHistory(conversationId)
     currentMessages.value = response.message || []
-    console.log('加载对话历史:', response)
 
     // 加载完历史消息后，滚动到底部
     await nextTick()
@@ -472,7 +507,6 @@ const refreshConversationList = async () => {
 const toggleConversation = async (index: number) => {
   const conversation = conversationList.value[index]
   if (conversation) {
-    console.log('切换对话:', conversation)
     // 直接通过路由更新，让 watch 处理加载逻辑
     router.push({ name: 'Bot', params: { id: conversation._id } })
     // 关闭菜单
@@ -576,40 +610,6 @@ onBeforeUnmount(() => {
     scrollTimer = null
   }
 })
-
-// 格式化时间
-const formatTime = (timestamp?: string) => {
-  if (!timestamp) return '刚刚'
-
-  const date = new Date(timestamp)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-
-  // 小于1分钟
-  if (diff < 60000) {
-    return '刚刚'
-  }
-
-  // 小于1小时
-  if (diff < 3600000) {
-    const minutes = Math.floor(diff / 60000)
-    return `${minutes}分钟前`
-  }
-
-  // 小于24小时
-  if (diff < 86400000) {
-    const hours = Math.floor(diff / 3600000)
-    return `${hours}小时前`
-  }
-
-  // 大于24小时，显示具体时间
-  return date.toLocaleString('zh-CN', {
-    month: 'numeric',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 </script>
 
 <style scoped>
@@ -680,5 +680,70 @@ textarea {
 .menu-fade-leave-from {
   opacity: 1;
   transform: scale(1) translateY(0);
+}
+
+/* 1. 基础容器样式 */
+.markdown-body {
+  line-height: 1.7;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* 2. 代码块样式 */
+.markdown-body :deep(pre) {
+  background-color: #f6f8fa;
+  padding: 16px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.markdown-body :deep(pre code) {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* 3. 行内代码样式 */
+.markdown-body :deep(code) {
+  background-color: rgba(175, 184, 193, 0.2);
+  border-radius: 6px;
+  font-size: 95%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* 4. 表格样式 */
+.markdown-body :deep(table) {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.markdown-body :deep(th),
+.markdown-body :deep(td) {
+  border: 1px solid #dfe2e5;
+  padding: 6px 13px;
+}
+
+.dark .markdown-body :deep(pre) {
+  background-color: #161b22;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.dark .markdown-body :deep(code) {
+  background-color: rgba(110, 118, 129, 0.4);
+}
+
+.dark .markdown-body :deep(pre code) {
+  background-color: transparent;
+}
+
+.dark .markdown-body :deep(th),
+.dark .markdown-body :deep(td) {
+  border-color: #444c56;
 }
 </style>

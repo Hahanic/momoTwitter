@@ -33,6 +33,13 @@ const useThemeStore = defineStore('theme', () => {
         root.classList.remove('dark')
       }
       localStorage.setItem(THEME_KEY, newTheme)
+
+      // 动态加载代码高亮样式
+      if (newTheme === 'dark') {
+        import('highlight.js/styles/github-dark.css')
+      } else {
+        import('highlight.js/styles/github.css')
+      }
     },
     {
       // 立即执行一次，确保在初始化时就应用主题

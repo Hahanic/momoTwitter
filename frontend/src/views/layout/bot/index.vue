@@ -244,6 +244,7 @@ import {
 } from '@/api'
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import Avatar from '@/components/post/Avatar.vue'
+import { useMessage } from '@/composables/useMessage'
 import { useUserStore, useWindowStore } from '@/stores'
 import { formatTime } from '@/utils'
 
@@ -268,6 +269,7 @@ const md: MarkdownIt = new MarkdownIt({
 
 const userStore = useUserStore()
 const windowStore = useWindowStore()
+const message = useMessage()
 const router = useRouter()
 const route = useRoute()
 
@@ -357,6 +359,7 @@ const adjustHeight = async () => {
 
 // 发送消息
 const sendMessage = async () => {
+  if (!userStore.user) return message.info('请先登录')
   if (!inputMessage.value.trim() || isStreaming.value) return
 
   const userMessage = inputMessage.value.trim()

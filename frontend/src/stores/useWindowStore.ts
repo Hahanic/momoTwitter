@@ -27,24 +27,26 @@ const useWindowStore = defineStore('window', () => {
   // 监听内部调用
   function _handleScroll(currentRoute: RouteLocationNormalized) {
     const currentScrollY = window.scrollY
+    const routeName = currentRoute.name as string
+    const routePath = currentRoute.path
 
     // a. 更新基础滚动状态
     scrollDelta.value = currentScrollY - lastScrollTop
     scrollY.value = currentScrollY
 
     // b. 处理底部菜单的显示/隐藏
-    accumulatedScroll += scrollDelta.value
-    if (accumulatedScroll > scrollThreshold) {
-      showNav.value = false
-      accumulatedScroll = 0
-    } else if (accumulatedScroll < -scrollThreshold) {
-      showNav.value = true
-      accumulatedScroll = 0
+    if (routeName !== 'Bot') {
+      accumulatedScroll += scrollDelta.value
+      if (accumulatedScroll > scrollThreshold) {
+        showNav.value = false
+        accumulatedScroll = 0
+      } else if (accumulatedScroll < -scrollThreshold) {
+        showNav.value = true
+        accumulatedScroll = 0
+      }
     }
 
     // c. 更新当前页面的滚动位置记忆
-    const routeName = currentRoute.name as string
-    const routePath = currentRoute.path
     if (routePath === '/home') {
       homeScrollTop.value = currentScrollY
     } else if (['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(routeName)) {

@@ -129,7 +129,7 @@ const { t } = useI18n()
 const showAccountMenu = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
 const shouldShowFooter = computed(() => {
-  return windowStore.isMobile && windowStore.showNav && route.path !== '/bot'
+  return windowStore.isMobile && windowStore.showNav && route.name !== 'Bot'
 })
 
 const AppModal = defineAsyncComponent(() => import('@/components/modal/BaseModal.vue'))

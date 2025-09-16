@@ -9,7 +9,7 @@
         class="dark:border-borderDark border-borderWhite sticky top-0 z-2 h-12 w-full border-b-1 bg-white dark:bg-black"
       >
         <div class="flex h-full w-full items-center justify-between px-2">
-          <button @click="router.back()" class="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <button @click="router.push('/home')" class="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
             <ArrowLeft :size="20" />
           </button>
         </div>
@@ -18,8 +18,20 @@
       <div class="w-full flex-1 px-2 pt-8 pb-24 sm:px-4">
         <div v-if="currentConversationId" class="w-full space-y-4">
           <!-- 加载状态 -->
-          <div v-if="isLoadingMessages" class="flex justify-center py-4">
-            <div class="text-gray-500">加载消息中...</div>
+          <div v-if="isLoadingMessages" class="flex justify-center py-8">
+            <div class="flex flex-col items-center space-y-3">
+              <div class="relative">
+                <div class="h-12 w-12 animate-spin rounded-full border-2 border-blue-200 border-t-blue-500"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <svg class="h-6 w-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div class="text-sm text-gray-500">加载消息中...</div>
+            </div>
           </div>
 
           <!-- 消息列表 -->
@@ -35,7 +47,7 @@
                 </div>
                 <div class="flex">
                   <div class="rounded-lg px-4 py-3 shadow-sm dark:bg-[#202327]/70">
-                    <p>{{ message.content }}</p>
+                    <p class="whitespace-pre-wrap">{{ message.content }}</p>
                   </div>
                 </div>
               </div>
@@ -50,7 +62,7 @@
                 </div>
                 <div class="flex-1">
                   <div class="rounded-lg bg-white px-4 py-3 shadow-sm dark:bg-gray-800/50">
-                    <p class="text-gray-800 dark:text-gray-200">{{ message.content }}</p>
+                    <p class="whitespace-pre-wrap text-gray-800 dark:text-gray-200">{{ message.content }}</p>
                   </div>
                 </div>
               </div>
@@ -212,7 +224,7 @@
 <script setup lang="ts">
 import { onClickOutside } from '@vueuse/core'
 import { ArrowLeft, ChevronsRight, ChevronsLeft, MoreHorizontal, SquarePen } from 'lucide-vue-next'
-import { ref, nextTick, onMounted, onActivated, onDeactivated, watch } from 'vue'
+import { ref, nextTick, onMounted, onActivated, onDeactivated, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 import {
@@ -249,6 +261,49 @@ const scrollbarRef = ref<InstanceType<typeof Scrollbar> | null>(null)
 
 const isShowTextarea = ref<boolean>(true)
 
+// 自动滚动相关
+const isNearBottom = ref<boolean>(true)
+const scrollThreshold = 100 // 距离底部的阈值
+let scrollTimer: number | null = null
+
+// 检查是否接近底部
+const checkIfNearBottom = () => {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+  const windowHeight = window.innerHeight
+  const documentHeight = document.documentElement.scrollHeight
+
+  isNearBottom.value = documentHeight - scrollTop - windowHeight <= scrollThreshold
+}
+
+// 滚动到底部
+const scrollToBottom = () => {
+  nextTick(() => {
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'instant',
+      })
+      // 滚动后更新状态
+      isNearBottom.value = true
+    }, 0)
+  })
+}
+
+// 节流的滚动到底部（用于流式消息）
+const throttledScrollToBottom = () => {
+  if (scrollTimer) return
+
+  scrollTimer = window.setTimeout(() => {
+    if (isNearBottom.value) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+    scrollTimer = null
+  }, 100)
+}
+
 // 调整文本区域高度
 const adjustHeight = async () => {
   await nextTick()
@@ -272,7 +327,8 @@ const sendMessage = async () => {
   }
   currentMessages.value.push(userMsg)
 
-  // 清空输入框
+  scrollToBottom()
+
   inputMessage.value = ''
   await nextTick()
   if (textareaRef.value) {
@@ -292,6 +348,11 @@ const sendMessage = async () => {
   currentMessages.value.push(aiMsg)
   const aiMessageIndex = currentMessages.value.length - 1
 
+  // 如果用户在底部，自动滚动
+  if (isNearBottom.value) {
+    scrollToBottom()
+  }
+
   try {
     // 根据是否有当前对话ID选择不同的API
     if (currentConversationId.value) {
@@ -306,6 +367,9 @@ const sendMessage = async () => {
             streamingMessage.value += content
             // 更新AI消息内容
             currentMessages.value[aiMessageIndex].content = streamingMessage.value
+
+            // 使用节流的滚动函数
+            throttledScrollToBottom()
           }
         },
         (error) => {
@@ -331,7 +395,16 @@ const sendMessage = async () => {
             currentConversationId.value = data.conversationId
             // 更新URL，但不触发reload
             window.history.replaceState({}, '', `/bot/${data.conversationId}`)
-            // 刷新对话列表以包含新创建的对话
+            // 创建新的对话对象并添加到列表
+            const newConversation: Conversation = {
+              _id: data.conversationId,
+              userId: userStore.user?._id || '',
+              title: userMessage.substring(0, 20),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }
+            conversationList.value.unshift(newConversation)
+            // 刷新对话列表确保最新内容
             refreshConversationList()
           }
 
@@ -340,6 +413,9 @@ const sendMessage = async () => {
             streamingMessage.value += content
             // 更新AI消息内容
             currentMessages.value[aiMessageIndex].content = streamingMessage.value
+
+            // 使用节流的滚动函数
+            throttledScrollToBottom()
           }
         },
         (error) => {
@@ -370,6 +446,10 @@ const loadConversationHistory = async (conversationId: string) => {
     const response = await getConversationHistory(conversationId)
     currentMessages.value = response.message || []
     console.log('加载对话历史:', response)
+
+    // 加载完历史消息后，滚动到底部
+    await nextTick()
+    scrollToBottom()
   } catch (error) {
     console.error('加载对话历史失败:', error)
     currentMessages.value = []
@@ -451,6 +531,11 @@ onMounted(async () => {
   } catch (error) {
     console.error('获取对话列表失败:', error)
   }
+
+  // 添加滚动事件监听器
+  window.addEventListener('scroll', checkIfNearBottom)
+  // 初始化滚动位置检查
+  checkIfNearBottom()
 })
 
 // 监听路由参数变化
@@ -479,6 +564,16 @@ onActivated(() => {
 onDeactivated(() => {
   if (scrollbarRef.value?.scrollContainer) {
     scrollbarRef.value.scrollContainer.removeEventListener('scroll', handleScroll)
+  }
+})
+
+// 组件卸载时清理事件监听器
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', checkIfNearBottom)
+  // 清理定时器
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+    scrollTimer = null
   }
 })
 

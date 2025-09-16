@@ -26,8 +26,7 @@ export const chatWithBot = async (req, res) => {
       messages: [
         {
           role: 'system',
-          content:
-            '你是一个乐于助人的AI助手。你的回答必须是纯文本。不要使用任何Markdown格式，包括但不限于加粗的星号、作为列表的短横线或数字、标题的井号。所有内容都必须是无格式的文本。',
+          content: '你是一个乐于助人的AI助手。只能使用markdown格式回复。',
         },
       ],
     })

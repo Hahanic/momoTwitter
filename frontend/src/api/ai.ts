@@ -116,6 +116,7 @@ const chatStream = async (
 
       // 处理完整的事件
       const lines = buffer.split('\n')
+      // [('data: {"choices":[{"delta":{"content":"解析：\\n\\n"}}]}', '')]
       buffer = lines.pop() || '' // 保留不完整的行
 
       for (const line of lines) {

@@ -12,6 +12,12 @@
           <button @click="router.push('/home')" class="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
             <ArrowLeft :size="20" />
           </button>
+          <div class="md:hidden">
+            <button @click="toggleList" class="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <List v-if="!isShowList" :size="20" />
+              <X v-else :size="20" />
+            </button>
+          </div>
         </div>
       </div>
       <!-- 聊天消息区域 -->
@@ -61,9 +67,6 @@
                   <span class="block text-xs text-gray-500">{{ formatTime(message.createdAt) }}</span>
                 </div>
                 <div class="flex-1">
-                  <!-- <div class="rounded-lg bg-white px-4 py-3 shadow-sm dark:bg-gray-800/50">
-                    <p class="whitespace-pre-wrap text-gray-800 dark:text-gray-200">{{ message.content }}</p>
-                  </div> -->
                   <div
                     class="markdown-body rounded-lg bg-white px-4 py-3 shadow-sm dark:bg-gray-800/30"
                     v-html="message.htmlContent"
@@ -163,12 +166,16 @@
       </div>
     </div>
   </div>
-
   <aside
-    class="dark:border-borderDark border-borderWhite sticky top-0 ml-7 hidden h-[100dvh] w-[15rem] flex-col border-1 transition-all md:flex lg:w-[15rem]"
+    class="dark:border-borderDark border-borderWhite fixed top-0 right-0 z-2 ml-7 h-[100dvh] w-[15rem] flex-col border-1 bg-white md:sticky md:flex lg:w-[15rem] dark:bg-black"
+    :class="{
+      'transition-transform duration-300 ease-in-out': true,
+      'translate-x-0': isShowList || !windowStore.isLaptop,
+      'translate-x-full': !isShowList && windowStore.isLaptop,
+    }"
   >
     <Scrollbar ref="scrollbarRef" maxHeight="100%">
-      <div class="sticky top-0 bg-white px-4 dark:bg-black">
+      <div class="sticky top-0 flex items-center justify-between bg-white pr-2 pl-4 dark:bg-black">
         <button @click="createNewConversation" class="group relative flex items-center space-x-4 py-4">
           <SquarePen :size="24" />
           <p>新建对话</p>
@@ -178,6 +185,12 @@
             <span class="px-1 py-0.5 text-[0.9rem]">发起新对话</span>
           </div>
         </button>
+        <div class="md:hidden">
+          <button @click="toggleList" class="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+            <List v-if="!isShowList" :size="20" />
+            <X v-else :size="20" />
+          </button>
+        </div>
       </div>
       <div class="px-4 py-2"><p>近期对话</p></div>
       <div class="flex w-full flex-col">
@@ -199,30 +212,125 @@
         </div>
 
         <!-- 对话设置菜单 - 单独渲染 -->
-        <Transition name="menu-fade">
-          <div
-            v-if="activeMenuIndex !== null"
-            ref="settingsRef"
-            :style="menuPosition"
-            class="fixed z-50 w-48 rounded-lg border-1 border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-black"
-          >
-            <button
-              @click="() => console.log('重命名')"
-              class="flex w-full items-center px-4 py-2 text-sm text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
-            >
-              重命名
-            </button>
-            <button
-              @click="() => console.log('删除')"
-              class="flex w-full items-center px-4 py-2 text-sm transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
-            >
-              删除
-            </button>
-          </div>
-        </Transition>
+        <template>
+          <Teleport to="body">
+            <Transition name="menu-fade">
+              <div
+                v-if="activeMenuIndex !== null"
+                ref="settingsRef"
+                :style="menuPosition"
+                class="fixed z-3 w-48 rounded-lg border-1 border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-black"
+              >
+                <button
+                  @click="openMenuModal(activeMenuIndex, 'conversationRename')"
+                  class="flex w-full items-center px-4 py-2 text-sm text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+                >
+                  重命名
+                </button>
+                <button
+                  @click="openMenuModal(activeMenuIndex, 'conversationDelete')"
+                  class="flex w-full items-center px-4 py-2 text-sm text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+                >
+                  删除
+                </button>
+              </div>
+            </Transition>
+          </Teleport>
+        </template>
       </div>
     </Scrollbar>
   </aside>
+
+  <!-- 重命名对话模态框 -->
+  <Teleport to="body">
+    <Transition name="modal-fade">
+      <div
+        v-if="showRenameModal"
+        class="fixed inset-0 z-999 flex items-center justify-center bg-black/40 dark:bg-black/60"
+        @click="closeModal"
+      >
+        <div
+          class="border-borderWhite dark:border-borderDark mx-4 w-full max-w-md rounded-2xl border-1 bg-white p-6 shadow-lg dark:bg-black"
+          @click.stop
+        >
+          <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">重命名此对话</h3>
+          <div class="mb-4">
+            <input
+              v-model="renameInputValue"
+              type="text"
+              placeholder="输入新的对话标题"
+              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:text-white dark:focus:border-blue-400"
+              @keyup.enter="handleRenameConversation"
+              @keyup.escape="closeModal"
+            />
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button
+              @click="closeModal"
+              :disabled="isProcessing"
+              class="rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
+            >
+              取消
+            </button>
+            <button
+              @click="handleRenameConversation"
+              :disabled="!renameInputValue.trim() || isProcessing"
+              class="flex items-center space-x-2 rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
+            >
+              <div
+                v-if="isProcessing"
+                class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+              ></div>
+              <span>{{ isProcessing ? '处理中...' : '确认' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- 删除对话模态框 -->
+  <Teleport to="body">
+    <Transition name="modal-fade">
+      <div
+        v-if="showDeleteModal"
+        class="bg-opacity-50 fixed inset-0 z-999 flex items-center justify-center bg-black/40 dark:bg-black/60"
+        @click="closeModal"
+      >
+        <div
+          class="border-borderWhite dark:border-borderDark mx-4 w-full max-w-md rounded-2xl border-1 bg-white p-6 shadow-lg dark:bg-black"
+          @click.stop
+        >
+          <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">删除对话</h3>
+          <p class="mb-6 text-gray-600 dark:text-gray-300">
+            确定要删除对话"{{
+              selectedConversationIndex !== null ? conversationList[selectedConversationIndex]?.title : ''
+            }}"吗？此操作无法撤销。
+          </p>
+          <div class="flex items-center justify-end space-x-2">
+            <button
+              @click="closeModal"
+              :disabled="isProcessing"
+              class="rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white hover:dark:bg-gray-800"
+            >
+              取消
+            </button>
+            <button
+              @click="handleDeleteConversation"
+              :disabled="isProcessing"
+              class="flex items-center space-x-2 rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
+            >
+              <div
+                v-if="isProcessing"
+                class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+              ></div>
+              <span>{{ isProcessing ? '删除中...' : '删除' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -235,7 +343,7 @@ import javascript from 'highlight.js/lib/languages/javascript'
 import json from 'highlight.js/lib/languages/json'
 import typescript from 'highlight.js/lib/languages/typescript'
 import xml from 'highlight.js/lib/languages/xml'
-import { ArrowLeft, ChevronsRight, ChevronsLeft, MoreHorizontal, SquarePen } from 'lucide-vue-next'
+import { ArrowLeft, ChevronsRight, ChevronsLeft, MoreHorizontal, SquarePen, List, X } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
 import { ref, nextTick, onMounted, onActivated, onDeactivated, onBeforeUnmount, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
@@ -245,6 +353,8 @@ import {
   continueConversationStream,
   getConversations,
   getConversationHistory,
+  renameConversation,
+  deleteConversation,
   type Conversation,
   type ChatMessage,
 } from '@/api'
@@ -293,6 +403,7 @@ const isLoadingMessages = ref<boolean>(false)
 const isStreaming = ref<boolean>(false)
 const streamingMessage = ref<string>('')
 const inputMessage = ref('')
+const isShowList = ref<boolean>(false)
 
 const processedMessages = computed((): ProcessedMessage[] => {
   return currentMessages.value.map((message) => {
@@ -312,11 +423,23 @@ const processedMessages = computed((): ProcessedMessage[] => {
 const activeMenuIndex = ref<number | null>(null)
 const menuPosition = ref<{ top: string; left: string }>({ top: '0px', left: '0px' })
 
+// 模态框状态
+const showRenameModal = ref<boolean>(false)
+const showDeleteModal = ref<boolean>(false)
+const selectedConversationIndex = ref<number | null>(null)
+const renameInputValue = ref<string>('')
+const isProcessing = ref<boolean>(false)
+
 const textareaRef = ref<HTMLTextAreaElement>()
 const settingsRef = ref<HTMLElement | null>(null)
 const scrollbarRef = ref<InstanceType<typeof Scrollbar> | null>(null)
 
 const isShowTextarea = ref<boolean>(true)
+
+// 移动端显示/隐藏对话列表
+const toggleList = () => {
+  isShowList.value = !isShowList.value
+}
 
 // 自动滚动相关
 const isNearBottom = ref<boolean>(true)
@@ -443,7 +566,7 @@ const sendMessage = async () => {
       await createNewChatStream(
         { message: userMessage },
         (data) => {
-          // 如果是新对话，保存conversationId并刷新对话列表
+          // 如果是新对话，保存conversationId
           if (data.conversationId && !currentConversationId.value) {
             currentConversationId.value = data.conversationId
             // 更新URL，但不触发reload
@@ -457,8 +580,6 @@ const sendMessage = async () => {
               updatedAt: new Date().toISOString(),
             }
             conversationList.value.unshift(newConversation)
-            // 刷新对话列表确保最新内容
-            refreshConversationList()
           }
 
           const content = data.choices[0].delta.content
@@ -496,7 +617,7 @@ const loadConversationHistory = async (conversationId: string) => {
   try {
     isLoadingMessages.value = true
     const response = await getConversationHistory(conversationId)
-    currentMessages.value = response.message || []
+    currentMessages.value = response.userMessages || []
 
     // 加载完历史消息后，滚动到底部
     await nextTick()
@@ -506,16 +627,6 @@ const loadConversationHistory = async (conversationId: string) => {
     currentMessages.value = []
   } finally {
     isLoadingMessages.value = false
-  }
-}
-
-// 刷新对话列表
-const refreshConversationList = async () => {
-  try {
-    const conversations = await getConversations()
-    conversationList.value = conversations.message.conversationList
-  } catch (error) {
-    console.error('刷新对话列表失败:', error)
   }
 }
 
@@ -562,6 +673,86 @@ const handleScroll = () => {
   }
 }
 
+// 打开重命名或删除模态框
+const openMenuModal = (index: number | null, type: 'conversationRename' | 'conversationDelete') => {
+  if (index === null) return
+  activeMenuIndex.value = null
+  selectedConversationIndex.value = index
+
+  if (type === 'conversationRename') {
+    renameInputValue.value = conversationList.value[index].title
+    showRenameModal.value = true
+  } else if (type === 'conversationDelete') {
+    showDeleteModal.value = true
+  }
+}
+
+// 关闭模态框
+const closeModal = () => {
+  showRenameModal.value = false
+  showDeleteModal.value = false
+  selectedConversationIndex.value = null
+  renameInputValue.value = ''
+  isProcessing.value = false
+}
+
+// 处理重命名对话
+const handleRenameConversation = async () => {
+  if (selectedConversationIndex.value === null || !renameInputValue.value.trim() || isProcessing.value) return
+
+  const conversation = conversationList.value[selectedConversationIndex.value]
+  const newTitle = renameInputValue.value.trim()
+
+  if (newTitle === conversation.title) {
+    closeModal()
+    return
+  }
+
+  try {
+    isProcessing.value = true
+    await renameConversation(conversation._id, newTitle)
+
+    // 更新本地状态
+    conversationList.value[selectedConversationIndex.value].title = newTitle
+
+    message.success('重命名成功')
+    closeModal()
+  } catch (error: any) {
+    console.error('重命名失败:', error)
+    message.error(error.message || '重命名失败')
+  } finally {
+    isProcessing.value = false
+  }
+}
+
+// 处理删除对话
+const handleDeleteConversation = async () => {
+  if (selectedConversationIndex.value === null || isProcessing.value) return
+
+  const conversation = conversationList.value[selectedConversationIndex.value]
+
+  try {
+    isProcessing.value = true
+    await deleteConversation(conversation._id)
+
+    // 更新本地状态
+    conversationList.value.splice(selectedConversationIndex.value, 1)
+
+    // 如果删除的是当前对话，重定向到主页
+    if (currentConversationId.value === conversation._id) {
+      router.push({ name: 'Bot' })
+    }
+
+    message.success('删除成功')
+    closeModal()
+  } catch (error: any) {
+    console.error('删除失败:', error)
+    message.error(error.message || '删除失败')
+  } finally {
+    isProcessing.value = false
+  }
+}
+
 onClickOutside(settingsRef, () => {
   activeMenuIndex.value = null
 })
@@ -569,7 +760,7 @@ onClickOutside(settingsRef, () => {
 onMounted(async () => {
   try {
     const conversations = await getConversations()
-    conversationList.value = conversations.message.conversationList
+    conversationList.value = conversations.conversationList
 
     const conversationId = route.params.id as string
     if (conversationId && conversationList.value.some((conv) => conv._id === conversationId)) {
@@ -617,10 +808,8 @@ onDeactivated(() => {
   }
 })
 
-// 组件卸载时清理事件监听器
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', checkIfNearBottom)
-  // 清理定时器
   if (scrollTimer) {
     clearTimeout(scrollTimer)
     scrollTimer = null
@@ -761,5 +950,36 @@ textarea {
 .dark .markdown-body :deep(th),
 .dark .markdown-body :deep(td) {
   border-color: #444c56;
+}
+
+/* 模态框动画效果 */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: all 0.3s ease-out;
+}
+.modal-fade-enter-from {
+  opacity: 0;
+}
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.modal-fade-enter-to,
+.modal-fade-leave-from {
+  opacity: 1;
+}
+
+.modal-fade-enter-active .mx-4,
+.modal-fade-leave-active .mx-4 {
+  transition: transform 0.3s ease-out;
+}
+.modal-fade-enter-from .mx-4 {
+  transform: scale(0.9) translateY(-20px);
+}
+.modal-fade-leave-to .mx-4 {
+  transform: scale(0.9) translateY(-20px);
+}
+.modal-fade-enter-to .mx-4,
+.modal-fade-leave-from .mx-4 {
+  transform: scale(1) translateY(0);
 }
 </style>

@@ -60,51 +60,53 @@
         <!-- 分割线 -->
         <div class="my-4 border-t border-gray-200 dark:border-gray-700" />
         <!-- 菜单选项 -->
-        <div class="flex flex-col">
-          <div
-            @click="router.push(`/profile/${userStore.user?.username}`)"
-            class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <User2 :size="24" />
-            <span>个人资料</span>
+        <Scrollbar maxHeight="calc(100vh - 200px)" visibility="hidden" propsClass="flex-1">
+          <div class="flex flex-col">
+            <div
+              @click="router.push(`/profile/${userStore.user?.username}`)"
+              class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <User2 :size="24" />
+              <span>个人资料</span>
+            </div>
+            <div class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <MessageCircleMore :size="24" />
+              <span>话题</span>
+            </div>
+            <div
+              @click="router.push(`/profile/${userStore.user?.username}/bookmarks`)"
+              class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Save :size="24" />
+              <span>收藏</span>
+            </div>
+            <div class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800">
+              <List :size="24" />
+              <span>列表</span>
+            </div>
+            <div
+              @click="router.push('/more')"
+              class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Settings :size="24" />
+              <span>设置</span>
+            </div>
+            <div
+              @click="router.push('/bot')"
+              class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <BotIcon :size="24" />
+              <span>人工智能</span>
+            </div>
+            <div
+              @click="userStore.logout"
+              class="flex cursor-pointer gap-2 py-3 pl-6 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <LogOut :size="24" />
+              <span>退出登录</span>
+            </div>
           </div>
-          <div class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800">
-            <MessageCircleMore :size="24" />
-            <span>话题</span>
-          </div>
-          <div
-            @click="router.push(`/profile/${userStore.user?.username}/bookmarks`)"
-            class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <Save :size="24" />
-            <span>收藏</span>
-          </div>
-          <div class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800">
-            <List :size="24" />
-            <span>列表</span>
-          </div>
-          <div
-            @click="router.push('/more')"
-            class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <Settings :size="24" />
-            <span>设置</span>
-          </div>
-          <div
-            @click="router.push('/bot')"
-            class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <BotIcon :size="24" />
-            <span>人工智能</span>
-          </div>
-          <div
-            @click="userStore.logout"
-            class="flex cursor-pointer gap-2 py-3 pl-6 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <LogOut :size="24" />
-            <span>退出登录</span>
-          </div>
-        </div>
+        </Scrollbar>
       </div>
     </div>
     <div class="w-[20%]" @click="$emit('close')"></div>
@@ -117,6 +119,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
+import Scrollbar from '../common/Scrollbar.vue'
 import Avatar from '../post/Avatar.vue'
 
 import { useUserStore } from '@/stores'

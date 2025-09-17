@@ -6,17 +6,17 @@
   >
     <!-- 头像 -->
     <div class="relative">
-      <div class="mx-2 mt-2 h-[3rem] w-[3rem]">
+      <div class="mx-2 mt-2 h-[2.5rem] w-[2.5rem] sm:h-[3rem] sm:w-[3rem]">
         <Avatar
           :src="post.authorInfo.avatarUrl"
           :username="post.authorInfo.username"
-          container-class="h-[3rem] w-[3rem]"
+          container-class="h-full w-full rounded-full"
         />
       </div>
       <!-- parentPost向下的线程 -->
       <div
         v-if="type === 'parent'"
-        class="absolute left-[2rem] h-[calc(100%-3rem)] rounded-2xl border-[1.5px] border-[#a8b1bb] dark:border-[#333639]"
+        class="absolute left-[calc(50%-1.5px)] h-[calc(100%)] rounded-2xl border-[1.5px] border-[#a8b1bb] dark:border-[#333639]"
       ></div>
     </div>
     <!-- 内容 -->

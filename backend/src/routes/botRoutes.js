@@ -1,7 +1,13 @@
 import express from 'express'
 const router = express.Router()
 
-import { chatWithBot, getConversationHistory, getConversations } from '../controller/bot.js'
+import {
+  chatWithBot,
+  getConversationHistory,
+  getConversations,
+  renameConversation,
+  deleteConversation,
+} from '../controller/bot.js'
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
 
@@ -13,7 +19,9 @@ router.post('/chat', protectAuthRoute, asyncHandler(chatWithBot))
 router.post('/chat/:id', protectAuthRoute, asyncHandler(chatWithBot))
 // 获取单个对话历史
 router.get('/chat/:id', protectAuthRoute, asyncHandler(getConversationHistory))
+// 重命名对话标题
+router.put('/chat/:id/rename', protectAuthRoute, asyncHandler(renameConversation))
 // 删除对话
-// router.delete('/chat/:id', protectAuthRoute, asyncHandler(deleteConversation))
+router.delete('/chat/:id', protectAuthRoute, asyncHandler(deleteConversation))
 
 export default router

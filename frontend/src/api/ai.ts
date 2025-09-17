@@ -30,12 +30,14 @@ export interface ChatRequest {
 }
 
 // 获取对话列表
-export const getConversations = (): Promise<{ message: { conversationList: Conversation[] } }> => {
+export const getConversations = (): Promise<{ message: string; conversationList: Conversation[] }> => {
   return axiosInstance.get('/bot/chat')
 }
 
 // 获取单个对话历史
-export const getConversationHistory = (conversationId: string): Promise<{ message: ChatMessage[] }> => {
+export const getConversationHistory = (
+  conversationId: string
+): Promise<{ message: string; userMessages: ChatMessage[] }> => {
   return axiosInstance.get(`/bot/chat/${conversationId}`)
 }
 
@@ -158,10 +160,22 @@ export const chatWithBot = async (message: string, conversationId?: string) => {
 // 删除对话
 export const deleteConversation = async (conversationId: string) => {
   try {
-    const response = await axiosInstance.delete(`/bot/chat/${conversationId}`)
-    return response.data
+    return await axiosInstance.delete(`/bot/chat/${conversationId}`)
   } catch (error) {
     console.error('删除对话失败:', error)
+    throw error
+  }
+}
+
+// 重命名对话
+export const renameConversation = async (
+  conversationId: string,
+  newTitle: string
+): Promise<{ message: string; conversation: Conversation }> => {
+  try {
+    return await axiosInstance.put(`/bot/chat/${conversationId}/rename`, { title: newTitle })
+  } catch (error) {
+    console.error('重命名对话失败:', error)
     throw error
   }
 }

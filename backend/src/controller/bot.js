@@ -11,18 +11,19 @@ export const chatWithBot = async (req, res) => {
   const userId = req.user.id
 
   if (!message || typeof message !== 'string' || message.trim() === '') {
-    return sendResponse(res, 400, { message: '消息内容不能为空' })
+    return sendResponse(res, 400, '消息内容不能为空')
   }
 
   let conversation
   if (conversationId) {
     conversation = await AiConversation.findOne({ _id: conversationId, userId: userId })
     if (!conversation) {
-      return sendResponse(res, 404, { message: '对话未找到' })
+      return sendResponse(res, 404, '对话未找到')
     }
   } else {
     conversation = new AiConversation({
       userId: userId,
+      title: message.substring(0, 20),
       messages: [
         {
           role: 'system',
@@ -147,7 +148,7 @@ export const getConversations = async (req, res) => {
     updatedAt: conv.updatedAt,
   }))
 
-  return sendResponse(res, 200, { conversationList })
+  return sendResponse(res, 200, '获取对话列表成功', { conversationList })
 }
 
 // 获取单个对话历史
@@ -157,10 +158,72 @@ export const getConversationHistory = async (req, res) => {
 
   const conversation = await AiConversation.findOne({ _id: conversationId, userId: userId })
   if (!conversation) {
-    return sendResponse(res, 404, { message: '对话未找到' })
+    return sendResponse(res, 404, '对话未找到')
   }
 
   const userMessages = conversation.messages.filter((msg) => msg.role !== 'system')
 
-  return sendResponse(res, 200, userMessages)
+  return sendResponse(res, 200, '获取对话历史成功', { userMessages })
+}
+
+// 重命名对话
+export const renameConversation = async (req, res) => {
+  const { title } = req.body
+  const conversationId = req.params.id
+  const userId = req.user.id
+
+  // 验证标题不能为空
+  if (!title || typeof title !== 'string' || title.trim() === '') {
+    return sendResponse(res, 400, '标题不能为空')
+  }
+
+  // 验证标题长度
+  if (title.trim().length > 50) {
+    return sendResponse(res, 400, '标题长度不能超过50个字符')
+  }
+
+  try {
+    const conversation = await AiConversation.findOne({ _id: conversationId, userId: userId })
+    if (!conversation) {
+      return sendResponse(res, 404, '对话未找到')
+    }
+
+    // 更新标题
+    conversation.title = title.trim()
+    await conversation.save()
+
+    return sendResponse(res, 200, '标题修改成功', {
+      conversation: {
+        _id: conversation._id,
+        title: conversation.title,
+        updatedAt: conversation.updatedAt,
+      },
+    })
+  } catch (error) {
+    console.error('重命名对话标题失败:', error)
+    return sendResponse(res, 500, '服务器内部错误')
+  }
+}
+
+// 删除对话
+export const deleteConversation = async (req, res) => {
+  const conversationId = req.params.id
+  const userId = req.user.id
+
+  try {
+    const conversation = await AiConversation.findOne({ _id: conversationId, userId: userId })
+    if (!conversation) {
+      return sendResponse(res, 404, '对话未找到')
+    }
+
+    // 删除对话
+    await AiConversation.deleteOne({ _id: conversationId, userId: userId })
+
+    return sendResponse(res, 200, '对话删除成功', {
+      deletedConversationId: conversationId,
+    })
+  } catch (error) {
+    console.error('删除对话失败:', error)
+    return sendResponse(res, 500, '服务器内部错误')
+  }
 }

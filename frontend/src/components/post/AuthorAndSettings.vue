@@ -7,9 +7,9 @@
 
       <span v-if="type !== 'default'" class="text-gray-500">@{{ username }}</span>
 
-      <div v-else class="text-gray-500">
+      <div v-else class="tracking-tighter text-gray-500 sm:tracking-normal">
         <span class="ml-1">@{{ username }}</span>
-        <span class="mx-1">·</span>
+        <span class="sm:mx-1">·</span>
         <span>{{ formatDate(createdAt || '') }}</span>
       </div>
     </div>

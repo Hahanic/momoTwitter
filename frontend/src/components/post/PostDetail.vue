@@ -16,7 +16,7 @@
             :username="currentPost.authorInfo.username"
             :src="currentPost.authorInfo.avatarUrl"
             :alt="currentPost.authorInfo.displayName"
-            container-class="h-12 w-12"
+            container-class="sm:h-[3rem] sm:w-[3rem] h-[2.5rem] w-[2.5rem]"
           />
           <AuthorAndSettings
             :username="currentPost.authorInfo.username"

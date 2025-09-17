@@ -34,7 +34,6 @@ const useUserStore = defineStore(
     // 自主验证并刷新AccessToken
     async function ensureValidToken(): Promise<void> {
       if (!accessToken.value || !user.value) return
-
       let needsRefresh = false
       try {
         const payload = jwtDecode<{ exp?: number }>(accessToken.value)
@@ -42,8 +41,8 @@ const useUserStore = defineStore(
           needsRefresh = true
         } else {
           const now = Math.floor(Date.now() / 1000)
-          if (payload.exp - now < 120) {
-            // 2分钟缓冲期
+          if (payload.exp - now < 300) {
+            // 5分钟缓冲期
             needsRefresh = true
           }
         }

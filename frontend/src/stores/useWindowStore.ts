@@ -100,6 +100,7 @@ const useWindowStore = defineStore('window', () => {
     desktop: 1130,
   })
   const isMobile = breakpoints.smaller('tablet')
+  const isLaptop = breakpoints.smaller('laptop')
   const isLargeScreen = breakpoints.greaterOrEqual('laptop')
 
   // 是否是通过回退移动的路由，如router.back() // 相关的使用在routers/index.ts
@@ -160,6 +161,7 @@ const useWindowStore = defineStore('window', () => {
 
     showNav,
     isMobile,
+    isLaptop,
     isLargeScreen,
   }
 })

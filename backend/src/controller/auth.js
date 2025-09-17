@@ -250,7 +250,7 @@ const createSessionAndTokens = async (user, req, res) => {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: false,
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30天
   })
   return accessToken

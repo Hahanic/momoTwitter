@@ -1,11 +1,14 @@
 <template>
   <div class="flex">
     <!-- 头像 -->
-    <div :class="{ hidden: localStorageKey }" class="mx-2 mt-2 flex h-[3rem] w-[3rem] items-center justify-center">
+    <div
+      :class="{ hidden: localStorageKey }"
+      class="mx-2 mt-2 flex h-[2.5rem] w-[2.5rem] items-center justify-center sm:h-[3rem] sm:w-[3rem]"
+    >
       <Avatar
         :username="userStore.user?.username"
         :src="userStore.user?.avatarUrl || '/cat.svg'"
-        container-class="h-[3rem] w-[3rem]"
+        container-class="sm:h-[3rem] sm:w-[3rem] h-[2.5rem] w-[2.5rem]"
       />
     </div>
 

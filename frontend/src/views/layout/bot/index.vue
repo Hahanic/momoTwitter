@@ -228,7 +228,13 @@
 <script setup lang="ts">
 import { onClickOutside } from '@vueuse/core'
 import DOMPurify from 'dompurify'
-import hljs from 'highlight.js'
+import hljs from 'highlight.js/lib/core'
+import bash from 'highlight.js/lib/languages/bash'
+import css from 'highlight.js/lib/languages/css'
+import javascript from 'highlight.js/lib/languages/javascript'
+import json from 'highlight.js/lib/languages/json'
+import typescript from 'highlight.js/lib/languages/typescript'
+import xml from 'highlight.js/lib/languages/xml'
 import { ArrowLeft, ChevronsRight, ChevronsLeft, MoreHorizontal, SquarePen } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
 import { ref, nextTick, onMounted, onActivated, onDeactivated, onBeforeUnmount, watch, computed } from 'vue'
@@ -247,6 +253,13 @@ import Avatar from '@/components/post/Avatar.vue'
 import { useMessage } from '@/composables/useMessage'
 import { useUserStore, useWindowStore } from '@/stores'
 import { formatTime } from '@/utils'
+
+hljs.registerLanguage('javascript', javascript)
+hljs.registerLanguage('css', css)
+hljs.registerLanguage('xml', xml)
+hljs.registerLanguage('bash', bash)
+hljs.registerLanguage('typescript', typescript)
+hljs.registerLanguage('json', json)
 
 interface ProcessedMessage extends ChatMessage {
   htmlContent?: string

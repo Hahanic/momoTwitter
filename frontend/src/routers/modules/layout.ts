@@ -1,20 +1,15 @@
 import { type RouteRecordRaw } from 'vue-router'
 
-import Home from '@/views/layout/home/index.vue'
-import Layout from '@/views/layout/index.vue'
-import More from '@/views/layout/more/index.vue'
-import Profile from '@/views/layout/profile/index.vue'
-
 const layoutRoutes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    component: Layout,
+    component: () => import('@/views/layout/index.vue'),
     redirect: '/home',
     children: [
       {
         path: '/home',
         name: 'Home',
-        component: Home,
+        component: () => import('@/views/layout/home/index.vue'),
       },
       {
         path: '/home/post/:postId/replies',
@@ -24,7 +19,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
       {
         path: '/profile/:username',
         name: 'Profile',
-        component: Profile,
+        component: () => import('@/views/layout/profile/index.vue'),
         redirect: (to) => {
           return { name: 'ProfilePosts', params: { username: to.params.username } }
         },
@@ -77,7 +72,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
       {
         path: '/more',
         name: 'More',
-        component: More,
+        component: () => import('@/views/layout/more/index.vue'),
         children: [
           {
             path: 'account',

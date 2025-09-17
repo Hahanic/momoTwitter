@@ -15,7 +15,8 @@ import userRoutes from './routes/userRoutes.js'
 
 dotenv.config()
 const app = express()
-const port = process.env.PORT || 3000
+const PORT = 3000
+const HOST = '127.0.0.1'
 
 app.set('trust proxy', true)
 // 中间件
@@ -26,7 +27,7 @@ app.use(express.json())
 // app.use('/uploads', express.static('uploads'))
 
 // 跨域配置 process.env.Test_Server=用于测试的服务器地址，比如在手机上访问
-const allowedOrigins = ['http://localhost:5173', 'http://8.153.160.83', process.env.Test_Server]
+const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:3000', process.env.Test_Server]
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -53,15 +54,13 @@ app.use('/api/bot', botRoutes)
 app.use(notFound)
 app.use(errorHandler)
 
-app.listen(port, () => {
+app.listen(PORT, HOST, () => {
   connectDB()
 
   console.log('\n🚀 服务器启动成功!')
-  console.log(`📡 端口: ${port}`)
   console.log(`🌐 环境: ${process.env.NODE_ENV || 'development'}`)
   console.log('\n📍 可访问地址:')
-  console.log(`   本地访问: http://localhost:${port}`)
-  console.log(`   本地访问: http://127.0.0.1:${port}`)
+  console.log(`Backend server is running on http://${HOST}:${PORT}`)
 
   // 获取本机IP地址
   const networkInterfaces = os.networkInterfaces()
@@ -70,7 +69,7 @@ app.listen(port, () => {
     const interfaces = networkInterfaces[interfaceName]
     interfaces.forEach((interfaceInfo) => {
       if (interfaceInfo.family === 'IPv4' && !interfaceInfo.internal) {
-        console.log(`   局域网访问: http://${interfaceInfo.address}:${port}`)
+        console.log(`   局域网访问: http://${interfaceInfo.address}:${PORT}`)
       }
     })
   })

@@ -242,95 +242,71 @@
   </aside>
 
   <!-- 重命名对话模态框 -->
-  <Teleport to="body">
-    <Transition name="modal-fade">
-      <div
-        v-if="showRenameModal"
-        class="fixed inset-0 z-999 flex items-center justify-center bg-black/40 dark:bg-black/60"
+  <ConfirmDialog :show="showRenameModal" @close="closeModal">
+    <template #title>重命名对话</template>
+    <template #message>
+      <div class="mb-4">
+        <input
+          v-model="renameInputValue"
+          type="text"
+          placeholder="输入新的对话标题"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:text-white dark:focus:border-blue-400"
+        />
+      </div>
+    </template>
+    <template #buttons>
+      <button
         @click="closeModal"
+        :disabled="isProcessing"
+        class="rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
+      >
+        取消
+      </button>
+      <button
+        @click="handleRenameConversation"
+        :disabled="!renameInputValue.trim() || isProcessing"
+        class="flex items-center space-x-2 rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
       >
         <div
-          class="border-borderWhite dark:border-borderDark mx-4 w-full max-w-md rounded-2xl border-1 bg-white p-6 shadow-lg dark:bg-black"
-          @click.stop
-        >
-          <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">重命名此对话</h3>
-          <div class="mb-4">
-            <input
-              v-model="renameInputValue"
-              type="text"
-              placeholder="输入新的对话标题"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:text-white dark:focus:border-blue-400"
-              @keyup.enter="handleRenameConversation"
-              @keyup.escape="closeModal"
-            />
-          </div>
-          <div class="flex justify-end space-x-2">
-            <button
-              @click="closeModal"
-              :disabled="isProcessing"
-              class="rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
-            >
-              取消
-            </button>
-            <button
-              @click="handleRenameConversation"
-              :disabled="!renameInputValue.trim() || isProcessing"
-              class="flex items-center space-x-2 rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
-            >
-              <div
-                v-if="isProcessing"
-                class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-              ></div>
-              <span>{{ isProcessing ? '处理中...' : '确认' }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+          v-if="isProcessing"
+          class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+        ></div>
+        <span>{{ isProcessing ? '处理中...' : '确认' }}</span>
+      </button>
+    </template>
+  </ConfirmDialog>
 
   <!-- 删除对话模态框 -->
-  <Teleport to="body">
-    <Transition name="modal-fade">
-      <div
-        v-if="showDeleteModal"
-        class="bg-opacity-50 fixed inset-0 z-999 flex items-center justify-center bg-black/40 dark:bg-black/60"
+  <ConfirmDialog :show="showDeleteModal" @close="closeModal">
+    <template #title>删除对话</template>
+    <template #message>
+      <p class="mb-6 text-gray-600 dark:text-gray-300">
+        确定要删除对话"{{
+          selectedConversationIndex !== null ? conversationList[selectedConversationIndex]?.title : ''
+        }}"吗？此操作无法撤销。
+      </p>
+    </template>
+    <template #buttons>
+      <button
         @click="closeModal"
+        :disabled="isProcessing"
+        class="rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white hover:dark:bg-gray-800"
+      >
+        取消
+      </button>
+      <button
+        @click="handleDeleteConversation"
+        :disabled="isProcessing"
+        class="flex items-center space-x-2 rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
       >
         <div
-          class="border-borderWhite dark:border-borderDark mx-4 w-full max-w-md rounded-2xl border-1 bg-white p-6 shadow-lg dark:bg-black"
-          @click.stop
-        >
-          <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">删除对话</h3>
-          <p class="mb-6 text-gray-600 dark:text-gray-300">
-            确定要删除对话"{{
-              selectedConversationIndex !== null ? conversationList[selectedConversationIndex]?.title : ''
-            }}"吗？此操作无法撤销。
-          </p>
-          <div class="flex items-center justify-end space-x-2">
-            <button
-              @click="closeModal"
-              :disabled="isProcessing"
-              class="rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white hover:dark:bg-gray-800"
-            >
-              取消
-            </button>
-            <button
-              @click="handleDeleteConversation"
-              :disabled="isProcessing"
-              class="flex items-center space-x-2 rounded-full px-4 py-2 text-gray-800 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white dark:hover:bg-gray-800"
-            >
-              <div
-                v-if="isProcessing"
-                class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-              ></div>
-              <span>{{ isProcessing ? '删除中...' : '删除' }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+          v-if="isProcessing"
+          class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+        ></div>
+        <span>{{ isProcessing ? '删除中...' : '删除' }}</span>
+      </button>
+    </template>
+  </ConfirmDialog>
 </template>
 
 <script setup lang="ts">
@@ -358,6 +334,7 @@ import {
   type Conversation,
   type ChatMessage,
 } from '@/api'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import Avatar from '@/components/post/Avatar.vue'
 import { useMessage } from '@/composables/useMessage'
@@ -950,36 +927,5 @@ textarea {
 .dark .markdown-body :deep(th),
 .dark .markdown-body :deep(td) {
   border-color: #444c56;
-}
-
-/* 模态框动画效果 */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: all 0.3s ease-out;
-}
-.modal-fade-enter-from {
-  opacity: 0;
-}
-.modal-fade-leave-to {
-  opacity: 0;
-}
-.modal-fade-enter-to,
-.modal-fade-leave-from {
-  opacity: 1;
-}
-
-.modal-fade-enter-active .mx-4,
-.modal-fade-leave-active .mx-4 {
-  transition: transform 0.3s ease-out;
-}
-.modal-fade-enter-from .mx-4 {
-  transform: scale(0.9) translateY(-20px);
-}
-.modal-fade-leave-to .mx-4 {
-  transform: scale(0.9) translateY(-20px);
-}
-.modal-fade-enter-to .mx-4,
-.modal-fade-leave-from .mx-4 {
-  transform: scale(1) translateY(0);
 }
 </style>

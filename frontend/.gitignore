@@ -27,3 +27,5 @@ dist-ssr
 public/*.jpg
 public/*.png
 public/*.gif
+
+stats.html

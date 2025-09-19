@@ -16,7 +16,7 @@
     <button ref="emojiButtonRef" type="button" class="hover:cursor-pointer" @click="$emit('emoji', $event)">
       <SmileIcon :size="iconSize" />
     </button>
-    <button type="button" class="hover:cursor-pointer" @click="$emit('bot')">
+    <button type="button" class="hover:cursor-pointer" @click="[$emit('bot'), router.push('/bot')]">
       <LucideBot :size="iconSize" />
     </button>
     <button type="button" class="hover:cursor-pointer" @click="$emit('menu')">
@@ -34,6 +34,7 @@
 <script lang="ts" setup>
 import { Image, LucideBot, MenuIcon, LocationEdit, CalendarClockIcon, SmileIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface Props {
   iconSize?: number
@@ -62,6 +63,8 @@ const emit = defineEmits<{
   'files-selected': [files: File[]]
   'file-rejected': [info: { file: File; reason: string }]
 }>()
+
+const router = useRouter()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 

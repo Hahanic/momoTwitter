@@ -89,3 +89,18 @@ export const recordPostView = (
 }> => {
   return axiosInstance.post(`/posts/${postId}/views`)
 }
+
+// 搜索帖子
+export const searchPosts = (
+  query: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ message: string; posts: Post[]; hasMore: boolean }> => {
+  return axiosInstance.get('/posts/search', {
+    params: {
+      q: query,
+      page,
+      limit,
+    },
+  })
+}

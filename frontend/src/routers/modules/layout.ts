@@ -63,6 +63,16 @@ const layoutRoutes: Array<RouteRecordRaw> = [
             component: () => import('@/views/layout/explore/children/for_you.vue'),
           },
           {
+            path: '/explore/posts',
+            name: 'ExploreSearchPosts',
+            component: () => import('@/views/layout/explore/children/search_posts.vue'),
+          },
+          {
+            path: '/explore/users',
+            name: 'ExploreSearchUsers',
+            component: () => import('@/views/layout/explore/children/search_users.vue'),
+          },
+          {
             path: ':pathMatch(.*)*',
             name: 'ExploreNotFound',
             component: () => import('@/components/status/exploreNotFound.vue'),

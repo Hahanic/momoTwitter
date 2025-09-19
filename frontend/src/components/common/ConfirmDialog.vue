@@ -2,7 +2,7 @@
   <Teleport to="body">
     <Transition name="modal-fade">
       <div
-        v-if="props.show"
+        v-if="show"
         class="bg-opacity-50 fixed inset-0 z-999 flex items-center justify-center bg-black/40 dark:bg-black/60"
         @click.self="$emit('close')"
       >
@@ -22,7 +22,8 @@
   </Teleport>
 </template>
 <script setup lang="ts">
-const props = defineProps<{
+defineEmits(['close'])
+defineProps<{
   show: boolean
 }>()
 </script>

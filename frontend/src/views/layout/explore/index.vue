@@ -4,7 +4,7 @@
       <!-- 搜索及设置 -->
       <div class="flex w-full items-center justify-center pt-2">
         <div class="w-full px-5">
-          <SearchInput />
+          <SearchInput v-model="searchQuery" @search="onSearch" />
         </div>
         <div class="relative">
           <SettingsIcon :size="20" class="mx-4" />
@@ -25,7 +25,11 @@
     </StickyHead>
 
     <div class="w-full">
-      <RouterView />
+      <router-view v-slot="{ Component }">
+        <keep-alive>
+          <component :is="Component" />
+        </keep-alive>
+      </router-view>
     </div>
   </MainContainer>
 
@@ -41,8 +45,9 @@
 
 <script setup lang="ts">
 import { SettingsIcon } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter, useRoute } from 'vue-router'
 
 import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
@@ -50,6 +55,16 @@ import StickyHead from '@/components/layout/StickyHead.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 
 const { t } = useI18n()
+const router = useRouter()
+const route = useRoute()
+const searchQuery = ref<string>((route.query.q as string) || '')
+// 监听路由参数变化，自动同步搜索框内容
+watch(
+  () => route.query.q,
+  (q) => {
+    searchQuery.value = (q as string) || ''
+  }
+)
 
 const tagList = ref([
   { nameKey: 'explore.tags.for_you', path: 'for_you' },
@@ -58,6 +73,12 @@ const tagList = ref([
   { nameKey: 'explore.tags.sports', path: 'sports' },
   { nameKey: 'explore.tags.entertainment', path: 'entertainment' },
 ])
+
+const onSearch = (q: string, type: string) => {
+  if (q.trim()) {
+    router.push({ path: `/explore/${type}`, query: { q } })
+  }
+}
 </script>
 
 <style scoped>

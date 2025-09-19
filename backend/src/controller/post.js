@@ -8,10 +8,6 @@ import { parseCursor, sendResponse, verifyAccessToken } from '../utils/index.js'
 
 // 发送帖子
 export const createPost = async (req, res) => {
-  // ==================> 在这里添加调试代码 <==================
-  // console.log(JSON.stringify(req.body, null, 2))
-  // console.log('----------------------------------------------------')
-  // =============================================================
   const authorId = req.user.id
   const { content, postType, media, parentPostId, quotedPostId, visibility } = req.body
 
@@ -453,4 +449,23 @@ export const deletePost = async (req, res) => {
   }
 
   return sendResponse(res, 200, '删除成功', { deletedCount: toDeleteIds.length })
+}
+
+// 搜索帖子
+export const searchPosts = async (req, res) => {
+  const { q } = req.query
+  const page = parseInt(req.query.page, 10) || 1
+  const limit = Math.min(parseInt(req.query.limit) || 10, 20)
+
+  if (!q || !q.trim()) {
+    return sendResponse(res, 400, '搜索关键词不能为空')
+  }
+
+  try {
+    const { posts, hasMore } = await PostService.searchPosts(q.trim(), page, limit)
+    const decorated = await PostService.decorateWithInteractionsIfNeeded(req, posts)
+    return sendResponse(res, 200, '搜索成功', { posts: decorated, hasMore })
+  } catch (error) {
+    return sendResponse(res, 500, '搜索失败', { error: error.message })
+  }
 }

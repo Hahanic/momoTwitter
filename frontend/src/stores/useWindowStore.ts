@@ -54,11 +54,17 @@ const useWindowStore = defineStore('window', () => {
     } else if (routeName === 'PostDetail') {
       setPostDetailScroll(currentRoute.params.postId as string, currentScrollY)
     } else if (
-      ['ExploreForYou', 'ExploreTrending', 'ExploreNews', 'ExploreSports', 'ExploreEntertainment'].includes(routeName)
+      [
+        'ExploreSearchPosts',
+        'ExploreForYou',
+        'ExploreTrending',
+        'ExploreNews',
+        'ExploreSports',
+        'ExploreEntertainment',
+      ].includes(routeName)
     ) {
       exploreScrollMap.value[routeName] = currentScrollY
     }
-
     // d. 更新 lastScrollTop
     lastScrollTop = currentScrollY
   }

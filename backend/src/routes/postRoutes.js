@@ -13,6 +13,7 @@ import {
   getReplyParentPost,
   getUserCategoryPosts,
   translatePost,
+  searchPosts,
 } from '../controller/post.js'
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
@@ -21,6 +22,8 @@ import { asyncHandler } from '../middleware/errorHandler.js'
 router.get('/', asyncHandler(getPost))
 // 新建帖子和回复
 router.post('/', protectAuthRoute, asyncHandler(createPost))
+// 搜索帖子
+router.get('/search', asyncHandler(searchPosts))
 // 获取单条帖子
 router.get('/:postId', asyncHandler(getOnePost))
 // 删除帖子/回复

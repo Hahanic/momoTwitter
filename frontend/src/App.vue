@@ -57,9 +57,14 @@ watch(
       }
       // 探索页
       else if (
-        ['ExploreForYou', 'ExploreTrending', 'ExploreNews', 'ExploreSports', 'ExploreEntertainment'].includes(
-          route.name as string
-        )
+        [
+          'ExploreSearchPosts',
+          'ExploreForYou',
+          'ExploreTrending',
+          'ExploreNews',
+          'ExploreSports',
+          'ExploreEntertainment',
+        ].includes(route.name as string)
       ) {
         window.scrollTo({
           top: windowStore.exploreScrollMap[route.name as string] || 0,

@@ -124,6 +124,27 @@ export class PostService {
     return result
   }
 
+  // 搜索帖子
+  static async searchPosts(query, page, limit) {
+    const skip = (page - 1) * limit
+
+    // 多查询一条数据，用于判断是否存在下一页
+    const posts = await Post.find({ $text: { $search: query } }, { score: { $meta: 'textScore' } })
+      .sort({ score: { $meta: 'textScore' } })
+      .skip(skip)
+      .limit(limit + 1) // 在指定的 limit基础上多查一条
+      .lean()
+
+    let hasMore = false
+    // 如果返回的记录数大于 limit，说明有下一页
+    if (posts.length > limit) {
+      hasMore = true
+      posts.pop() // 将多查的那条记录从结果中移除
+    }
+
+    return { posts, hasMore }
+  }
+
   // ============ 用户主页分类流 ============
   static async fetchUserPosts(userId, cursorDate, limit) {
     const query = {

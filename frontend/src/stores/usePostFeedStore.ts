@@ -4,111 +4,116 @@ import { ref, computed } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import usePostInteractionStore from './usePostInteractionStore.ts'
 
-import { fetchPosts } from '@/api'
+import { fetchPosts, fetchFollowingPosts } from '@/api'
 import type { Post } from '@/types'
+
+type FeedType = 'forYou' | 'following'
 
 const usePostFeedStore = defineStore('postFeed', () => {
   const postCacheStore = usePostCacheStore()
   const interactionStore = usePostInteractionStore()
 
-  // 主页帖子流状态
-  const postIds = ref<string[]>([]) // 只存储ID，实际数据从cache获取
-  const isLoading = ref(false)
-  const isRefreshing = ref(false)
+  // 当前激活的帖子流类型
+  const activeFeedType = ref<FeedType>('forYou')
 
-  // 分页状态
-  const nextCursor = ref<string | null>(null)
-  const hasMore = ref(false)
+  // 双流数据缓存
+  const feedMap = {
+    forYou: {
+      postIds: ref<string[]>([]),
+      nextCursor: ref<string | null>(null),
+      hasMore: ref(false),
+      isLoading: ref(false),
+      isRefreshing: ref(false),
+    },
+    following: {
+      postIds: ref<string[]>([]),
+      nextCursor: ref<string | null>(null),
+      hasMore: ref(false),
+      isLoading: ref(false),
+      isRefreshing: ref(false),
+    },
+  }
 
-  // 计算属性：实际的帖子列表
+  // 当前tab的帖子列表
   const posts = computed(() => {
-    return postIds.value.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
+    const ids = feedMap[activeFeedType.value].postIds.value
+    return ids.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
   })
 
   // 初始加载帖子
   async function loadInitialPosts() {
-    if (isLoading.value) return
-
-    isLoading.value = true
+    const type = activeFeedType.value
+    const feed = feedMap[type]
+    if (feed.isLoading.value) return
+    feed.isLoading.value = true
     try {
-      // 重置数据
-      resetFeed()
-
-      const response = await fetchPosts(null)
-
-      // 将帖子添加到缓存
+      resetFeed(type)
+      let response
+      if (type === 'forYou') {
+        response = await fetchPosts(null)
+      } else {
+        response = await fetchFollowingPosts(null)
+      }
       postCacheStore.addPosts(response.posts)
-
-      // 更新ID列表
-      postIds.value = response.posts.map((post) => post._id)
-
-      // 更新分页信息
-      nextCursor.value = response.nextCursor
-      hasMore.value = response.nextCursor !== null
+      feed.postIds.value = response.posts.map((post) => post._id)
+      feed.nextCursor.value = response.nextCursor
+      feed.hasMore.value = response.nextCursor !== null
     } catch (error) {
-      console.error('初始加载帖子失败:', error)
-      // 出错时重置状态
-      hasMore.value = false
-      throw error
+      feed.hasMore.value = false
+      console.error('加载初始帖子失败:', error)
     } finally {
-      isLoading.value = false
+      feed.isLoading.value = false
     }
   }
 
   // 加载更多帖子
   async function loadMorePosts() {
-    if (isLoading.value || !hasMore.value) {
-      return
-    }
-
-    isLoading.value = true
-
+    const type = activeFeedType.value
+    const feed = feedMap[type]
+    if (feed.isLoading.value || !feed.hasMore.value) return
+    feed.isLoading.value = true
     try {
-      const response = await fetchPosts(nextCursor.value)
-
-      // 将新帖子添加到缓存
+      let response
+      if (type === 'forYou') {
+        response = await fetchPosts(feed.nextCursor.value)
+      } else {
+        response = await fetchFollowingPosts(feed.nextCursor.value)
+      }
       postCacheStore.addPosts(response.posts)
-
-      // 追加新的ID到列表
       const newPostIds = response.posts.map((post) => post._id)
-      postIds.value.push(...newPostIds)
-
-      // 更新分页信息
-      nextCursor.value = response.nextCursor
-      hasMore.value = response.nextCursor !== null
+      feed.postIds.value.push(...newPostIds)
+      feed.nextCursor.value = response.nextCursor
+      feed.hasMore.value = response.nextCursor !== null
     } catch (error) {
       console.error('加载更多帖子失败:', error)
       throw error
     } finally {
-      isLoading.value = false
+      feed.isLoading.value = false
     }
   }
 
   // 刷新帖子流
   async function refreshPosts() {
-    if (isRefreshing.value) return
-
-    isRefreshing.value = true
-
+    const type = activeFeedType.value
+    const feed = feedMap[type]
+    if (feed.isRefreshing.value) return
+    feed.isRefreshing.value = true
     try {
-      const response = await fetchPosts(null)
-
-      // 将帖子添加到缓存
+      let response
+      if (type === 'forYou') {
+        response = await fetchPosts(null)
+      } else {
+        response = await fetchFollowingPosts(null)
+      }
       postCacheStore.addPosts(response.posts)
-
-      // 重新设置ID列表
-      postIds.value = response.posts.map((post) => post._id)
-
-      // 重置分页信息
-      nextCursor.value = response.nextCursor
-      hasMore.value = response.nextCursor !== null
-
-      console.log('刷新帖子:', posts.value.length)
+      feed.postIds.value = response.posts.map((post) => post._id)
+      feed.nextCursor.value = response.nextCursor
+      feed.hasMore.value = response.nextCursor !== null
     } catch (error) {
-      console.error('刷新帖子失败:', error)
+      console.error('刷新帖子流失败:', error)
       throw error
     } finally {
-      isRefreshing.value = false
+      feed.isRefreshing.value = false
     }
   }
 
@@ -119,7 +124,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
 
       // 如果是标准帖子，添加到流的顶部
       if (newPost.postType === 'standard') {
-        postIds.value.unshift(newPost._id)
+        feedMap.forYou.postIds.value.unshift(newPost._id)
       }
 
       return newPost
@@ -130,23 +135,37 @@ const usePostFeedStore = defineStore('postFeed', () => {
   }
 
   // 重置帖子流
-  function resetFeed() {
-    postIds.value = []
-    nextCursor.value = null
-    hasMore.value = false
-    isLoading.value = false
-    isRefreshing.value = false
+  function resetFeed(type: FeedType = activeFeedType.value) {
+    const feed = feedMap[type]
+    feed.postIds.value = []
+    feed.nextCursor.value = null
+    feed.hasMore.value = false
+    feed.isLoading.value = false
+    feed.isRefreshing.value = false
+  }
+
+  // 切换tab
+  function switchFeedType(type: FeedType) {
+    if (activeFeedType.value === type) return
+    activeFeedType.value = type
+    // 如果目标流还没加载过，自动加载
+    if (feedMap[type].postIds.value.length === 0) {
+      loadInitialPosts()
+    }
   }
 
   return {
-    // 状态
-    postIds,
-    posts,
-    isLoading,
-    isRefreshing,
-    hasMore,
+    // tab
+    activeFeedType,
+    switchFeedType,
 
-    // 核心方法
+    // 当前tab帖子流
+    posts,
+    isLoading: computed(() => feedMap[activeFeedType.value].isLoading.value),
+    isRefreshing: computed(() => feedMap[activeFeedType.value].isRefreshing.value),
+    hasMore: computed(() => feedMap[activeFeedType.value].hasMore.value),
+
+    // 操作
     loadInitialPosts,
     loadMorePosts,
     refreshPosts,

@@ -128,24 +128,27 @@ export class PostService {
   static async searchPosts(query, page, limit) {
     const skip = (page - 1) * limit
 
-    // 多查询一条数据，用于判断是否存在下一页
-    const posts = await Post.find({ $text: { $search: query } }, { score: { $meta: 'textScore' } })
-      .sort({ score: { $meta: 'textScore' } })
+    const escapedQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+
+    // 使用 $regex 在 content 字段中进行不区分大小写的模糊匹配
+    const posts = await Post.find({
+      content: { $regex: escapedQuery, $options: 'i' },
+    })
+      .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit + 1) // 在指定的 limit基础上多查一条
+      .limit(limit + 1) // 多获取一条数据来判断是否还有下一页
       .lean()
 
     let hasMore = false
-    // 如果返回的记录数大于 limit，说明有下一页
     if (posts.length > limit) {
       hasMore = true
-      posts.pop() // 将多查的那条记录从结果中移除
+      posts.pop()
     }
 
     return { posts, hasMore }
   }
 
-  // ============ 用户主页分类流 ============
+  // 用户主页分类流
   static async fetchUserPosts(userId, cursorDate, limit) {
     const query = {
       authorId: userId,

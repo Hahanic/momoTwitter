@@ -9,10 +9,11 @@ import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import MessageProvider from './components/common/MessageProvider.vue'
-import { useWindowStore, useUserStore, useThemeStore } from './stores'
+import { useWindowStore, useUserStore, useThemeStore, usePostFeedStore } from './stores'
 
 const windowStore = useWindowStore()
 const userStore = useUserStore()
+const postFeedStore = usePostFeedStore()
 const route = useRoute()
 
 // 初始化主题store
@@ -44,7 +45,7 @@ watch(
       // 主页帖子流
       if (routePath === '/home') {
         window.scrollTo({
-          top: windowStore.homeScrollTop,
+          top: windowStore.homeScrollTop[postFeedStore.activeFeedType] || 0,
           behavior: 'auto',
         })
       }

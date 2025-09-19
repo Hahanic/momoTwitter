@@ -1,6 +1,7 @@
 import Bookmark from '../db/model/Bookmark.js'
 import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
+import Relationship from '../db/model/Relationship.js'
 import User from '../db/model/User.js'
 import { translateText } from '../services/aiService.js'
 import { PostService } from '../services/postService.js'
@@ -468,4 +469,36 @@ export const searchPosts = async (req, res) => {
   } catch (error) {
     return sendResponse(res, 500, '搜索失败', { error: error.message })
   }
+}
+
+// 获取用户关注的用户的帖子
+export const getFollowingPosts = async (req, res) => {
+  const currentUserId = req.user.id
+  const limit = Math.min(parseInt(req.query.limit) || 10, 20)
+  const cursor = parseCursor(req.query.cursor)
+
+  // 查找当前用户关注的所有用户ID
+  const followList = await Relationship.find({ followerId: currentUserId }).lean()
+  const followingIds = followList.map((item) => item.followingId).filter(Boolean)
+  if (!followingIds.length) {
+    return sendResponse(res, 200, '没有关注任何用户', { posts: [], nextCursor: null })
+  }
+
+  const query = {
+    authorId: { $in: followingIds },
+    postType: { $in: ['standard', 'quote'] },
+    visibility: 'public',
+  }
+  if (cursor) query.createdAt = { $lt: cursor }
+
+  const posts = await Post.find(query).sort({ createdAt: -1 }).limit(limit).lean()
+  const nextCursor = posts.length < limit ? null : posts[posts.length - 1].createdAt.toISOString()
+
+  let results = posts
+  // 添加交互信息
+  const postIds = posts.map((p) => p._id)
+  const interactions = await PostService.getUserInteractions(currentUserId, postIds)
+  results = PostService.addUserInteractions(posts, interactions)
+
+  sendResponse(res, 200, '获取关注用户的帖子成功', { posts: results, nextCursor })
 }

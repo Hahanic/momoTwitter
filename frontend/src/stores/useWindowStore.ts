@@ -3,7 +3,11 @@ import { defineStore } from 'pinia'
 import { readonly, ref } from 'vue'
 import type { RouteLocationNormalized } from 'vue-router'
 
+import usePostfeedStore from './usePostFeedStore.ts'
+
 const useWindowStore = defineStore('window', () => {
+  const postFeedStore = usePostfeedStore()
+
   const scrollY = ref(0)
   // 滚动差值
   const scrollDelta = ref(0)
@@ -12,7 +16,7 @@ const useWindowStore = defineStore('window', () => {
   // 防止重复添加监听器
   let isScrollListenerInitialized = false
 
-  const homeScrollTop = ref<number>(0)
+  const homeScrollTop = ref<Record<string, number>>({}) // key 为 feed 类型 'forYou' | 'following'
   const userProfileScrollTop = ref<number>(0)
   const postDetailScrollMap = ref<Record<string, number>>({})
   const exploreScrollMap = ref<Record<string, number>>({})
@@ -48,7 +52,7 @@ const useWindowStore = defineStore('window', () => {
 
     // c. 更新当前页面的滚动位置记忆
     if (routePath === '/home') {
-      homeScrollTop.value = currentScrollY
+      homeScrollTop.value[postFeedStore.activeFeedType] = currentScrollY
     } else if (['ProfilePosts', 'ProfileReplies', 'ProfileLikes', 'ProfileBookmarks'].includes(routeName)) {
       userProfileScrollTop.value = currentScrollY
     } else if (routeName === 'PostDetail') {

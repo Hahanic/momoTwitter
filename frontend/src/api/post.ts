@@ -23,9 +23,22 @@ export const fetchPostById = (postId: string): Promise<Post> => {
   return axiosInstance.get(`/posts/${postId}`)
 }
 
-// 主页加载帖子
+// 主页加载推荐帖子
 export const fetchPosts = (cursor: string | null = null, limit: number = 20): Promise<PaginatedPostsResponse> => {
   return axiosInstance.get('/posts', {
+    params: {
+      cursor,
+      limit,
+    },
+  })
+}
+
+// 主页加载关注帖子
+export const fetchFollowingPosts = (
+  cursor: string | null = null,
+  limit: number = 20
+): Promise<PaginatedPostsResponse> => {
+  return axiosInstance.get('/posts/following', {
     params: {
       cursor,
       limit,

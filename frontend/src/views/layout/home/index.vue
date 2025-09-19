@@ -29,24 +29,29 @@
       <div class="flex h-full w-full">
         <div
           class="transition-color flex h-full w-[50%] cursor-pointer items-center justify-center hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/90"
+          :class="{ 'active-tab text-gray-900 dark:text-gray-100': postFeedStore.activeFeedType === 'forYou' }"
+          @click="switchFeed('forYou')"
           @dblclick="refreshPosts"
         >
-          {{ t('home.forYou') }}
+          <span class="tab-text-wrapper">{{ t('home.forYou') }}</span>
         </div>
         <div
           class="transition-color flex h-full w-[50%] cursor-pointer items-center justify-center hover:bg-[#e7e7e8]/70 dark:hover:bg-[#181818]/80"
+          :class="{ 'active-tab text-gray-900 dark:text-gray-100': postFeedStore.activeFeedType === 'following' }"
+          @click="switchFeed('following')"
+          @dblclick="refreshPosts"
         >
-          {{ t('home.following') }}
+          <span class="tab-text-wrapper">{{ t('home.following') }}</span>
         </div>
       </div>
     </div>
     <div class="w-full">
       <PostCreate v-if="!windowStore.isMobile" />
       <!-- posts -->
-      <Posts v-for="post in feedStore.posts" :post="post" :type="'post'" :key="post._id" />
+      <Posts v-for="post in postFeedStore.posts" :post="post" :type="'post'" :key="post._id" />
       <div ref="observerEl" class="my-20 flex w-full items-center justify-center">
-        <LoaderIcon v-if="feedStore.isLoading" :class="{ 'animate-spin': feedStore.isLoading }" :size="26" />
-        <div v-else-if="!canLoadMore && feedStore.posts.length > 0" class="text-sm text-gray-500">
+        <LoaderIcon v-if="postFeedStore.isLoading" :class="{ 'animate-spin': postFeedStore.isLoading }" :size="26" />
+        <div v-else-if="!canLoadMore && postFeedStore.posts.length > 0" class="text-sm text-gray-500">
           {{ t('home.noMoreContent') }}
         </div>
       </div>
@@ -85,7 +90,7 @@
 
 <script setup lang="ts">
 import { LoaderIcon } from 'lucide-vue-next'
-import { ref, computed, onActivated, watchEffect } from 'vue'
+import { ref, computed, onActivated, watchEffect, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -101,22 +106,14 @@ import { usePostFeedStore, useUserStore, useWindowStore } from '@/stores'
 
 const router = useRouter()
 const route = useRoute()
-const feedStore = usePostFeedStore()
+const postFeedStore = usePostFeedStore()
 const userStore = useUserStore()
 const windowStore = useWindowStore()
 const { t } = useI18n()
 
 const loadMorePosts = async () => {
   try {
-    await feedStore.loadMorePosts()
-  } catch (error: any) {
-    console.log(error.message || error)
-  }
-}
-
-const loadInitialPosts = async () => {
-  try {
-    await feedStore.loadInitialPosts()
+    await postFeedStore.loadMorePosts()
   } catch (error: any) {
     console.log(error.message || error)
   }
@@ -124,10 +121,18 @@ const loadInitialPosts = async () => {
 
 const refreshPosts = async () => {
   try {
-    await feedStore.refreshPosts()
+    await postFeedStore.refreshPosts()
   } catch (error: any) {
     console.log(error.message || error)
   }
+}
+
+const switchFeed = (type: 'forYou' | 'following') => {
+  if (postFeedStore.isRefreshing) return
+  postFeedStore.switchFeedType(type)
+  nextTick(() => {
+    window.scrollTo({ top: windowStore.homeScrollTop[postFeedStore.activeFeedType] || 0, behavior: 'auto' })
+  })
 }
 
 const scrollContainer = ref(null)
@@ -135,8 +140,8 @@ const scrollContainer = ref(null)
 // 使用无限滚动组合式函数
 const { targetEl: observerEl, canLoadMore } = useInfiniteScroll({
   loadMore: loadMorePosts,
-  isLoading: computed(() => feedStore.isLoading),
-  hasMore: computed(() => feedStore.hasMore),
+  isLoading: computed(() => postFeedStore.isLoading),
+  hasMore: computed(() => postFeedStore.hasMore),
   scrollContainerRef: scrollContainer,
   rootMargin: '0px 0px 500px 0px',
   debounceMs: 300,
@@ -196,10 +201,9 @@ onActivated(async () => {
     headerHeight = headerRef.value.offsetHeight
     tabsHeight = tabsRef.value.offsetHeight
   }
-
-  // 首次加载帖子
-  if (feedStore.posts.length === 0) {
-    await loadInitialPosts()
+  // 首次加载当前tab帖子
+  if (postFeedStore.posts.length === 0) {
+    await postFeedStore.loadInitialPosts()
   }
 })
 
@@ -207,3 +211,30 @@ const handleMobileMenuOpen = async () => {
   router.push({ path: route.path, query: { ...route.query, modal: 'mobileMenu' } })
 }
 </script>
+<style scoped>
+.active-tab {
+  font-weight: 600;
+  color: black;
+}
+.dark .active-tab {
+  color: white;
+}
+.tab-text-wrapper {
+  position: relative;
+}
+.tab-text-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: -0.4rem;
+  left: 0;
+  width: 100%;
+  height: 0.2rem;
+  background-color: #1d4ed8;
+  border-radius: 9999px;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+.active-tab .tab-text-wrapper::after {
+  transform: scaleX(1);
+}
+</style>

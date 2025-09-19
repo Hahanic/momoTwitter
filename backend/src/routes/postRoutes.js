@@ -14,12 +14,15 @@ import {
   getUserCategoryPosts,
   translatePost,
   searchPosts,
+  getFollowingPosts,
 } from '../controller/post.js'
 import { protectAuthRoute } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../middleware/errorHandler.js'
 
 // 主页加载帖子
 router.get('/', asyncHandler(getPost))
+// 加载关注帖子
+router.get('/following', protectAuthRoute, asyncHandler(getFollowingPosts))
 // 新建帖子和回复
 router.post('/', protectAuthRoute, asyncHandler(createPost))
 // 搜索帖子

@@ -45,6 +45,7 @@ export interface PostStats {
 
 // 主页加载帖子
 export interface PaginatedPostsResponse {
+  message: string
   posts: Post[]
   nextCursor: string | null
 }

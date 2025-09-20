@@ -1,10 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-import usePostCacheStore from './usePostCacheStore.ts'
-import usePostInteractionStore from './usePostInteractionStore.ts'
-
 import { fetchPosts, fetchFollowingPosts } from '@/api'
+import { useUserStore, usePostCacheStore, usePostInteractionStore } from '@/stores'
 import type { Post } from '@/types'
 
 type FeedType = 'forYou' | 'following'
@@ -12,6 +10,7 @@ type FeedType = 'forYou' | 'following'
 const usePostFeedStore = defineStore('postFeed', () => {
   const postCacheStore = usePostCacheStore()
   const interactionStore = usePostInteractionStore()
+  const usersStore = useUserStore()
 
   // 当前激活的帖子流类型
   const activeFeedType = ref<FeedType>('forYou')
@@ -61,6 +60,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
     } catch (error) {
       feed.hasMore.value = false
       console.error('加载初始帖子失败:', error)
+      throw error
     } finally {
       feed.isLoading.value = false
     }
@@ -109,9 +109,8 @@ const usePostFeedStore = defineStore('postFeed', () => {
       feed.postIds.value = response.posts.map((post) => post._id)
       feed.nextCursor.value = response.nextCursor
       feed.hasMore.value = response.nextCursor !== null
-    } catch (error) {
-      console.error('刷新帖子流失败:', error)
-      throw error
+    } catch (error: any) {
+      throw error.message ? new Error(` ${error.message}`) : new Error('刷新帖子失败')
     } finally {
       feed.isRefreshing.value = false
     }
@@ -146,11 +145,18 @@ const usePostFeedStore = defineStore('postFeed', () => {
 
   // 切换tab
   function switchFeedType(type: FeedType) {
-    if (activeFeedType.value === type) return
-    activeFeedType.value = type
-    // 如果目标流还没加载过，自动加载
-    if (feedMap[type].postIds.value.length === 0) {
-      loadInitialPosts()
+    try {
+      if (type === 'following' && !usersStore.isAuthenticated) {
+        throw new Error('请先登录')
+      }
+      if (activeFeedType.value === type) return
+      activeFeedType.value = type
+      // 如果目标流还没加载过，自动加载
+      if (feedMap[type].postIds.value.length === 0) {
+        loadInitialPosts()
+      }
+    } catch (error: any) {
+      throw error.message ? new Error(` ${error.message}`) : new Error('切换帖子流失败')
     }
   }
 

@@ -14,7 +14,7 @@ import {
   unfollowUserAPI,
 } from '@/api/index.ts'
 import { useUserPostStore } from '@/stores'
-import { type UserProfile, type LoginPayload, type RegisterPayload } from '@/types'
+import { type UserProfile, type AuthPayload } from '@/types'
 
 const useUserStore = defineStore(
   'user',
@@ -82,7 +82,7 @@ const useUserStore = defineStore(
     }
 
     // 登录方法
-    async function login(params: LoginPayload) {
+    async function login(params: AuthPayload) {
       try {
         isLogining.value = true
         const res = await loginUser(params)
@@ -99,7 +99,7 @@ const useUserStore = defineStore(
       }
     }
     // 注册方法
-    async function register(params: RegisterPayload) {
+    async function register(params: AuthPayload) {
       try {
         isRegistering.value = true
         const res = await registerUser(params)

@@ -102,6 +102,7 @@ import PostCreate from '@/components/post/PostCreate.vue'
 import Posts from '@/components/post/PostItem.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
+import { useMessage } from '@/composables/useMessage'
 import { usePostFeedStore, useUserStore, useWindowStore } from '@/stores'
 
 const router = useRouter()
@@ -109,6 +110,7 @@ const route = useRoute()
 const postFeedStore = usePostFeedStore()
 const userStore = useUserStore()
 const windowStore = useWindowStore()
+const message = useMessage()
 const { t } = useI18n()
 
 const loadMorePosts = async () => {
@@ -129,7 +131,12 @@ const refreshPosts = async () => {
 
 const switchFeed = (type: 'forYou' | 'following') => {
   if (postFeedStore.isRefreshing) return
-  postFeedStore.switchFeedType(type)
+  try {
+    postFeedStore.switchFeedType(type)
+  } catch (error: any) {
+    console.log(error.message || error)
+    message.error(error.message || '加载更多帖子失败，请稍后再试')
+  }
   nextTick(() => {
     window.scrollTo({ top: windowStore.homeScrollTop[postFeedStore.activeFeedType] || 0, behavior: 'auto' })
   })

@@ -6,12 +6,16 @@
         :key="index"
         class="flex h-[3.2rem] w-full items-center justify-center text-amber-950 transition-all dark:text-white"
       >
-        <RouterLink v-if="item.href" :to="item.href" class="flex h-full w-[3.2rem] cursor-pointer xl:w-full">
+        <button
+          v-if="item.href"
+          @click="handleLinkClick(item.href)"
+          class="flex h-full w-[3.2rem] cursor-pointer xl:w-full"
+        >
           <div class="relative flex h-[3.2rem] items-center justify-center rounded-full sm:w-[3.2rem]">
             <component :is="item.icon" :size="'1.7rem'" :class="[{ 'active-icon': activeIndex === index }]" />
             <span class="absolute left-[3.4rem] hidden text-nowrap xl:block">{{ item.label }}</span>
           </div>
-        </RouterLink>
+        </button>
 
         <button v-else @click="handleAction(item.action)" class="flex h-full w-[3.2rem] cursor-pointer xl:w-full">
           <div class="relative flex h-[3.2rem] items-center justify-center rounded-full sm:w-[3.2rem]">
@@ -30,7 +34,10 @@
 
 <script setup lang="ts">
 import { type Component, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+
+import { useMessage } from '@/composables/useMessage'
+import { useUserStore } from '@/stores'
 
 interface NavItem {
   icon: Component
@@ -54,6 +61,22 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const message = useMessage()
+
+// 处理导航链接点击
+const handleLinkClick = (href: string) => {
+  const protectedRoutes = ['/notifications', '/messages', '/bot', '/groups', '/profile', '/compose']
+  const isProtectedRoute = protectedRoutes.some((route) => href.startsWith(route))
+
+  if (isProtectedRoute && !userStore.isAuthenticated) {
+    message.info('请先登录以访问此内容')
+    return
+  }
+
+  router.push(href)
+}
 
 // 处理特殊动作
 const handleAction = (actionType?: string) => {

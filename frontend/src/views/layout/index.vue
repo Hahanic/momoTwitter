@@ -195,7 +195,7 @@ const menuLists = computed(() => {
     { icon: Mail, label: t('sidebar.messages'), href: '/messages' },
     { icon: BotIcon, label: t('sidebar.bot'), href: '/bot' },
     { icon: Users2, label: t('sidebar.groups'), href: '/groups' },
-    { icon: User2, label: t('sidebar.profile'), href: username ? `/profile/${username}` : '/' },
+    { icon: User2, label: t('sidebar.profile'), href: `/profile/${username}` },
     { icon: CircleEllipsis, label: t('sidebar.more'), href: '/more' },
     { icon: Send, label: t('sidebar.post'), href: null, action: 'compose' },
   ]

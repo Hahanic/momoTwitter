@@ -1,6 +1,6 @@
 import axiosInstance from './axiosInstance'
 
-import type { CaptchaResponse, LoginPayload, RegisterPayload, UserProfile } from '@/types'
+import type { CaptchaResponse, AuthPayload, UserProfile } from '@/types'
 
 // 登录验证码
 export const fetchCaptcha = (): Promise<CaptchaResponse> => {
@@ -9,14 +9,14 @@ export const fetchCaptcha = (): Promise<CaptchaResponse> => {
 
 // 用户注册
 export const registerUser = (
-  userRegisterData: RegisterPayload
+  userRegisterData: AuthPayload
 ): Promise<{ message: string; accessToken: string; user: UserProfile }> => {
   return axiosInstance.post('/auth/register', userRegisterData)
 }
 
 // 用户登录
 export const loginUser = (
-  userLoginData: LoginPayload
+  userLoginData: AuthPayload
 ): Promise<{ message: string; accessToken: string; user: UserProfile }> => {
   return axiosInstance.post('/auth/login', userLoginData)
 }

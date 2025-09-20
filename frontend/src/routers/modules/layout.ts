@@ -50,6 +50,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         path: '/bot/:id?',
         name: 'Bot',
         component: () => import('@/views/layout/bot/index.vue'),
+        meta: { requiresAuth: true },
       },
       {
         path: '/explore',

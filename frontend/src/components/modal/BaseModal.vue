@@ -35,6 +35,8 @@ const modalContentMap = {
   profile: defineAsyncComponent(() => import('./form/ProfileModal.vue')),
   mobileMenu: defineAsyncComponent(() => import('./MobileMenuModal.vue')),
   ImagePreview: defineAsyncComponent(() => import('./ImagePreviewModal.vue')),
+  login: defineAsyncComponent(() => import('./form/AuthFormModal.vue')),
+  register: defineAsyncComponent(() => import('./form/AuthFormModal.vue')),
 }
 // 存储组件实例
 const currentComponent = shallowRef<Component | null>(null)

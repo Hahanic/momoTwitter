@@ -36,7 +36,6 @@
 import { type Component, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { useMessage } from '@/composables/useMessage'
 import { useUserStore } from '@/stores'
 
 interface NavItem {
@@ -55,7 +54,6 @@ const props = withDefaults(defineProps<NavProps>(), {
   initialActiveIndex: -1,
 })
 
-// 定义 emit 事件
 const emit = defineEmits<{
   action: [actionType: string]
 }>()
@@ -63,15 +61,13 @@ const emit = defineEmits<{
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
-const message = useMessage()
 
-// 处理导航链接点击
 const handleLinkClick = (href: string) => {
   const protectedRoutes = ['/notifications', '/messages', '/bot', '/groups', '/profile', '/compose']
   const isProtectedRoute = protectedRoutes.some((route) => href.startsWith(route))
 
   if (isProtectedRoute && !userStore.isAuthenticated) {
-    message.info('请先登录以访问此内容')
+    router.push({ path: route.path, query: { ...route.query, modal: 'login' } })
     return
   }
 

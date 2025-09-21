@@ -4,7 +4,7 @@
       <p class="mb-2 font-semibold">{{ t('more.ability.display.background.title') }}</p>
       <div class="flex items-center justify-around gap-2">
         <button
-          @click="setTheme('dark')"
+          @click="themeStore.toggleTheme"
           :class="[
             'flex-1 rounded-md bg-black p-2 text-white hover:bg-gray-900',
             themeStore.currentTheme === 'dark' ? 'ring-2 ring-blue-500' : '',
@@ -13,7 +13,7 @@
           {{ t('more.ability.display.background.dark') }}
         </button>
         <button
-          @click="setTheme('light')"
+          @click="themeStore.toggleTheme"
           :class="[
             'flex-1 rounded-md bg-white p-2 text-black',
             themeStore.currentTheme === 'light' ? 'ring-2 ring-blue-500' : '',
@@ -22,10 +22,9 @@
           {{ t('more.ability.display.background.light') }}
         </button>
         <button
-          @click="setTheme('dim')"
           :class="[
             'flex-1 rounded-md bg-gray-800 p-2 text-white hover:bg-gray-700',
-            themeStore.currentTheme === 'dim' ? 'ring-2 ring-blue-500' : '',
+            !themeStore.currentTheme ? 'ring-2 ring-blue-500' : '',
           ]"
         >
           {{ t('more.ability.display.background.dim') }}
@@ -42,8 +41,4 @@ import { useThemeStore } from '@/stores'
 
 const { t } = useI18n()
 const themeStore = useThemeStore()
-
-const setTheme = (themeName: 'light' | 'dim' | 'dark') => {
-  themeStore.toggleTheme(themeName)
-}
 </script>

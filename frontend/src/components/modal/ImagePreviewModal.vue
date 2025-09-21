@@ -43,7 +43,7 @@
     </div>
     <div v-show="showPostDetail" class="hidden h-full w-[20rem] bg-white/80 sm:block xl:w-[25rem] dark:bg-black/90">
       <Scrollbar>
-        <PostDetail v-if="postId" :key="postId" :postId="postId" />
+        <PostDetail v-if="postId" :key="postId" :postId="postId" :isHiddenImages="true" />
       </Scrollbar>
     </div>
   </div>

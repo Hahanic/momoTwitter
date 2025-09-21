@@ -57,13 +57,13 @@
               </button>
               <div v-else class="w-full">
                 <button
-                  @click="router.push({ path: '/login' })"
+                  @click="router.push({ path: route.path, query: { ...route.query, modal: 'login' } })"
                   class="w-full rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
                 >
                   <span>{{ t('sidebar.authActions.loginExistingAccount') }}</span>
                 </button>
                 <button
-                  @click="router.push({ path: '/register' })"
+                  @click="router.push({ path: route.path, query: { ...route.query, modal: 'register' } })"
                   class="w-full rounded-md p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
                 >
                   <span>{{ t('sidebar.authActions.registerNewAccount') }}</span>
@@ -206,8 +206,7 @@ const scrollToTop = () => {
 }
 
 // 控制账户菜单显示
-const toggleAccountMenu = (event: Event) => {
-  event.stopImmediatePropagation()
+const toggleAccountMenu = () => {
   showAccountMenu.value = !showAccountMenu.value
 }
 

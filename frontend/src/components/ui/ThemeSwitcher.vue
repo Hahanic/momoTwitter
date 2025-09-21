@@ -1,5 +1,6 @@
 <template>
   <div
+    @click="themeStore.toggleTheme"
     :style="{ width: `${size}px`, height: `${size}px` }"
     class="flex cursor-pointer items-center justify-center transition hover:scale-110"
   >

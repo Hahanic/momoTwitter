@@ -1,7 +1,7 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
+  <div class="flex h-full w-full items-center justify-center">
     <div
-      class="dark:border-borderDark border-borderWhite relative min-h-[500px] w-[400px] rounded-xl border-1 bg-white p-7 shadow-lg dark:bg-black"
+      class="dark:border-borderDark border-borderWhite relative rounded-xl bg-white p-7 shadow-lg dark:border-1 dark:bg-black"
     >
       <h1 class="text-center text-2xl font-bold text-gray-800 dark:text-gray-100">{{ title }}</h1>
 
@@ -70,7 +70,7 @@
             />
             <button
               type="button"
-              class="h-10 flex-shrink-0 rounded-md text-sm transition-colors hover:cursor-pointer hover:text-blue-300 dark:text-gray-200"
+              class="h-10 w-[70px] flex-shrink-0 rounded-md text-sm transition-colors hover:cursor-pointer hover:text-blue-300 dark:text-gray-200"
               @click="getCodeThrottle"
             >
               <span v-if="!generatedCode">获取验证码</span>

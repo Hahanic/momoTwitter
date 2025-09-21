@@ -51,7 +51,7 @@
       <Posts v-for="post in postFeedStore.posts" :post="post" :type="'post'" :key="post._id" />
       <div ref="observerEl" class="my-20 flex w-full items-center justify-center">
         <LoaderIcon v-if="postFeedStore.isLoading" :class="{ 'animate-spin': postFeedStore.isLoading }" :size="26" />
-        <div v-else-if="!canLoadMore && postFeedStore.posts.length > 0" class="text-sm text-gray-500">
+        <div v-else-if="!canLoadMore && postFeedStore.posts.length >= 0" class="text-sm text-gray-500">
           {{ t('home.noMoreContent') }}
         </div>
       </div>

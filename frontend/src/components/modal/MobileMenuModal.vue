@@ -1,5 +1,5 @@
 <template>
-  <div class="modal-mobile-menu flex h-full w-full">
+  <div class="modal-mobile-menu flex h-full w-full sm:hidden">
     <div class="h-full w-[80%] flex-1 bg-white py-6 shadow-2xl dark:bg-black">
       <div class="h-full w-full">
         <!-- 头像和账号菜单 -->
@@ -36,13 +36,13 @@
                 </button>
                 <div v-else class="w-full">
                   <button
-                    @click="router.push({ path: '/login' })"
+                    @click="router.push({ path: route.path, query: { ...route.query, modal: 'login' } })"
                     class="w-full rounded-t-2xl p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
                   >
                     <span>{{ t('sidebar.authActions.loginExistingAccount') }}</span>
                   </button>
                   <button
-                    @click="router.push({ path: '/register' })"
+                    @click="router.push({ path: route.path, query: { ...route.query, modal: 'register' } })"
                     class="w-full rounded-b-2xl p-3 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
                   >
                     <span>{{ t('sidebar.authActions.registerNewAccount') }}</span>
@@ -117,7 +117,7 @@ import { onClickOutside } from '@vueuse/core'
 import { BotIcon, User2, Settings, MoreHorizontalIcon, LogOut, List, Save, MessageCircleMore } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 import Scrollbar from '../common/Scrollbar.vue'
 import Avatar from '../post/Avatar.vue'
@@ -125,6 +125,7 @@ import Avatar from '../post/Avatar.vue'
 import { useUserStore } from '@/stores'
 
 const { t } = useI18n()
+const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 

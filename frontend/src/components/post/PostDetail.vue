@@ -57,7 +57,7 @@
             </div>
           </div>
           <!-- 图片/视频/媒体 -->
-          <PostImage :post="currentPost" />
+          <PostImage v-if="!isHiddenImages" :post="currentPost" />
           <!-- 日期 -->
           <div class="mx-2 mt-2 w-full text-[0.85rem]">
             <span class="text-gray-500">
@@ -153,7 +153,10 @@ const interactionStore = usePostInteractionStore()
 const windowStore = useWindowStore()
 const message = useMessage()
 
-const props = defineProps<{ postId?: string }>()
+const props = defineProps<{
+  postId?: string
+  isHiddenImages?: boolean
+}>()
 const effectivePostId = computed(() => props.postId ?? (route.params.postId as string | undefined) ?? null)
 const detail = usePostDetail(effectivePostId)
 const { currentPost, replies, isLoadingReplies, hasMoreReplies, parentPosts } = detail
@@ -228,7 +231,7 @@ watch(
   () => effectivePostId.value,
   async (newPostId, _oldPostId) => {
     displayTranslation.value = false
-
+    console.log(route.query)
     // 若 param 未变化（某些情况下触发，比如刷新响应式）则直接返回
     if (newPostId === displayingPostId.value || !newPostId) return
 
@@ -290,7 +293,4 @@ onActivated(() => {
     }
   }
 })
-// onMounted(() => {
-//   console.log('onMounted in PostDetail.vue')
-// })
 </script>

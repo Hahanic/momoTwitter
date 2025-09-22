@@ -40,7 +40,14 @@
       <PostImage :post="post" class="mt-3" />
       <!-- 互动按钮 -->
       <div class="mt-2 mr-4 mb-4 text-[#71767b]">
-        <PostAction :post="post" variant="full" @like="handlePostLike" @bookmark="handlePostBookmark" />
+        <PostAction
+          :post="post"
+          variant="full"
+          @like="handlePostLike"
+          @bookmark="handlePostBookmark"
+          @retweet="handlePostRetweet"
+          @quote="handlePostQuote"
+        />
       </div>
     </div>
   </div>
@@ -84,6 +91,19 @@ const handlePostBookmark = async () => {
     message.error(error.message || '收藏失败')
     console.error(error.message || error)
   }
+}
+// 转发
+const handlePostRetweet = async () => {
+  try {
+    await postInteractionStore.handleRetweet(props.post._id)
+  } catch (error: any) {
+    message.error(error.message || '转推失败')
+    console.error(error)
+  }
+}
+// 引用
+const handlePostQuote = async () => {
+  message.info('引用功能正在开发中，敬请期待！')
 }
 
 // 点击帖子进入详情页

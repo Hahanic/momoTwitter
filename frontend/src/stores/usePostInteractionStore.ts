@@ -116,41 +116,51 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
   }
 
   // 转发/取消转发
-  async function toggleRetweet(postId: string) {
-    if (!userStore.isAuthenticated) {
-      throw new Error('用户未登录，无法转发')
-    }
-
+  async function handleRetweet(postId: string) {
     const post = postCacheStore.getPost(postId)
-    if (!post || !post.currentUserInteraction) {
-      throw new Error('帖子不存在')
+    if (!post) throw new Error('帖子不存在')
+    if (!post.currentUserInteraction || !userStore.isAuthenticated) {
+      throw new Error('未登录')
     }
-
-    const originalIsRetweeted = post.currentUserInteraction.isRetweeted
-
-    // 乐观更新
-    postCacheStore.updatePost(postId, {
-      currentUserInteraction: {
-        ...post.currentUserInteraction,
-        isRetweeted: !originalIsRetweeted,
+    const original = {
+      isLiked: post.currentUserInteraction.isLiked,
+      isBookmarked: post.currentUserInteraction.isBookmarked,
+      isRetweeted: post.currentUserInteraction.isRetweeted,
+      retweetsCount: post.stats.retweetsCount,
+    }
+    return withOptimisticUpdate({
+      operationType: 'posting',
+      entityId: postId,
+      apiCall: () =>
+        handleCreatePost({
+          content: '',
+          postType: 'retweet',
+          retweetedPostId: postId,
+        }),
+      optimisticUpdateFn: () => {
+        postCacheStore.updatePost(postId, {
+          stats: {
+            ...post.stats,
+            retweetsCount: original.retweetsCount + (!original.isRetweeted ? 1 : -1),
+          },
+          currentUserInteraction: {
+            isLiked: original.isLiked,
+            isBookmarked: original.isBookmarked,
+            isRetweeted: !original.isRetweeted,
+          },
+        })
+      },
+      rollbackFn: () => {
+        postCacheStore.updatePost(postId, {
+          stats: { ...post.stats, retweetsCount: original.retweetsCount },
+          currentUserInteraction: {
+            isLiked: original.isLiked,
+            isBookmarked: original.isBookmarked,
+            isRetweeted: original.isRetweeted,
+          },
+        })
       },
     })
-
-    try {
-      // TODO: 等待后端实现转发API
-      // await apiRetweetPost(postId)
-      console.log('转发功能待实现')
-    } catch (error) {
-      // 失败回滚
-      postCacheStore.updatePost(postId, {
-        currentUserInteraction: {
-          ...post.currentUserInteraction,
-          isRetweeted: originalIsRetweeted,
-        },
-      })
-
-      throw error
-    }
   }
 
   // 回复
@@ -193,7 +203,9 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
       entityId: 'global',
       apiCall: async () => {
         const res = await createPost(payload)
-        postCacheStore.addPost(res.newPost)
+        if (res.newPost) {
+          postCacheStore.addPost(res.newPost)
+        }
         return res.newPost
       },
       optimisticUpdateFn: () => {},
@@ -324,7 +336,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     // 核心交互方法
     toggleLike,
     toggleBookmark,
-    toggleRetweet,
+    handleRetweet,
     handleTranslatePost,
     handleCreateReply,
     handleCreatePost,

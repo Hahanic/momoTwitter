@@ -119,6 +119,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
   // 创建新帖子并添加到流顶部
   async function createAndAddPost(payload: Parameters<typeof interactionStore.handleCreatePost>[0]) {
     try {
+      console.log(payload)
       const newPost = await interactionStore.handleCreatePost(payload)
 
       // 如果是标准帖子，添加到流的顶部

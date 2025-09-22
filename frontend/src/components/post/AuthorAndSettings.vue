@@ -19,29 +19,30 @@
       <button @click="handleSettings" class="flex items-center justify-center">
         <MoreHorizontal :size="iconSize || 20" :class="iconColor ? iconColor : 'text-gray-500'" />
       </button>
-
-      <div
-        ref="settingsRef"
-        v-if="openSettings && type !== 'card'"
-        class="absolute right-0 z-2 rounded-md border-1 border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-black"
-      >
-        <div class="flex flex-col" @click.stop="openSettings = false">
-          <button
-            v-if="username === userStore.user?.username"
-            @click="deletePost(postId || '')"
-            class="rounded-md px-3 py-2 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
-          >
-            <span class="text-nowrap text-red-500">删除帖子</span>
-          </button>
-          <button
-            v-if="username !== userStore.user?.username"
-            @click="() => message.info('以后会减少推荐相似内容')"
-            class="rounded-md px-3 py-2 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
-          >
-            <span class="text-nowrap">不感兴趣</span>
-          </button>
+      <Transition name="menu-fade">
+        <div
+          ref="settingsRef"
+          v-if="openSettings && type !== 'card'"
+          class="absolute right-0 z-2 rounded-md border-1 border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-black"
+        >
+          <div class="flex flex-col" @click.stop="openSettings = false">
+            <button
+              v-if="username === userStore.user?.username"
+              @click="deletePost(postId || '')"
+              class="rounded-md px-3 py-2 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+            >
+              <span class="text-nowrap text-red-500">删除帖子</span>
+            </button>
+            <button
+              v-if="username !== userStore.user?.username"
+              @click="() => message.info('以后会减少推荐相似内容')"
+              class="rounded-md px-3 py-2 text-start text-black transition-[background-color] hover:bg-gray-200 dark:text-white dark:hover:bg-gray-900"
+            >
+              <span class="text-nowrap">不感兴趣</span>
+            </button>
+          </div>
         </div>
-      </div>
+      </Transition>
 
       <ConfirmDialog :show="isConfirmOpen" @close="isConfirmOpen = false">
         <template #title>删除帖子</template>

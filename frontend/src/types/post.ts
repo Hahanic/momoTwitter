@@ -69,5 +69,6 @@ export interface CreatePostPayload {
   }[]
   parentPostId?: string
   quotedPostId?: string
+  retweetedPostId?: string
   visibility?: 'public' | 'circle' | 'private'
 }

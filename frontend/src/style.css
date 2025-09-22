@@ -74,6 +74,22 @@ li {
   transform-origin: bottom;
 }
 
+/* 通用的弹出菜单过渡动画 */
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+  scale: 1;
+  transition: all 0.2s ease-in-out;
+}
+.menu-fade-enter-from,
+.menu-fade-leave-to {
+  scale: 0.9;
+  opacity: 0;
+}
+.menu-fade-enter-to,
+.menu-fade-leave-from {
+  opacity: 1;
+}
+
 @keyframes backdropFadeIn {
   from {
     opacity: 0;

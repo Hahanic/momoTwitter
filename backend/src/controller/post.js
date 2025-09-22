@@ -10,10 +10,9 @@ import { parseCursor, sendResponse, verifyAccessToken } from '../utils/index.js'
 // 发送帖子
 export const createPost = async (req, res) => {
   const authorId = req.user.id
-  const { content, postType, media, parentPostId, quotedPostId, visibility } = req.body
-
+  const { content, postType, media, parentPostId, quotedPostId, retweetedPostId, visibility } = req.body
   // 数据验证
-  if ((!content?.trim() && !media) || !postType) {
+  if (!media && !postType && !content?.trim()) {
     return sendResponse(res, 400, '帖子内容和类型不能为空')
   }
 
@@ -53,6 +52,36 @@ export const createPost = async (req, res) => {
       }
       postData.quotedPostId = quotedPostId
       await PostService.updatePostStats(quotedPostId, { 'stats.quotesCount': 1 })
+      break
+    case 'retweet':
+      if (!retweetedPostId) {
+        return sendResponse(res, 400, '转推必须提供 retweetedPostId')
+      }
+
+      // 验证被转推的帖子是否存在
+      const retweetedPost = await Post.findById(retweetedPostId)
+      if (!retweetedPost) {
+        return sendResponse(res, 404, '被转推的帖子不存在')
+      }
+      // 检查用户是否已经转推过这个帖子
+      const existingRetweet = await Post.findOne({
+        authorId,
+        postType: 'retweet',
+        retweetedPostId,
+      })
+      if (existingRetweet) {
+        // 取消转推：删除转推帖子并减少统计
+        await Post.deleteOne({ _id: existingRetweet._id })
+        await PostService.updatePostStats(retweetedPostId, { 'stats.retweetsCount': -1 })
+        await PostService.updateUserStats(authorId, { 'stats.postsCount': -1 })
+
+        return sendResponse(res, 200, '取消转推成功', {
+          newPost: null,
+        })
+      }
+
+      postData.retweetedPostId = retweetedPostId
+      await PostService.updatePostStats(retweetedPostId, { 'stats.retweetsCount': 1 })
       break
     default:
       return sendResponse(res, 400, `无效的 postType: ${postType}`)

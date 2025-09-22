@@ -91,6 +91,8 @@
               type="detail"
               @like="handleLikeCurrentPost"
               @bookmark="handlePostBookmark"
+              @retweet="handlePostRetweet"
+              @quote="handlePostQuote"
             />
           </div>
         </div>
@@ -190,7 +192,7 @@ const loadMoreReplies = async () => {
   }
 }
 
-// 点赞当前帖子
+// 点赞
 const handleLikeCurrentPost = async () => {
   if (!currentPost.value) return
 
@@ -212,6 +214,21 @@ const handlePostBookmark = async () => {
     console.error(error.message || error)
   }
 }
+// 转发
+const handlePostRetweet = async () => {
+  if (!currentPost.value) return
+
+  try {
+    await interactionStore.handleRetweet(currentPost.value._id)
+  } catch (error: any) {
+    message.error(error.message || '转推失败')
+    console.error(error)
+  }
+}
+// 引用
+const handlePostQuote = () => {
+  message.info('引用功能正在开发中，敬请期待！')
+}
 // 翻译
 const handleTranslate = async () => {
   if (!currentPost.value) return
@@ -231,7 +248,6 @@ watch(
   () => effectivePostId.value,
   async (newPostId, _oldPostId) => {
     displayTranslation.value = false
-    console.log(route.query)
     // 若 param 未变化（某些情况下触发，比如刷新响应式）则直接返回
     if (newPostId === displayingPostId.value || !newPostId) return
 
@@ -288,7 +304,6 @@ watch(
 onActivated(() => {
   if (windowStore.navType === 'forward') {
     if (currentPostRef.value) {
-      console.log('onActivated in PostDetail.vue')
       currentPostRef.value.scrollIntoView({ behavior: 'auto', block: 'start' })
     }
   }

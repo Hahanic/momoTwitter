@@ -127,6 +127,8 @@ export function usePostDetail(postIdRef: Ref<string | null>) {
 
   async function createAndAddPost(payload: Parameters<typeof interactionStore.handleCreateReply>[0]) {
     if (!state.currentPostId) throw new Error('当前帖子不存在')
+    console.log(payload)
+
     const newReply = await interactionStore.handleCreateReply({
       ...payload,
       parentPostId: state.currentPostId,

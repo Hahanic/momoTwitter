@@ -2,6 +2,7 @@ import Bookmark from '../db/model/Bookmark.js'
 import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
 import Relationship from '../db/model/Relationship.js'
+import Retweet from '../db/model/Retweet.js'
 import User from '../db/model/User.js'
 import { translateText } from '../services/aiService.js'
 import { PostService } from '../services/postService.js'
@@ -52,36 +53,6 @@ export const createPost = async (req, res) => {
       }
       postData.quotedPostId = quotedPostId
       await PostService.updatePostStats(quotedPostId, { 'stats.quotesCount': 1 })
-      break
-    case 'retweet':
-      if (!retweetedPostId) {
-        return sendResponse(res, 400, '转推必须提供 retweetedPostId')
-      }
-
-      // 验证被转推的帖子是否存在
-      const retweetedPost = await Post.findById(retweetedPostId)
-      if (!retweetedPost) {
-        return sendResponse(res, 404, '被转推的帖子不存在')
-      }
-      // 检查用户是否已经转推过这个帖子
-      const existingRetweet = await Post.findOne({
-        authorId,
-        postType: 'retweet',
-        retweetedPostId,
-      })
-      if (existingRetweet) {
-        // 取消转推：删除转推帖子并减少统计
-        await Post.deleteOne({ _id: existingRetweet._id })
-        await PostService.updatePostStats(retweetedPostId, { 'stats.retweetsCount': -1 })
-        await PostService.updateUserStats(authorId, { 'stats.postsCount': -1 })
-
-        return sendResponse(res, 200, '取消转推成功', {
-          newPost: null,
-        })
-      }
-
-      postData.retweetedPostId = retweetedPostId
-      await PostService.updatePostStats(retweetedPostId, { 'stats.retweetsCount': 1 })
       break
     default:
       return sendResponse(res, 400, `无效的 postType: ${postType}`)
@@ -152,24 +123,28 @@ export const getPost = async (req, res) => {
   const posts = await Post.find(query).sort({ createdAt: -1 }).limit(limit).lean()
   const nextCursor = posts.length < limit ? null : posts[posts.length - 1].createdAt.toISOString()
 
-  let results = posts
+  // 将帖子包装为时间线项（与 getFollowingPosts 保持一致）
+  const timelineItems = posts.map((post) => ({
+    type: 'post',
+    timestamp: post.createdAt,
+    data: post,
+  }))
 
-  // 如果用户已登录，添加交互信息
-  const accessToken = req.headers.authorization?.split(' ')[1]
-  if (accessToken && posts.length > 0) {
+  // 如果用户已登录，添加交互信息（仅作用于 data 部分）
+  let finalTimeline = timelineItems
+  if (posts.length > 0) {
     try {
-      const currentUserId = verifyAccessToken(accessToken)
-      if (currentUserId) {
-        const postIds = posts.map((p) => p._id)
-        const interactions = await PostService.getUserInteractions(currentUserId, postIds)
-        results = PostService.addUserInteractions(posts, interactions)
-      }
+      const decoratedPosts = await PostService.decorateWithInteractionsIfNeeded(req, posts)
+      finalTimeline = timelineItems.map((item, index) => ({
+        ...item,
+        data: decoratedPosts[index],
+      }))
     } catch (error) {
-      // Token 错误时忽略，返回不带交互信息的帖子
+      // 忽略交互装饰错误，保持原数据
     }
   }
 
-  sendResponse(res, 200, '获取帖子列表成功', { posts: results, nextCursor })
+  sendResponse(res, 200, '获取帖子列表成功', { posts: finalTimeline, nextCursor })
 }
 
 // 获取帖子的回复
@@ -359,8 +334,49 @@ export const bookmarkPost = async (req, res) => {
     })
   }
 }
+// 转推
+export const retweetPost = async (req, res) => {
+  const { postId } = req.params
+  const currentUserId = req.user.id
 
-// 浏览数
+  // 1. 验证帖子是否存在
+  const post = await Post.findById(postId)
+  if (!post) {
+    return sendResponse(res, 404, '帖子不存在')
+  }
+
+  // 2. 检查用户是否已经转推过这个帖子
+  const existingRetweet = await Retweet.findOne({ userId: currentUserId, postId })
+
+  if (existingRetweet) {
+    // 3. 如果已经转推过，则取消转推
+    await Retweet.deleteOne({ _id: existingRetweet._id })
+
+    // 更新原帖的转推数
+    const updatedPost = await PostService.updatePostStats(postId, { 'stats.retweetsCount': -1 })
+    // 更新用户的转推数
+    await PostService.updateUserStats(currentUserId, { 'stats.retweetsCount': -1 })
+
+    sendResponse(res, 200, '取消转推成功', {
+      isRetweeted: false,
+      retweetsCount: updatedPost.stats.retweetsCount,
+    })
+  } else {
+    // 4. 如果没有转推过，则创建新转推
+    const newRetweet = new Retweet({ userId: currentUserId, postId })
+    await newRetweet.save()
+
+    // 更新原帖的转推数
+    const updatedPost = await PostService.updatePostStats(postId, { 'stats.retweetsCount': 1 })
+    // 更新用户的转推数
+    await PostService.updateUserStats(currentUserId, { 'stats.retweetsCount': 1 })
+
+    sendResponse(res, 200, '转推成功', {
+      isRetweeted: true,
+      retweetsCount: updatedPost.stats.retweetsCount,
+    })
+  }
+} // 浏览数
 export const viewPost = async (req, res) => {
   const { postId } = req.params
 
@@ -506,28 +522,94 @@ export const getFollowingPosts = async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 10, 20)
   const cursor = parseCursor(req.query.cursor)
 
-  // 查找当前用户关注的所有用户ID
+  // 1. 查找当前用户关注的所有用户ID
   const followList = await Relationship.find({ followerId: currentUserId }).lean()
   const followingIds = followList.map((item) => item.followingId).filter(Boolean)
-  if (!followingIds.length) {
+
+  // 将用户自己也加入，以便在时间线上看到自己的帖子和转推
+  const timelineUserIds = [...new Set([currentUserId, ...followingIds])]
+
+  // 如果只关注了自己且没有其他人，可以提前返回空
+  if (timelineUserIds.length === 1 && timelineUserIds[0] === currentUserId && followingIds.length === 0) {
+    // 如果用户没有关注任何人，可以根据产品逻辑决定是否显示自己的帖子
+    // 这里我们暂时返回空，因为通常关注流只显示关注者的内容
     return sendResponse(res, 200, '没有关注任何用户', { posts: [], nextCursor: null })
   }
 
-  const query = {
-    authorId: { $in: followingIds },
+  // 2. 为 Post 和 Retweet 分别构建查询条件
+  const postQuery = {
+    authorId: { $in: timelineUserIds },
     postType: { $in: ['standard', 'quote'] },
     visibility: 'public',
   }
-  if (cursor) query.createdAt = { $lt: cursor }
+  if (cursor) {
+    postQuery.createdAt = { $lt: cursor }
+  }
 
-  const posts = await Post.find(query).sort({ createdAt: -1 }).limit(limit).lean()
-  const nextCursor = posts.length < limit ? null : posts[posts.length - 1].createdAt.toISOString()
+  const retweetQuery = {
+    userId: { $in: timelineUserIds },
+  }
+  if (cursor) {
+    retweetQuery.createdAt = { $lt: cursor }
+  }
 
-  let results = posts
-  // 添加交互信息
-  const postIds = posts.map((p) => p._id)
-  const interactions = await PostService.getUserInteractions(currentUserId, postIds)
-  results = PostService.addUserInteractions(posts, interactions)
+  // 3. 并行获取帖子和转推
+  const [postsFromFollowing, retweetsFromFollowing] = await Promise.all([
+    Post.find(postQuery).sort({ createdAt: -1 }).limit(limit).lean(),
+    Retweet.find(retweetQuery)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate({
+        path: 'postId',
+        model: 'Post',
+        // 确保填充被引用帖子的作者信息
+        populate: { path: 'authorInfo' },
+      })
+      .populate({
+        path: 'userId',
+        model: 'User',
+        select: 'username displayName avatarUrl isVerified',
+      })
+      .lean(),
+  ])
 
-  sendResponse(res, 200, '获取关注用户的帖子成功', { posts: results, nextCursor })
+  // 4. 格式化并合并
+  const timelineItems = [
+    ...postsFromFollowing.map((post) => ({
+      type: 'post',
+      timestamp: post.createdAt,
+      data: post,
+    })),
+    ...retweetsFromFollowing
+      .filter((retweet) => retweet.postId) // 过滤掉可能已被删除的原帖
+      .map((retweet) => ({
+        type: 'retweet',
+        timestamp: retweet.createdAt,
+        retweetedBy: retweet.userId,
+        data: retweet.postId, // postId 已经被 populate 填充
+      })),
+  ]
+
+  // 5. 按时间戳排序并分页
+  timelineItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+  const paginatedItems = timelineItems.slice(0, limit)
+
+  // 6. 确定下一个游标
+  const nextCursor =
+    paginatedItems.length < limit ? null : paginatedItems[paginatedItems.length - 1].timestamp.toISOString()
+
+  // 7. 添加交互信息
+  if (paginatedItems.length > 0) {
+    const postsOnly = paginatedItems.map((item) => item.data)
+    const decoratedPosts = await PostService.decorateWithInteractionsIfNeeded(req, postsOnly)
+
+    const finalTimeline = paginatedItems.map((item, index) => ({
+      ...item,
+      data: decoratedPosts[index],
+    }))
+
+    return sendResponse(res, 200, '获取关注用户的帖子成功', { posts: finalTimeline, nextCursor })
+  }
+
+  sendResponse(res, 200, '获取关注用户的帖子成功', { posts: [], nextCursor: null })
 }

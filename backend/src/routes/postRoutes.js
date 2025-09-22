@@ -7,6 +7,7 @@ import {
   deletePost,
   getPostReplies,
   likePost,
+  retweetPost,
   bookmarkPost,
   viewPost,
   getOnePost,
@@ -35,6 +36,8 @@ router.delete('/:postId', protectAuthRoute, asyncHandler(deletePost))
 router.get('/:postId/replies', asyncHandler(getPostReplies))
 // 获取父帖子
 router.get('/:postId/parent', asyncHandler(getReplyParentPost))
+// 转推
+router.post('/:postId/retweets', protectAuthRoute, asyncHandler(retweetPost))
 // 点赞帖子/回复
 router.post('/:postId/likes', protectAuthRoute, asyncHandler(likePost))
 // 收藏帖子

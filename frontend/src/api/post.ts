@@ -85,6 +85,12 @@ export const fetchUserPostsByCategory = (
 export const likePost = (postId: string): Promise<{ message: string; isLiked: boolean; likesCount: number }> => {
   return axiosInstance.post(`/posts/${postId}/likes`)
 }
+// 转推帖子
+export const retweetPost = (
+  postId: string
+): Promise<{ message: string; isRetweeted: boolean; retweetsCount: number }> => {
+  return axiosInstance.post(`/posts/${postId}/retweets`)
+}
 
 // 收藏帖子
 export const bookmarkPost = (

@@ -12,7 +12,6 @@ export interface Post {
   visibility: 'public' | 'circle' | 'private'
   parentPostId?: string
   quotedPostId?: string
-  retweetedPostId?: string
   mentions?: string[]
   hashtags?: string[]
   createdAt: string
@@ -42,11 +41,28 @@ export interface PostStats {
   retweetsCount: number
   quotesCount: number
 }
+// 时间线中的用户精简信息（转推者）
+export interface MinimalUser {
+  _id: string
+  username: string
+  displayName: string
+  avatarUrl: string
+  isVerified: boolean
+}
+
+// 时间线项：可能是普通帖子，也可能是转推事件
+export interface TimelineItem {
+  type: 'post' | 'retweet'
+  timestamp: string
+  data: Post
+  // 当 type 为 'retweet' 时存在
+  retweetedBy?: MinimalUser
+}
 
 // 主页加载帖子
 export interface PaginatedPostsResponse {
   message: string
-  posts: Post[]
+  posts: TimelineItem[]
   nextCursor: string | null
 }
 
@@ -69,6 +85,5 @@ export interface CreatePostPayload {
   }[]
   parentPostId?: string
   quotedPostId?: string
-  retweetedPostId?: string
   visibility?: 'public' | 'circle' | 'private'
 }

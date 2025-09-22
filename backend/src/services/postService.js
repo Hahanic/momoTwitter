@@ -1,6 +1,7 @@
 import Bookmark from '../db/model/Bookmark.js'
 import Like from '../db/model/Like.js'
 import Post from '../db/model/Post.js'
+import Retweet from '../db/model/Retweet.js'
 import User from '../db/model/User.js'
 import { verifyAccessToken } from '../utils/index.js'
 
@@ -30,17 +31,13 @@ export class PostService {
     const [userLikes, userBookmarks, userRetweets] = await Promise.all([
       Like.find({ userId: currentUserId, postId: { $in: postIds } }).select('postId'),
       Bookmark.find({ userId: currentUserId, postId: { $in: postIds } }).select('postId'),
-      Post.find({
-        authorId: currentUserId,
-        postType: 'retweet',
-        retweetedPostId: { $in: postIds },
-      }).select('retweetedPostId'),
+      Retweet.find({ userId: currentUserId, postId: { $in: postIds } }).select('postId'),
     ])
 
     return {
       likedPostIds: new Set(userLikes.map((like) => like.postId.toString())),
       bookmarkedPostIds: new Set(userBookmarks.map((bookmark) => bookmark.postId.toString())),
-      retweetedPostIds: new Set(userRetweets.map((retweet) => retweet.retweetedPostId.toString())),
+      retweetedPostIds: new Set(userRetweets.map((retweet) => retweet.postId.toString())),
     }
   }
 
@@ -83,7 +80,7 @@ export class PostService {
 
   // 更新帖子统计
   static async updatePostStats(postId, updates) {
-    return await Post.findByIdAndUpdate(postId, { $inc: updates })
+    return await Post.findByIdAndUpdate(postId, { $inc: updates }, { new: true })
   }
 
   // 更新所有祖先帖子的回复统计

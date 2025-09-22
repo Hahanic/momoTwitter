@@ -53,8 +53,8 @@ const usePostFeedStore = defineStore('postFeed', () => {
       } else {
         response = await fetchFollowingPosts(null)
       }
-      postCacheStore.addPosts(response.posts)
-      feed.postIds.value = response.posts.map((post) => post._id)
+      postCacheStore.addPosts(response.posts.map((item) => item.data))
+      feed.postIds.value = response.posts.map((item) => item.data._id)
       feed.nextCursor.value = response.nextCursor
       feed.hasMore.value = response.nextCursor !== null
     } catch (error) {
@@ -79,8 +79,8 @@ const usePostFeedStore = defineStore('postFeed', () => {
       } else {
         response = await fetchFollowingPosts(feed.nextCursor.value)
       }
-      postCacheStore.addPosts(response.posts)
-      const newPostIds = response.posts.map((post) => post._id)
+      postCacheStore.addPosts(response.posts.map((item) => item.data))
+      const newPostIds = response.posts.map((item) => item.data._id)
       feed.postIds.value.push(...newPostIds)
       feed.nextCursor.value = response.nextCursor
       feed.hasMore.value = response.nextCursor !== null
@@ -105,8 +105,8 @@ const usePostFeedStore = defineStore('postFeed', () => {
       } else {
         response = await fetchFollowingPosts(null)
       }
-      postCacheStore.addPosts(response.posts)
-      feed.postIds.value = response.posts.map((post) => post._id)
+      postCacheStore.addPosts(response.posts.map((item) => item.data))
+      feed.postIds.value = response.posts.map((item) => item.data._id)
       feed.nextCursor.value = response.nextCursor
       feed.hasMore.value = response.nextCursor !== null
     } catch (error: any) {
@@ -119,7 +119,6 @@ const usePostFeedStore = defineStore('postFeed', () => {
   // 创建新帖子并添加到流顶部
   async function createAndAddPost(payload: Parameters<typeof interactionStore.handleCreatePost>[0]) {
     try {
-      console.log(payload)
       const newPost = await interactionStore.handleCreatePost(payload)
 
       // 如果是标准帖子，添加到流的顶部

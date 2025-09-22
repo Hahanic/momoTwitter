@@ -15,7 +15,7 @@ const postSchema = new mongoose.Schema(
     },
     postType: {
       type: String,
-      enum: ['standard', 'reply', 'quote', 'retweet'],
+      enum: ['standard', 'reply', 'quote'],
       default: 'standard',
     },
     // 可见性
@@ -46,11 +46,6 @@ const postSchema = new mongoose.Schema(
     },
     // 引用
     quotedPostId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Post',
-    },
-    // 转推
-    retweetedPostId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Post',
     },

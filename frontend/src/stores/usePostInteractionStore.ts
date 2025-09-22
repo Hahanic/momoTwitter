@@ -4,7 +4,15 @@ import { ref } from 'vue'
 import usePostCacheStore from './usePostCacheStore.ts'
 import useUserStore from './userUserStore.ts'
 
-import { likePost, bookmarkPost, createPost, recordPostView, translatePost, deletePost } from '@/api/index.ts'
+import {
+  likePost,
+  bookmarkPost,
+  createPost,
+  recordPostView,
+  translatePost,
+  deletePost,
+  retweetPost,
+} from '@/api/index.ts'
 import type { CreatePostPayload } from '@/types'
 
 const usePostInteractionStore = defineStore('postInteraction', () => {
@@ -131,12 +139,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     return withOptimisticUpdate({
       operationType: 'posting',
       entityId: postId,
-      apiCall: () =>
-        handleCreatePost({
-          content: '',
-          postType: 'retweet',
-          retweetedPostId: postId,
-        }),
+      apiCall: () => retweetPost(postId),
       optimisticUpdateFn: () => {
         postCacheStore.updatePost(postId, {
           stats: {

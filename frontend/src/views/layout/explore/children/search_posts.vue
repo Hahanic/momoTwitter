@@ -49,12 +49,12 @@ const posts = ref<Post[]>([])
 const page = ref(1)
 const isLoading = ref(false)
 const hasMore = ref(true)
-const initialLoad = ref(true)
+const hasInitialLoad = ref(false)
 
 const scrollContainer = ref(null)
 
 const loadMore = async () => {
-  if (!hasMore.value || !props.searchQuery.trim()) return
+  if (!hasMore.value || !props.searchQuery.trim() || !hasInitialLoad.value) return
 
   isLoading.value = true
   try {
@@ -71,7 +71,6 @@ const loadMore = async () => {
     console.error('加载搜索结果失败:', error)
   } finally {
     isLoading.value = false
-    initialLoad.value = false
   }
 }
 
@@ -100,18 +99,24 @@ watch(
       posts.value = []
       page.value = 1
       hasMore.value = true
-      initialLoad.value = true
+      hasInitialLoad.value = false
 
+      isLoading.value = true
       searchPosts(newQuery, 1)
         .then((response) => {
           posts.value = response.posts || []
+          postCacheStore.addPosts(response.posts)
+          page.value = 2
+          isLoading.value = false
           hasMore.value = response.hasMore
+          hasInitialLoad.value = true
           window.scrollTo({ top: 0, behavior: 'auto' })
         })
         .catch((error) => {
           console.error('搜索失败:', error)
         })
     }
-  }
+  },
+  { immediate: true }
 )
 </script>

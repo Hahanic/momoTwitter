@@ -3,9 +3,17 @@ import { ref, computed } from 'vue'
 
 import { fetchPosts, fetchFollowingPosts } from '@/api'
 import { useUserStore, usePostCacheStore, usePostInteractionStore } from '@/stores'
-import type { Post } from '@/types'
+import { type MinimalUser, type TimelineItem } from '@/types'
 
 type FeedType = 'forYou' | 'following'
+
+// 仅存储时间线项的引用信息，实际的 Post 数据复用缓存
+type TimelineItemRef = {
+  postId: string
+  type: 'post' | 'retweet'
+  timestamp: string
+  retweetedBy?: MinimalUser
+}
 
 const usePostFeedStore = defineStore('postFeed', () => {
   const postCacheStore = usePostCacheStore()
@@ -18,14 +26,14 @@ const usePostFeedStore = defineStore('postFeed', () => {
   // 双流数据缓存
   const feedMap = {
     forYou: {
-      postIds: ref<string[]>([]),
+      items: ref<TimelineItemRef[]>([]),
       nextCursor: ref<string | null>(null),
       hasMore: ref(false),
       isLoading: ref(false),
       isRefreshing: ref(false),
     },
     following: {
-      postIds: ref<string[]>([]),
+      items: ref<TimelineItemRef[]>([]),
       nextCursor: ref<string | null>(null),
       hasMore: ref(false),
       isLoading: ref(false),
@@ -35,8 +43,20 @@ const usePostFeedStore = defineStore('postFeed', () => {
 
   // 当前tab的帖子列表
   const posts = computed(() => {
-    const ids = feedMap[activeFeedType.value].postIds.value
-    return ids.map((id) => postCacheStore.getPost(id)).filter(Boolean) as Post[]
+    const items = feedMap[activeFeedType.value].items.value
+    // 组装 TimelineItem：将缓存中的 Post 填入 data
+    return items
+      .map((refItem) => {
+        const post = postCacheStore.getPost(refItem.postId)
+        if (!post) return null
+        return {
+          type: refItem.type,
+          timestamp: refItem.timestamp,
+          retweetedBy: refItem.retweetedBy,
+          data: post,
+        } as TimelineItem
+      })
+      .filter(Boolean) as TimelineItem[]
   })
 
   // 初始加载帖子
@@ -54,7 +74,12 @@ const usePostFeedStore = defineStore('postFeed', () => {
         response = await fetchFollowingPosts(null)
       }
       postCacheStore.addPosts(response.posts.map((item) => item.data))
-      feed.postIds.value = response.posts.map((item) => item.data._id)
+      feed.items.value = response.posts.map((item) => ({
+        postId: item.data._id,
+        type: item.type,
+        timestamp: item.timestamp,
+        retweetedBy: item.retweetedBy,
+      }))
       feed.nextCursor.value = response.nextCursor
       feed.hasMore.value = response.nextCursor !== null
     } catch (error) {
@@ -80,8 +105,13 @@ const usePostFeedStore = defineStore('postFeed', () => {
         response = await fetchFollowingPosts(feed.nextCursor.value)
       }
       postCacheStore.addPosts(response.posts.map((item) => item.data))
-      const newPostIds = response.posts.map((item) => item.data._id)
-      feed.postIds.value.push(...newPostIds)
+      const newItems = response.posts.map((item) => ({
+        postId: item.data._id,
+        type: item.type,
+        timestamp: item.timestamp,
+        retweetedBy: item.retweetedBy,
+      }))
+      feed.items.value.push(...newItems)
       feed.nextCursor.value = response.nextCursor
       feed.hasMore.value = response.nextCursor !== null
     } catch (error) {
@@ -106,7 +136,12 @@ const usePostFeedStore = defineStore('postFeed', () => {
         response = await fetchFollowingPosts(null)
       }
       postCacheStore.addPosts(response.posts.map((item) => item.data))
-      feed.postIds.value = response.posts.map((item) => item.data._id)
+      feed.items.value = response.posts.map((item) => ({
+        postId: item.data._id,
+        type: item.type,
+        timestamp: item.timestamp,
+        retweetedBy: item.retweetedBy,
+      }))
       feed.nextCursor.value = response.nextCursor
       feed.hasMore.value = response.nextCursor !== null
     } catch (error: any) {
@@ -123,7 +158,11 @@ const usePostFeedStore = defineStore('postFeed', () => {
 
       // 如果是标准帖子，添加到流的顶部
       if (newPost.postType === 'standard') {
-        feedMap.forYou.postIds.value.unshift(newPost._id)
+        feedMap.forYou.items.value.unshift({
+          postId: newPost._id,
+          type: 'post',
+          timestamp: newPost.createdAt,
+        })
       }
 
       return newPost
@@ -136,7 +175,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
   // 重置帖子流
   function resetFeed(type: FeedType = activeFeedType.value) {
     const feed = feedMap[type]
-    feed.postIds.value = []
+    feed.items.value = []
     feed.nextCursor.value = null
     feed.hasMore.value = false
     feed.isLoading.value = false
@@ -152,7 +191,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
       if (activeFeedType.value === type) return
       activeFeedType.value = type
       // 如果目标流还没加载过，自动加载
-      if (feedMap[type].postIds.value.length === 0) {
+      if (feedMap[type].items.value.length === 0) {
         loadInitialPosts()
       }
     } catch (error: any) {

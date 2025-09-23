@@ -1,59 +1,71 @@
 <template>
-  <div
-    :class="{ 'dark:border-borderDark border-borderWhite border-b-1': type !== 'parent' }"
-    class="flex w-full transition-all hover:cursor-pointer hover:bg-[#f7f7f7] dark:hover:bg-transparent"
-    @click="handlePostClick(post)"
-  >
-    <!-- 头像 -->
-    <div class="relative">
-      <div class="mx-2 mt-2 h-[2.5rem] w-[2.5rem] sm:h-[3rem] sm:w-[3rem]">
-        <Avatar
-          :src="post.authorInfo.avatarUrl"
-          :username="post.authorInfo.username"
-          container-class="h-full w-full rounded-full"
-        />
-      </div>
-      <!-- parentPost向下的线程 -->
-      <div
-        v-if="type === 'parent'"
-        class="absolute left-[calc(50%-1.5px)] h-[calc(100%)] rounded-2xl border-[1.5px] border-[#a8b1bb] dark:border-[#333639]"
-      ></div>
+  <div :class="{ 'dark:border-borderDark border-borderWhite border-b-1': type !== 'parent' }">
+    <!-- 转推信息 -->
+    <div
+      v-if="isRetweet && retweetedBy"
+      class="flex items-center px-8 pt-2 text-center text-[0.85rem] text-gray-500 dark:text-gray-400"
+    >
+      <Repeat2 :size="18" class="mr-1" />
+      <span class="hover:underline"
+        >{{ post.currentUserInteraction?.isRetweeted ? '您' : retweetedBy.username }}已转贴</span
+      >
     </div>
-    <!-- 内容 -->
-    <div class="mt-2.5 w-full">
-      <!-- 名字/用户id/日期 -->
-      <div class="flex w-full flex-1 items-center justify-between pr-4 text-[0.9rem]">
-        <AuthorAndSettings
-          :username="post.authorInfo.username"
-          :userDisplayName="post.authorInfo.displayName"
-          :createdAt="post.createdAt"
-          :postId="post._id"
-          type="default"
-          :iconSize="20"
-        />
+    <div
+      class="flex w-full transition-all hover:cursor-pointer hover:bg-[#f7f7f7] dark:hover:bg-transparent"
+      @click="handlePostClick(post)"
+    >
+      <!-- 头像 -->
+      <div class="relative">
+        <div class="mx-2 mt-2 h-[2.5rem] w-[2.5rem] sm:h-[3rem] sm:w-[3rem]">
+          <Avatar
+            :src="post.authorInfo.avatarUrl"
+            :username="post.authorInfo.username"
+            container-class="h-full w-full rounded-full"
+          />
+        </div>
+        <!-- parentPost向下的线程 -->
+        <div
+          v-if="type === 'parent'"
+          class="absolute left-[calc(50%-1.5px)] h-[calc(100%)] rounded-2xl border-[1.5px] border-[#a8b1bb] dark:border-[#333639]"
+        ></div>
       </div>
-      <!-- 文本 -->
-      <div class="font-Rounded mr-4 text-[1rem]">
-        <span class="tracking-tight break-all whitespace-pre-wrap">{{ post.content }}</span>
-      </div>
-      <!-- 图片/视频/媒体 -->
-      <PostImage :post="post" class="mt-3" />
-      <!-- 互动按钮 -->
-      <div class="mt-2 mr-4 mb-4 text-[#71767b]">
-        <PostAction
-          :post="post"
-          variant="full"
-          @like="handlePostLike"
-          @bookmark="handlePostBookmark"
-          @retweet="handlePostRetweet"
-          @quote="handlePostQuote"
-        />
+      <!-- 内容 -->
+      <div class="mt-2.5 w-full">
+        <!-- 名字/用户id/日期 -->
+        <div class="flex w-full flex-1 items-center justify-between pr-4 text-[0.9rem]">
+          <AuthorAndSettings
+            :username="post.authorInfo.username"
+            :userDisplayName="post.authorInfo.displayName"
+            :createdAt="post.createdAt"
+            :postId="post._id"
+            type="default"
+            :iconSize="20"
+          />
+        </div>
+        <!-- 文本 -->
+        <div class="font-Rounded mr-4 text-[1rem]">
+          <span class="tracking-tight break-all whitespace-pre-wrap">{{ post.content }}</span>
+        </div>
+        <!-- 图片/视频/媒体 -->
+        <PostImage :post="post" class="mt-3" />
+        <!-- 互动按钮 -->
+        <div class="mt-2 mr-4 mb-4 text-[#71767b]">
+          <PostAction
+            :post="post"
+            variant="full"
+            @like="handlePostLike"
+            @bookmark="handlePostBookmark"
+            @retweet="handlePostRetweet"
+            @quote="handlePostQuote"
+          />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { Repeat2 } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
 import AuthorAndSettings from './AuthorAndSettings.vue'
@@ -63,7 +75,7 @@ import Avatar from '@/components/post/Avatar.vue'
 import PostAction from '@/components/post/PostAction.vue'
 import { useMessage } from '@/composables/useMessage'
 import { usePostInteractionStore } from '@/stores'
-import { type Post } from '@/types'
+import { type MinimalUser, type Post } from '@/types'
 
 const router = useRouter()
 const postInteractionStore = usePostInteractionStore()
@@ -72,6 +84,9 @@ const message = useMessage()
 const props = defineProps<{
   post: Post
   type: 'post' | 'reply' | 'parent'
+  eventTimestamp?: string
+  isRetweet?: boolean
+  retweetedBy?: MinimalUser
 }>()
 
 // 点赞

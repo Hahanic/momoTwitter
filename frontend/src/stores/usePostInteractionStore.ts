@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 import usePostCacheStore from './usePostCacheStore.ts'
 import useUserStore from './userUserStore.ts'
+import useUserPostStore from './useUserPostStore.ts'
 
 import {
   likePost,
@@ -18,6 +19,7 @@ import type { CreatePostPayload } from '@/types'
 const usePostInteractionStore = defineStore('postInteraction', () => {
   const postCacheStore = usePostCacheStore()
   const userStore = useUserStore()
+  const userPostStore = useUserPostStore()
 
   // 存储已经翻译的帖子ID和目标语言和内容
   const translatedPosts = ref<Map<string, { language: string; translatedContent: string }>>(new Map())
@@ -80,7 +82,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
     })
   }
 
-  // 收藏/取消收藏 (目前只做乐观更新，等后端API)
+  // 收藏/取消收藏
   async function toggleBookmark(postId: string) {
     const post = postCacheStore.getPost(postId)
     if (!post) throw new Error('帖子不存在')
@@ -136,11 +138,18 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
       isRetweeted: post.currentUserInteraction.isRetweeted,
       retweetsCount: post.stats.retweetsCount,
     }
+    // 若当前用户正在查看自己的个人主页 posts 分类，且是取消转推，要从时间线里移除这条转推
+    let removedTimelineItems: ReturnType<typeof userPostStore.removeRetweetItemsByUser> | null = null
+
     return withOptimisticUpdate({
       operationType: 'posting',
       entityId: postId,
       apiCall: () => retweetPost(postId),
       optimisticUpdateFn: () => {
+        // 先处理列表侧的乐观更新（仅在取消转推时移除）
+        if (original.isRetweeted && userStore.user) {
+          removedTimelineItems = userPostStore.removeRetweetItemsByUser(postId, userStore.user)
+        }
         postCacheStore.updatePost(postId, {
           stats: {
             ...post.stats,
@@ -162,6 +171,10 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
             isRetweeted: original.isRetweeted,
           },
         })
+        // 回滚被移除的时间线项
+        if (removedTimelineItems && removedTimelineItems.length) {
+          userPostStore.addRetweetItems(removedTimelineItems)
+        }
       },
     })
   }
@@ -206,9 +219,7 @@ const usePostInteractionStore = defineStore('postInteraction', () => {
       entityId: 'global',
       apiCall: async () => {
         const res = await createPost(payload)
-        if (res.newPost) {
-          postCacheStore.addPost(res.newPost)
-        }
+        postCacheStore.addPost(res.newPost)
         return res.newPost
       },
       optimisticUpdateFn: () => {},

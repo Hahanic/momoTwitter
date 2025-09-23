@@ -127,7 +127,6 @@ export function usePostDetail(postIdRef: Ref<string | null>) {
 
   async function createAndAddPost(payload: Parameters<typeof interactionStore.handleCreateReply>[0]) {
     if (!state.currentPostId) throw new Error('当前帖子不存在')
-    console.log(payload)
 
     const newReply = await interactionStore.handleCreateReply({
       ...payload,
@@ -135,7 +134,6 @@ export function usePostDetail(postIdRef: Ref<string | null>) {
     })
     // 去重并前插
     state.replyIds = [newReply._id, ...state.replyIds.filter((id) => id !== newReply._id)]
-    // TODO 乐观更新父帖回复数
     return newReply
   }
 

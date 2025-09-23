@@ -48,7 +48,14 @@
     <div class="w-full">
       <PostCreate v-if="!windowStore.isMobile" />
       <!-- posts -->
-      <Posts v-for="post in postFeedStore.posts" :post="post" :type="'post'" :key="post._id" />
+      <Posts
+        v-for="item in postFeedStore.posts"
+        :key="`${item.type}-${item.data._id}-${item.timestamp}`"
+        :post="item.data"
+        :type="'post'"
+        :isRetweet="item.type === 'retweet'"
+        :retweetedBy="item.retweetedBy"
+      />
       <div ref="observerEl" class="my-20 flex w-full items-center justify-center">
         <LoaderIcon v-if="postFeedStore.isLoading" :class="{ 'animate-spin': postFeedStore.isLoading }" :size="26" />
         <div v-else-if="!canLoadMore && postFeedStore.posts.length >= 0" class="text-sm text-gray-500">

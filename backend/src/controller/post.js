@@ -400,6 +400,66 @@ export const getUserCategoryPosts = async (req, res) => {
   const user = await User.findOne({ username })
   if (!user) return sendResponse(res, 404, '用户不存在')
 
+  // posts 分类：需要同时包含用户的原创/引用帖与其转推，统一为时间线项结构
+  if (category === 'posts') {
+    try {
+      const postQuery = {
+        authorId: user._id,
+        postType: { $in: ['standard', 'quote'] },
+        visibility: 'public',
+      }
+      if (cursorDate) postQuery.createdAt = { $lt: cursorDate }
+
+      const retweetQuery = { userId: user._id }
+      if (cursorDate) retweetQuery.createdAt = { $lt: cursorDate }
+
+      const [userPosts, userRetweets] = await Promise.all([
+        Post.find(postQuery).sort({ createdAt: -1 }).limit(limit).lean(),
+        Retweet.find(retweetQuery)
+          .sort({ createdAt: -1 })
+          .limit(limit)
+          .populate({ path: 'postId', model: 'Post' })
+          .populate({
+            path: 'userId',
+            model: 'User',
+            select: 'username displayName avatarUrl isVerified',
+          })
+          .lean(),
+      ])
+
+      const timelineItems = [
+        ...userPosts.map((post) => ({ type: 'post', timestamp: post.createdAt, data: post })),
+        ...userRetweets
+          .filter((rt) => rt.postId)
+          .map((rt) => ({
+            type: 'retweet',
+            timestamp: rt.createdAt,
+            retweetedBy: rt.userId,
+            data: rt.postId,
+          })),
+      ]
+
+      // 排序并分页
+      timelineItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      const paginatedItems = timelineItems.slice(0, limit)
+      const nextCursor =
+        paginatedItems.length < limit ? null : paginatedItems[paginatedItems.length - 1].timestamp.toISOString()
+
+      // 装饰交互信息
+      let finalTimeline = paginatedItems
+      if (paginatedItems.length > 0) {
+        const postsOnly = paginatedItems.map((item) => item.data)
+        const decoratedPosts = await PostService.decorateWithInteractionsIfNeeded(req, postsOnly)
+        finalTimeline = paginatedItems.map((item, index) => ({ ...item, data: decoratedPosts[index] }))
+      }
+
+      return sendResponse(res, 200, '获取用户帖子成功', { posts: finalTimeline, nextCursor })
+    } catch (e) {
+      return sendResponse(res, 500, '获取用户帖子失败', { error: e.message })
+    }
+  }
+
+  // 其他分类：沿用原有实现
   const strategy = {
     posts: PostService.fetchUserPosts,
     replies: PostService.fetchUserReplies,
@@ -412,7 +472,6 @@ export const getUserCategoryPosts = async (req, res) => {
   try {
     const { posts, nextCursor } = await fetcher(user._id, cursorDate, limit)
     const decorated = await PostService.decorateWithInteractionsIfNeeded(req, posts)
-
     return sendResponse(res, 200, '获取用户帖子成功', { posts: decorated, nextCursor })
   } catch (e) {
     return sendResponse(res, 500, '获取用户帖子失败', { error: e.message })
@@ -526,8 +585,8 @@ export const getFollowingPosts = async (req, res) => {
   const followList = await Relationship.find({ followerId: currentUserId }).lean()
   const followingIds = followList.map((item) => item.followingId).filter(Boolean)
 
-  // 将用户自己也加入，以便在时间线上看到自己的帖子和转推
-  const timelineUserIds = [...new Set([currentUserId, ...followingIds])]
+  //currentUserId,
+  const timelineUserIds = [...new Set([...followingIds])]
 
   // 如果只关注了自己且没有其他人，可以提前返回空
   if (timelineUserIds.length === 1 && timelineUserIds[0] === currentUserId && followingIds.length === 0) {

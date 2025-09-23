@@ -15,29 +15,41 @@
 
 <script lang="ts" setup>
 import { SearchIcon } from 'lucide-vue-next'
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 const props = withDefaults(
   defineProps<{
     type?: string
+    searchQuery?: string
   }>(),
   {
     type: 'posts',
   }
 )
-const emit = defineEmits<{ (e: 'search', value: string, type: string): void }>()
+const emit = defineEmits<{
+  (e: 'search', value: string, type: string): void
+}>()
 
 const { t } = useI18n()
-const searchQuery = defineModel<string>({ default: '' })
 const router = useRouter()
 const instance = getCurrentInstance()
+
+// 使用计算属性实现双向绑定
+const searchQuery = ref('')
+
+watch(
+  () => props.searchQuery,
+  (newVal) => {
+    searchQuery.value = newVal ? newVal : ''
+  },
+  { immediate: true }
+)
 
 const performSearch = () => {
   if (searchQuery.value.trim()) {
     const hasSearchListener = instance?.vnode.props?.onSearch
-
     if (hasSearchListener) {
       emit('search', searchQuery.value, props.type)
     } else {

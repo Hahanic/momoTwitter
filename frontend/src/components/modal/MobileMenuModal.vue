@@ -55,7 +55,9 @@
         <!-- username和displayName -->
         <div class="mt-4 flex flex-col pl-6">
           <div class="text-lg font-bold">{{ userStore.user?.displayName }}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400">@{{ userStore.user?.username }}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            {{ userStore.isAuthenticated ? `@${userStore.user?.username}` : '未登录' }}
+          </div>
         </div>
         <!-- 分割线 -->
         <div class="my-4 border-t border-gray-200 dark:border-gray-700" />
@@ -63,7 +65,7 @@
         <Scrollbar maxHeight="calc(100vh - 200px)" visibility="hidden" propsClass="flex-1">
           <div class="flex flex-col">
             <div
-              @click="router.push(`/profile/${userStore.user?.username}`)"
+              @click="handleProfileClick"
               class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <User2 :size="24" />
@@ -74,7 +76,7 @@
               <span>话题</span>
             </div>
             <div
-              @click="router.push(`/profile/${userStore.user?.username}/bookmarks`)"
+              @click="handleBookmarksClick"
               class="flex cursor-pointer gap-2 py-3 pl-6 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <Save :size="24" />
@@ -99,11 +101,20 @@
               <span>人工智能</span>
             </div>
             <div
+              v-if="userStore.isAuthenticated"
               @click="userStore.logout"
               class="flex cursor-pointer gap-2 py-3 pl-6 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <LogOut :size="24" />
               <span>退出登录</span>
+            </div>
+            <div
+              v-else
+              @click="router.push({ path: route.path, query: { ...route.query, modal: 'login' } })"
+              class="flex cursor-pointer gap-2 py-3 pl-6 text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <LogOut :size="24" />
+              <span>登录</span>
             </div>
           </div>
         </Scrollbar>
@@ -136,6 +147,23 @@ const accountMenuRef = ref<HTMLElement | null>(null)
 const toggleAccountMenu = (event: Event) => {
   event.stopImmediatePropagation()
   showMobileAccountMenu.value = !showMobileAccountMenu.value
+}
+
+// 没登陆就弹出登录框
+const handleProfileClick = () => {
+  if (userStore.isAuthenticated) {
+    router.push(`/profile/${userStore.user?.username}`)
+  } else {
+    router.push({ path: route.path, query: { ...route.query, modal: 'login' } })
+  }
+}
+
+const handleBookmarksClick = () => {
+  if (userStore.isAuthenticated) {
+    router.push(`/profile/${userStore.user?.username}/bookmarks`)
+  } else {
+    router.push({ path: route.path, query: { ...route.query, modal: 'login' } })
+  }
 }
 
 onClickOutside(accountMenuRef, toggleAccountMenu)

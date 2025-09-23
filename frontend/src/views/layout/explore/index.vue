@@ -4,7 +4,7 @@
       <!-- 搜索及设置 -->
       <div class="flex w-full items-center justify-center pt-2">
         <div class="w-full px-5">
-          <SearchInput v-model="searchQuery" @search="onSearch" />
+          <SearchInput :searchQuery="searchQuery" @search="onSearch" />
         </div>
         <div class="relative">
           <SettingsIcon :size="20" class="mx-4" />
@@ -27,7 +27,7 @@
     <div class="w-full">
       <router-view v-slot="{ Component }">
         <keep-alive>
-          <component :is="Component" />
+          <component :searchQuery="searchQuery" :is="Component" />
         </keep-alive>
       </router-view>
     </div>
@@ -57,21 +57,20 @@ import SearchInput from '@/components/ui/SearchInput.vue'
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
-const searchQuery = ref<string>((route.query.q as string) || '')
+const searchQuery = ref<string>('')
 // 监听路由参数变化，自动同步搜索框内容
 watch(
   () => route.query.q,
   (q) => {
     searchQuery.value = (q as string) || ''
-  }
+  },
+  { immediate: true }
 )
 
 const tagList = ref([
   { nameKey: 'explore.tags.for_you', path: 'for_you' },
-  { nameKey: 'explore.tags.trending', path: 'trending' },
-  { nameKey: 'explore.tags.news', path: 'news' },
-  { nameKey: 'explore.tags.sports', path: 'sports' },
-  { nameKey: 'explore.tags.entertainment', path: 'entertainment' },
+  { nameKey: 'explore.tags.posts', path: 'posts' },
+  { nameKey: 'explore.tags.users', path: 'users' },
 ])
 
 const onSearch = (q: string, type: string) => {

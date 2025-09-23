@@ -588,10 +588,8 @@ export const getFollowingPosts = async (req, res) => {
   //currentUserId,
   const timelineUserIds = [...new Set([...followingIds])]
 
-  // 如果只关注了自己且没有其他人，可以提前返回空
+  // 如果没关注有其他人，可以提前返回空
   if (timelineUserIds.length === 1 && timelineUserIds[0] === currentUserId && followingIds.length === 0) {
-    // 如果用户没有关注任何人，可以根据产品逻辑决定是否显示自己的帖子
-    // 这里我们暂时返回空，因为通常关注流只显示关注者的内容
     return sendResponse(res, 200, '没有关注任何用户', { posts: [], nextCursor: null })
   }
 

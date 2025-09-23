@@ -50,7 +50,6 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         path: '/bot/:id?',
         name: 'Bot',
         component: () => import('@/views/layout/bot/index.vue'),
-        meta: { requiresAuth: true },
       },
       {
         path: '/explore',
@@ -59,7 +58,7 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         component: () => import('@/views/layout/explore/index.vue'),
         children: [
           {
-            path: 'for_you',
+            path: '/explore/for_you',
             name: 'ExploreForYou',
             component: () => import('@/views/layout/explore/children/for_you.vue'),
           },

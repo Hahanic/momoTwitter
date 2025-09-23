@@ -21,7 +21,10 @@
         </div>
         <!-- 右 -->
         <div class="flex items-center justify-center">
-          <button class="mr-2 rounded-full p-2 transition-all hover:bg-gray-100 dark:hover:bg-gray-800">
+          <button
+            @click="router.push({ path: '/explore/posts', query: { q: `from:${currentUserProfile.username}:` } })"
+            class="mr-2 rounded-full p-2 transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
             <SearchIcon :size="20" />
           </button>
         </div>

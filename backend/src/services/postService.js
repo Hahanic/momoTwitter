@@ -125,12 +125,11 @@ export class PostService {
   static async searchPosts(query, page, limit) {
     const skip = (page - 1) * limit
 
-    const escapedQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+    // 解析搜索查询
+    const searchFilter = await this.parseSearchQuery(query)
 
-    // 使用 $regex 在 content 字段中进行不区分大小写的模糊匹配
-    const posts = await Post.find({
-      content: { $regex: escapedQuery, $options: 'i' },
-    })
+    // 使用解析后的过滤条件搜索帖子
+    const posts = await Post.find(searchFilter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit + 1) // 多获取一条数据来判断是否还有下一页
@@ -143,6 +142,58 @@ export class PostService {
     }
 
     return { posts, hasMore }
+  }
+
+  // 解析搜索查询语法
+  static async parseSearchQuery(query) {
+    // 检查是否是 from:username:keyword 格式
+    const fromMatch = query.match(/^from:([^:]+):(.+)$/)
+
+    if (fromMatch) {
+      const [, username, keyword] = fromMatch
+
+      // 查找用户
+      const user = await User.findOne({ username: username.trim() }).select('_id').lean()
+      if (!user) {
+        // 如果用户不存在，返回一个不会匹配到任何帖子的查询
+        return { _id: null }
+      }
+
+      // 转义关键词中的特殊字符
+      const escapedKeyword = keyword.trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+
+      return {
+        authorId: user._id,
+        content: { $regex: escapedKeyword, $options: 'i' },
+        visibility: 'public',
+      }
+    }
+
+    // 检查是否是 from:username 格式（只搜索用户的所有帖子）
+    const fromOnlyMatch = query.match(/^from:([^:]+)$/)
+
+    if (fromOnlyMatch) {
+      const username = fromOnlyMatch[1].trim()
+
+      // 查找用户
+      const user = await User.findOne({ username }).select('_id').lean()
+      if (!user) {
+        return { _id: null }
+      }
+
+      return {
+        authorId: user._id,
+        visibility: 'public',
+      }
+    }
+
+    // 在所有帖子的内容中搜索
+    const escapedQuery = query.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+
+    return {
+      content: { $regex: escapedQuery, $options: 'i' },
+      visibility: 'public',
+    }
   }
 
   // 用户主页分类流

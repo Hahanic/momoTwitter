@@ -63,7 +63,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const handleLinkClick = (href: string) => {
-  const protectedRoutes = ['/notifications', '/messages', '/bot', '/groups', '/profile', '/compose']
+  const protectedRoutes = ['/profile']
   const isProtectedRoute = protectedRoutes.some((route) => href.startsWith(route))
 
   if (isProtectedRoute && !userStore.isAuthenticated) {

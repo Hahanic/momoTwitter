@@ -37,7 +37,7 @@
       <div v-else-if="currentUserProfile" class="flex flex-col">
         <!-- 顶部banner -->
         <div class="h-40 w-full bg-gray-200 dark:bg-gray-800">
-          <img class="h-full w-full object-cover" :src="currentUserProfile.bannerUrl || '/banner.gif'" />
+          <img class="h-full w-full object-cover" :src="currentUserProfile.bannerUrl || '/banner.jpg'" />
         </div>
         <!-- 头像和按钮 -->
         <div class="flex w-full justify-between px-4">

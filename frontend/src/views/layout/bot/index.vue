@@ -48,7 +48,12 @@
                 <div class="flex items-end space-x-2">
                   <span class="block text-xs text-gray-500">{{ formatTime(message.createdAt) }}</span>
                   <div class="flex h-8 w-8 items-center justify-center rounded-full">
-                    <Avatar :username="userStore.user?.username" :src="userStore.user?.avatarUrl" alt="User Avatar" />
+                    <Avatar
+                      class="h-full w-full"
+                      :username="userStore.user?.username"
+                      :src="userStore.user?.avatarUrl"
+                      alt="User Avatar"
+                    />
                   </div>
                 </div>
                 <div class="flex">
@@ -94,76 +99,13 @@
       </div>
 
       <!-- 输入区域 -->
-      <div class="sticky bottom-0 w-full">
-        <Transition name="slide-fade">
-          <div v-show="isShowTextarea" class="w-full px-4 pb-1">
-            <div class="flex w-full">
-              <div
-                class="border-borderWhite dark:border-borderDark flex-1 rounded-2xl border-1 bg-white shadow-sm dark:bg-black"
-              >
-                <div class="relative flex pt-3">
-                  <textarea
-                    ref="textareaRef"
-                    v-model="inputMessage"
-                    @input="adjustHeight"
-                    placeholder="输入消息..."
-                    rows="1"
-                    class="w-full resize-none px-4 text-gray-900 placeholder-gray-500 outline-none dark:text-gray-100"
-                    style="min-height: 40px; max-height: 250px"
-                  ></textarea>
-                </div>
-                <div class="flex w-full justify-between px-3 py-2">
-                  <div class="flex items-center space-x-1">
-                    <!-- 隐藏 -->
-                    <div class="flex text-gray-400 hover:text-gray-600 dark:hover:text-white">
-                      <button @click="isShowTextarea = false" class="p-1">
-                        <ChevronsRight :size="20" />
-                      </button>
-                    </div>
-                    <!-- 文件 -->
-                    <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-white">
-                      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  <button
-                    @click="sendMessage"
-                    :disabled="!inputMessage.trim() || isStreaming"
-                    class="flex items-center space-x-2 rounded-lg bg-blue-500 px-2 py-1 font-medium text-white transition-colors duration-200 hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300 sm:px-4 sm:py-2 dark:disabled:bg-gray-700/50 dark:disabled:text-gray-500"
-                  >
-                    <div
-                      v-if="isStreaming"
-                      class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-                    ></div>
-                    <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                      />
-                    </svg>
-                    <span>{{ isStreaming ? '发送中...' : '发送' }}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Transition>
-        <div v-show="!isShowTextarea" class="relative flex w-full justify-end">
-          <div class="absolute bottom-0 flex p-4 text-gray-500 hover:text-gray-600 dark:hover:text-white">
-            <button @click="isShowTextarea = true" class="rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700">
-              <ChevronsLeft :size="20" />
-            </button>
-          </div>
-        </div>
-      </div>
+      <MessageInput
+        v-model="inputMessage"
+        :placeholder="'输入消息...'"
+        :disabled="isStreaming"
+        :isLoading="isStreaming"
+        @send="sendMessage"
+      />
     </div>
   </div>
   <aside
@@ -193,7 +135,7 @@
         </div>
       </div>
       <div class="px-4 py-2"><p>近期对话</p></div>
-      <div class="flex w-full flex-col">
+      <div class="flex w-full flex-col pb-20">
         <!-- 对话列表 -->
         <div v-for="(value, index) in conversationList" :key="value._id" class="w-full rounded-4xl sm:w-full">
           <div
@@ -319,7 +261,7 @@ import javascript from 'highlight.js/lib/languages/javascript'
 import json from 'highlight.js/lib/languages/json'
 import typescript from 'highlight.js/lib/languages/typescript'
 import xml from 'highlight.js/lib/languages/xml'
-import { ArrowLeft, ChevronsRight, ChevronsLeft, MoreHorizontal, SquarePen, List, X } from 'lucide-vue-next'
+import { ArrowLeft, MoreHorizontal, SquarePen, List, X } from 'lucide-vue-next'
 import MarkdownIt from 'markdown-it'
 import { ref, nextTick, onMounted, onActivated, onDeactivated, onBeforeUnmount, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
@@ -337,6 +279,7 @@ import {
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import Scrollbar from '@/components/common/Scrollbar.vue'
 import Avatar from '@/components/post/Avatar.vue'
+import MessageInput from '@/components/ui/MessageInput.vue'
 import { useMessage } from '@/composables/useMessage'
 import { useUserStore, useWindowStore } from '@/stores'
 import { formatTime } from '@/utils'
@@ -407,11 +350,8 @@ const selectedConversationIndex = ref<number | null>(null)
 const renameInputValue = ref<string>('')
 const isProcessing = ref<boolean>(false)
 
-const textareaRef = ref<HTMLTextAreaElement>()
 const settingsRef = ref<HTMLElement | null>(null)
 const scrollbarRef = ref<InstanceType<typeof Scrollbar> | null>(null)
-
-const isShowTextarea = ref<boolean>(true)
 
 // 移动端显示/隐藏对话列表
 const toggleList = () => {
@@ -461,15 +401,6 @@ const throttledScrollToBottom = () => {
   }, 100)
 }
 
-// 调整文本区域高度
-const adjustHeight = async () => {
-  await nextTick()
-  if (textareaRef.value) {
-    textareaRef.value.style.height = 'auto'
-    textareaRef.value.style.height = `${textareaRef.value.scrollHeight}px`
-  }
-}
-
 // 发送消息
 const sendMessage = async () => {
   if (!userStore.user) return message.info('请先登录')
@@ -489,9 +420,6 @@ const sendMessage = async () => {
 
   inputMessage.value = ''
   await nextTick()
-  if (textareaRef.value) {
-    textareaRef.value.style.height = 'auto'
-  }
 
   // 开始流式接收
   isStreaming.value = true
@@ -795,56 +723,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-textarea::-webkit-scrollbar {
-  width: 6px;
-}
-
-textarea::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-textarea::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.5);
-  border-radius: 3px;
-}
-
-textarea::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.8);
-}
-
-/* 深色模式下的滚动条 */
-.dark textarea::-webkit-scrollbar-thumb {
-  background: rgba(107, 114, 128, 0.5);
-}
-
-.dark textarea::-webkit-scrollbar-thumb:hover {
-  background: rgba(107, 114, 128, 0.8);
-}
-
-/* Firefox 滚动条样式 */
-textarea {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-.dark textarea {
-  scrollbar-color: rgba(107, 114, 128, 0.5) transparent;
-}
-
-/* 输入框过渡效果 */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: transform 0.3s ease-out;
-}
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateY(100%);
-}
-.slide-fade-enter-to,
-.slide-fade-leave-from {
-  transform: translateY(0);
-}
-
 /* 菜单动画效果 */
 .menu-fade-enter-active,
 .menu-fade-leave-active {

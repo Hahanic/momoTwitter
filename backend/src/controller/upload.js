@@ -1,4 +1,4 @@
-import { uploadToR2, deleteFromR2 } from '../services/r2Service.js'
+import { uploadToR2 } from '../services/r2Service.js'
 import { sendResponse } from '../utils/index.js'
 
 export const uploadPostImage = async (req, res) => {
@@ -15,7 +15,7 @@ export const uploadPostImage = async (req, res) => {
     return sendResponse(res, 200, '图片上传成功', {
       originalname,
       size,
-      // 注意：这里返回的是 R2 的完整公共 URL
+      // 这里返回的是 R2 的完整公共 URL
       // 前端会使用这个 URL，然后发帖时将这个 URL 提交
       url: publicUrl,
       type: 'image',

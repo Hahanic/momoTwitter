@@ -22,7 +22,7 @@ const useWindowStore = defineStore('window', () => {
   const exploreScrollMap = ref<Record<string, number>>({})
 
   // 底部菜单显示状态
-  const showNav = ref<boolean>(true)
+  const isShowTopNav = ref<boolean>(true)
   // 累计滚动距离
   let accumulatedScroll = 0
   // 滚动阈值
@@ -42,10 +42,10 @@ const useWindowStore = defineStore('window', () => {
     if (routeName !== 'Bot') {
       accumulatedScroll += scrollDelta.value
       if (accumulatedScroll > scrollThreshold) {
-        showNav.value = false
+        isShowTopNav.value = false
         accumulatedScroll = 0
       } else if (accumulatedScroll < -scrollThreshold) {
-        showNav.value = true
+        isShowTopNav.value = true
         accumulatedScroll = 0
       }
     }
@@ -57,16 +57,7 @@ const useWindowStore = defineStore('window', () => {
       userProfileScrollTop.value = currentScrollY
     } else if (routeName === 'PostDetail') {
       setPostDetailScroll(currentRoute.params.postId as string, currentScrollY)
-    } else if (
-      [
-        'ExploreSearchPosts',
-        'ExploreForYou',
-        'ExploreTrending',
-        'ExploreNews',
-        'ExploreSports',
-        'ExploreEntertainment',
-      ].includes(routeName)
-    ) {
+    } else if (['ExploreForYou', 'ExploreSearchPosts', 'ExploreSearchUsers'].includes(routeName)) {
       exploreScrollMap.value[routeName] = currentScrollY
     }
     // d. 更新 lastScrollTop
@@ -169,7 +160,7 @@ const useWindowStore = defineStore('window', () => {
     setNavType,
     navType,
 
-    showNav,
+    isShowTopNav,
     isMobile,
     isLaptop,
     isLargeScreen,

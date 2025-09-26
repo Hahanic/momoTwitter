@@ -83,7 +83,7 @@
       </div>
       <!-- 移动端菜单 -->
       <transition name="slide-up">
-        <footer v-if="shouldShowFooter" class="fixed right-0 bottom-0 left-0 z-50 w-full">
+        <footer v-if="isShowFooterNav" class="fixed right-0 bottom-0 left-0 z-50 w-full">
           <BottomNavigation />
         </footer>
       </transition>
@@ -128,8 +128,9 @@ const { t } = useI18n()
 
 const showAccountMenu = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
-const shouldShowFooter = computed(() => {
-  return windowStore.isMobile && windowStore.showNav && route.name !== 'Bot'
+// 控制移动端底部菜单显示
+const isShowFooterNav = computed(() => {
+  return windowStore.isMobile && windowStore.isShowTopNav && !['Bot', 'Messages'].includes(route.name as string)
 })
 
 const AppModal = defineAsyncComponent(() => import('@/components/modal/BaseModal.vue'))

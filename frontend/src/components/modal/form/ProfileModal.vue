@@ -29,7 +29,7 @@
           >
             <img
               class="h-full w-full object-cover"
-              :src="bannerPreview || userStore.currentUserProfile?.bannerUrl || '/banner.gif'"
+              :src="bannerPreview || userStore.currentUserProfile?.bannerUrl || '/banner.jpg'"
             />
 
             <div

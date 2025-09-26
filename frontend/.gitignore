@@ -24,8 +24,4 @@ dist-ssr
 *.sw?
 .env
 
-public/*.jpg
-public/*.png
-public/*.gif
-
 stats.html

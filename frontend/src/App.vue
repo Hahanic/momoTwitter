@@ -39,7 +39,7 @@ watch(
   async (routePath) => {
     // 若不在主页帖子流，则移动端底部菜单一直保持显示
     if (routePath !== '/home') {
-      windowStore.showNav = true
+      windowStore.isShowTopNav = true
     }
     await nextTick(() => {
       // 主页帖子流
@@ -57,16 +57,7 @@ watch(
         })
       }
       // 探索页
-      else if (
-        [
-          'ExploreSearchPosts',
-          'ExploreForYou',
-          'ExploreTrending',
-          'ExploreNews',
-          'ExploreSports',
-          'ExploreEntertainment',
-        ].includes(route.name as string)
-      ) {
+      else if (['ExploreForYou', 'ExploreSearchPosts', 'ExploreSearchUsers'].includes(route.name as string)) {
         window.scrollTo({
           top: windowStore.exploreScrollMap[route.name as string] || 0,
           behavior: 'auto',

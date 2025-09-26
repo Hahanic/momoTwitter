@@ -47,6 +47,11 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         ],
       },
       {
+        path: '/messages/:id?',
+        name: 'Messages',
+        component: () => import('@/views/layout/messages/index.vue'),
+      },
+      {
         path: '/bot/:id?',
         name: 'Bot',
         component: () => import('@/views/layout/bot/index.vue'),

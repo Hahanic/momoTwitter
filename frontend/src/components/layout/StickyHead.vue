@@ -1,7 +1,7 @@
 <template>
   <transition name="slide-down">
     <div
-      v-show="!windowStore.isMobile || (windowStore.showNav && windowStore.isMobile)"
+      v-show="!windowStore.isMobile || (windowStore.isShowTopNav && windowStore.isMobile)"
       class="dark:border-borderDark border-borderWhite sticky top-0 z-10 w-full border-b-1 bg-[#ffffff]/80 backdrop-blur-lg dark:bg-[#000]/80 dark:backdrop-blur-sm"
     >
       <slot />

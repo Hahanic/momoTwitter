@@ -334,6 +334,7 @@ export const bookmarkPost = async (req, res) => {
     })
   }
 }
+
 // 转推
 export const retweetPost = async (req, res) => {
   const { postId } = req.params
@@ -376,7 +377,9 @@ export const retweetPost = async (req, res) => {
       retweetsCount: updatedPost.stats.retweetsCount,
     })
   }
-} // 浏览数
+}
+
+// 浏览数
 export const viewPost = async (req, res) => {
   const { postId } = req.params
 
@@ -478,6 +481,7 @@ export const getUserCategoryPosts = async (req, res) => {
   }
 }
 
+// 翻译帖子
 export const translatePost = async (req, res) => {
   const { postId } = req.params
   let ToLanguage = req.body?.targetLanguage || 'zh-CN'
@@ -499,6 +503,7 @@ export const translatePost = async (req, res) => {
   }
 }
 
+// 删除帖子
 export const deletePost = async (req, res) => {
   const { postId } = req.params
   const currentUserId = req.user.id
@@ -528,10 +533,11 @@ export const deletePost = async (req, res) => {
     authorDeleteCountMap.set(key, (authorDeleteCountMap.get(key) || 0) + 1)
   }
 
-  // 清理关联的点赞和收藏
+  // 清理关联的点赞、收藏和转推
   await Promise.all([
     Like.deleteMany({ postId: { $in: toDeleteIds } }),
     Bookmark.deleteMany({ postId: { $in: toDeleteIds } }),
+    Retweet.deleteMany({ postId: { $in: toDeleteIds } }),
   ])
 
   // 批量删除帖子
@@ -586,7 +592,7 @@ export const getFollowingPosts = async (req, res) => {
   const followingIds = followList.map((item) => item.followingId).filter(Boolean)
 
   //currentUserId,
-  const timelineUserIds = [...new Set([...followingIds])]
+  const timelineUserIds = [...new Set([...followingIds, currentUserId])]
 
   // 如果没关注有其他人，可以提前返回空
   if (timelineUserIds.length === 1 && timelineUserIds[0] === currentUserId && followingIds.length === 0) {

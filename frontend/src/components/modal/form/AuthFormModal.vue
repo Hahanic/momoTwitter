@@ -1,10 +1,11 @@
 <template>
   <div @click.self="$emit('close')" class="modal-desktop flex h-full w-full items-start justify-center pt-3">
-    <div class="flex pt-20">
+    <div class="flex pt-15 sm:pt-20">
       <AuthForm
         :title="isLoginMode ? '用户登录' : '用户注册'"
         :submit-text="isLoginMode ? '登录' : '注册'"
         :is-login="isLoginMode"
+        :is-loading="userStore.isLogining || userStore.isRegistering"
         @submit="handleSubmit"
         @toggle-mode="handleToggleMode"
         @forgot-password="handleForgotPassword"

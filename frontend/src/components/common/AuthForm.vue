@@ -56,14 +56,14 @@
         </div>
 
         <!-- 邮箱验证码输入框 -->
-        <div class="relative">
+        <div v-if="isLogin" class="relative">
           <div class="flex items-center gap-2">
             <input
               id="email-verification-code"
               type="text"
               name="email-verification-code"
               v-model="formValue.code"
-              placeholder="请输入邮箱验证码"
+              placeholder="请输入验证码"
               class="dark:border-borderDark w-full border-b-1 p-3 transition-colors outline-none focus:border-blue-500"
               :class="{ 'border-red-500 dark:border-red-500': errors.code }"
               @blur="validateField('code')"
@@ -81,10 +81,35 @@
             {{ errors.code }}
           </div>
         </div>
+        <div v-else class="relative">
+          <div class="flex items-center gap-2">
+            <input
+              id="email-verification-code"
+              type="text"
+              name="email-verification-code"
+              v-model="formValue.code"
+              placeholder="请输入邮箱验证码"
+              class="dark:border-borderDark w-full border-b-1 p-3 transition-colors outline-none focus:border-blue-500"
+              :class="{ 'border-red-500 dark:border-red-500': errors.code }"
+              @blur="validateField('code')"
+            />
+            <button
+              type="button"
+              class="h-10 w-[70px] flex-shrink-0 rounded-md text-sm transition-colors hover:cursor-pointer hover:text-blue-300 dark:text-gray-200"
+              @click="() => message.info('验证码以发送至您的邮箱，请注意查收')"
+            >
+              <span>获取验证码</span>
+            </button>
+          </div>
+          <div v-if="errors.code" class="absolute pl-3 text-[0.9rem] font-light text-red-500">
+            {{ errors.code }}
+          </div>
+        </div>
 
         <!-- 提交按钮 -->
         <button
           type="submit"
+          :disabled="isLoading"
           class="submit-btn relative flex w-full justify-center rounded-md px-6 text-xl text-white hover:cursor-pointer"
         >
           <p
@@ -136,6 +161,7 @@ interface Props {
   title: string
   submitText: string
   isLogin?: boolean
+  isLoading?: boolean
 }
 
 interface Emits {
@@ -144,7 +170,7 @@ interface Emits {
   'forgot-password': []
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isLogin: false,
 })
 
@@ -197,6 +223,10 @@ const rules = {
   code: [
     {
       validator: (value: string) => {
+        if (!props.isLogin) {
+          if (!value) return '请填写验证码'
+          return true
+        }
         if (!generatedCode.value) return '请先获取验证码'
         if (!value) return '请填写验证码'
         if (value.toLowerCase() !== generatedCode.value.toLowerCase()) {

@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt'
 import { UAParser } from 'ua-parser-js'
 
 import Post from '../db/model/Post.js'
@@ -118,10 +119,12 @@ export const getUserProfile = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body
 
-  // 查找用户并验证密码
+  // 查找用户并验证密码（加密）
   const user = await User.findOne({ email }).select('+password')
-  const isPasswordCorrect = user && user.password === password
-
+  let isPasswordCorrect = false
+  if (user) {
+    isPasswordCorrect = await bcrypt.compare(password, user.password)
+  }
   if (!isPasswordCorrect) {
     return sendResponse(res, 401, '账户或密码错误')
   }
@@ -137,23 +140,29 @@ export const login = async (req, res) => {
 }
 
 export const register = async (req, res) => {
-  const { email, password, emailcode } = req.body
+  const { email, password, code } = req.body
 
+  if (process.env.REGISTER_PASSWORD) {
+    if (code !== process.env.REGISTER_PASSWORD) {
+      return sendResponse(res, 400, '限制注册请联系管理员')
+    }
+  }
   // 检查是否已注册
   const existingUser = await User.findOne({ email })
   if (existingUser) {
     return sendResponse(res, 409, '当前邮箱已被注册')
   }
 
-  // 创建新用户
+  // 创建新用户，密码加密存储
   const username = email.split('@')[0]
+  const saltRounds = 10
+  const hashedPassword = await bcrypt.hash(password, saltRounds)
   const newUser = new User({
     username,
     displayName: username,
     email,
-    password,
+    password: hashedPassword,
   })
-
   await newUser.save()
 
   const userToReturn = newUser.toObject()

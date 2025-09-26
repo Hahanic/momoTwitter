@@ -13,26 +13,39 @@
         <Image :size="iconSize" />
       </button>
     </div>
+    <div class="flex">
+      <input
+        ref="fileInputRef"
+        type="file"
+        class="hidden"
+        accept="image/*"
+        :multiple="allowMultiple"
+        @change="onFileChange"
+      />
+      <button type="button" class="hover:cursor-pointer" @click="() => fileInputRef?.click()">
+        <Videotape :size="iconSize" />
+      </button>
+    </div>
     <button ref="emojiButtonRef" type="button" class="hover:cursor-pointer" @click="$emit('emoji', $event)">
-      <SmileIcon :size="iconSize" />
+      <Smile :size="iconSize" />
     </button>
     <button type="button" class="hover:cursor-pointer" @click="[$emit('bot'), router.push('/bot')]">
       <LucideBot :size="iconSize" />
     </button>
     <button type="button" class="hover:cursor-pointer" @click="$emit('menu')">
-      <MenuIcon :size="iconSize" />
+      <Menu :size="iconSize" />
     </button>
     <button type="button" class="hover:cursor-pointer" @click="$emit('location')">
       <LocationEdit :size="iconSize" />
     </button>
     <button type="button" class="hover:cursor-pointer" @click="$emit('calendar')">
-      <CalendarClockIcon :size="iconSize" />
+      <CalendarClock :size="iconSize" />
     </button>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { Image, LucideBot, MenuIcon, LocationEdit, CalendarClockIcon, SmileIcon } from 'lucide-vue-next'
+import { Image, Videotape, LucideBot, Menu, LocationEdit, CalendarClock, Smile } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 

@@ -83,6 +83,7 @@ const useUserStore = defineStore(
 
     // 登录方法
     async function login(params: AuthPayload) {
+      if (isLogining.value) return
       try {
         isLogining.value = true
         const res = await loginUser(params)
@@ -100,6 +101,7 @@ const useUserStore = defineStore(
     }
     // 注册方法
     async function register(params: AuthPayload) {
+      if (isRegistering.value) return
       try {
         isRegistering.value = true
         const res = await registerUser(params)
@@ -235,7 +237,7 @@ const useUserStore = defineStore(
       accessToken,
       isAuthenticated,
       isLogining,
-
+      isRegistering,
       // Token 管理
       setAccessToken,
       getAccessToken,

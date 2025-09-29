@@ -140,6 +140,7 @@ const useChatStore = defineStore('chat', () => {
   }
 
   return {
+    handleMarkAsRead,
     // State
     conversationsMap,
     messagesMap,

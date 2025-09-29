@@ -45,7 +45,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Image, Videotape, LucideBot, Menu, LocationEdit, CalendarClock, Smile } from 'lucide-vue-next'
+import { Image, Videotape, LucideBot, LocationEdit, CalendarClock, Smile } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 

@@ -136,10 +136,10 @@ const refreshPosts = async () => {
   }
 }
 
-const switchFeed = (type: 'forYou' | 'following') => {
+const switchFeed = async (type: 'forYou' | 'following') => {
   if (postFeedStore.isRefreshing) return
   try {
-    postFeedStore.switchFeedType(type)
+    await postFeedStore.switchFeedType(type)
   } catch (error: any) {
     console.log(error.message || error)
     message.error(error.message || '加载更多帖子失败，请稍后再试')

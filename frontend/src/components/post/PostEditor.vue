@@ -40,7 +40,7 @@ import { useI18n } from 'vue-i18n'
 
 import Scrollbar from '../common/Scrollbar.vue'
 
-import Avatar from '@/components/post/Avatar.vue'
+import Avatar from '@/components/ui/Avatar.vue'
 import { useMessage } from '@/composables/useMessage'
 import { useUserStore } from '@/stores'
 

@@ -15,9 +15,6 @@
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
 
-import { useMessage } from '@/composables/useMessage'
-
-const message = useMessage()
 const router = useRouter()
 
 interface Props {
@@ -36,7 +33,10 @@ const props = withDefaults(defineProps<Props>(), {
 // 头像点击
 const handleAvatarClick = () => {
   if (!props.username) {
-    return message.warning('请先登录')
+    return
+  }
+  if (props.username === 'warp_ai') {
+    return
   }
   router.push({
     name: 'Profile',

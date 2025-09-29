@@ -1,27 +1,78 @@
 import mongoose from 'mongoose'
 
-const conversationSchema = new mongoose.Schema(
+const participantSchema = new mongoose.Schema(
   {
-    // 参与对话的所有用户ID
-    participants: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-      },
-    ],
-    // 是否是群聊
-    isGroup: {
+    // 参与者的用户ID
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+
+    // 角色：仅在群聊中有效
+    role: {
+      type: String,
+      enum: ['member', 'admin', 'owner'],
+      default: 'member',
+    },
+
+    // 加入时间
+    joinAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    // ---- 以下是每个用户对此会话的个性化设置 ----
+
+    // 在1v1私聊中，当前用户给对方设置的备注昵称
+    peerNickname: {
+      type: String,
+      trim: true,
+    },
+
+    // 是否将此会话消息设置为免打扰
+    isMuted: {
       type: Boolean,
       default: false,
     },
-    // 群聊名称
+
+    // 是否置顶此会话
+    isSticky: {
+      type: Boolean,
+      default: false,
+    },
+
+    // 用户最后一次“看到”这个会话的时间，用于计算未读数
+    lastReadAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+)
+
+const conversationSchema = new mongoose.Schema(
+  {
+    // 是否是群聊
+    isGroup: {
+      type: Boolean,
+      required: true,
+      default: false,
+      index: true,
+    },
+
+    // 会话的所有参与者
+    participants: [participantSchema],
+
+    /* --------- 群聊信息 (isGroup: true 时有效) --------- */
     groupName: {
       type: String,
       trim: true,
     },
-    // 群聊头像
     groupAvatar: {
+      type: String,
+    },
+    groupAnnouncement: {
       type: String,
     },
 
@@ -40,10 +91,20 @@ const conversationSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
-// 为 participants 字段创建索引，以便快速查找用户参与的所有对话
-conversationSchema.index({ participants: 1 })
-// 为 lastMessageAt 字段创建索引，以便快速排序对话列表
-conversationSchema.index({ lastMessageAt: -1 })
+// 1. 核心查询索引：高效查找某个用户的所有会话，并能直接利用此索引按最新消息排序。
+conversationSchema.index({ 'participants.userId': 1, lastMessageAt: -1 })
+// 2. 私聊防重复索引：
+conversationSchema.index(
+  { 'participants.userId': 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      isGroup: false,
+      'participants.1': { $exists: true },
+      'participants.2': { $exists: false },
+    },
+  }
+)
 
 const Conversation = mongoose.model('Conversation', conversationSchema)
 

@@ -1,50 +1,23 @@
 import axiosInstance from './axiosInstance'
 
-export interface ChatMessage {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-  createdAt?: string
-  updatedAt?: string
-}
-
-export interface Conversation {
-  _id: string
-  userId: string
-  title: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface ChatResponse {
-  choices: Array<{
-    delta: {
-      role?: string
-      content?: string
-    }
-  }>
-  conversationId?: string
-}
-
-export interface ChatRequest {
-  message: string
-}
+import type { AiChatMessage, AiConversation, AiChatResponse, AiChatRequest } from '@/types/ai'
 
 // 获取对话列表
-export const getConversations = (): Promise<{ message: string; conversationList: Conversation[] }> => {
+export const getAiConversations = (): Promise<{ message: string; conversationList: AiConversation[] }> => {
   return axiosInstance.get('/bot/chat')
 }
 
 // 获取单个对话历史
-export const getConversationHistory = (
+export const getAiConversationHistory = (
   conversationId: string
-): Promise<{ message: string; userMessages: ChatMessage[] }> => {
+): Promise<{ message: string; userMessages: AiChatMessage[] }> => {
   return axiosInstance.get(`/bot/chat/${conversationId}`)
 }
 
 // AI 聊天流式接口，创建新对话
 export const createNewChatStream = async (
-  request: ChatRequest,
-  onMessage: (data: ChatResponse) => void,
+  request: AiChatRequest,
+  onMessage: (data: AiChatResponse) => void,
   onError: (error: Error) => void,
   onComplete: () => void
 ) => {
@@ -54,8 +27,8 @@ export const createNewChatStream = async (
 // AI 聊天流式接口，继续现有对话
 export const continueConversationStream = async (
   conversationId: string,
-  request: ChatRequest,
-  onMessage: (data: ChatResponse) => void,
+  request: AiChatRequest,
+  onMessage: (data: AiChatResponse) => void,
   onError: (error: Error) => void,
   onComplete: () => void
 ) => {
@@ -65,8 +38,8 @@ export const continueConversationStream = async (
 // 通用的流式聊天函数
 const chatStream = async (
   url: string,
-  request: ChatRequest,
-  onMessage: (data: ChatResponse) => void,
+  request: AiChatRequest,
+  onMessage: (data: AiChatResponse) => void,
   onError: (error: Error) => void,
   onComplete: () => void
 ) => {
@@ -131,7 +104,7 @@ const chatStream = async (
           }
 
           try {
-            const parsedData: ChatResponse = JSON.parse(data)
+            const parsedData: AiChatResponse = JSON.parse(data)
             onMessage(parsedData)
           } catch (error) {
             console.error('解析 SSE 数据失败:', error, 'Data:', data)
@@ -158,7 +131,7 @@ export const chatWithBot = async (message: string, conversationId?: string) => {
 }
 
 // 删除对话
-export const deleteConversation = async (conversationId: string) => {
+export const deleteAiConversation = async (conversationId: string) => {
   try {
     return await axiosInstance.delete(`/bot/chat/${conversationId}`)
   } catch (error) {
@@ -168,10 +141,10 @@ export const deleteConversation = async (conversationId: string) => {
 }
 
 // 重命名对话
-export const renameConversation = async (
+export const renameAiConversation = async (
   conversationId: string,
   newTitle: string
-): Promise<{ message: string; conversation: Conversation }> => {
+): Promise<{ message: string; conversation: AiConversation }> => {
   try {
     return await axiosInstance.put(`/bot/chat/${conversationId}/rename`, { title: newTitle })
   } catch (error) {

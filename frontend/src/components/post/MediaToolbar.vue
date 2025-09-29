@@ -32,9 +32,9 @@
     <button type="button" class="hover:cursor-pointer" @click="[$emit('bot'), router.push('/bot')]">
       <LucideBot :size="iconSize" />
     </button>
-    <button type="button" class="hover:cursor-pointer" @click="$emit('menu')">
+    <!-- <button type="button" class="hover:cursor-pointer" @click="$emit('menu')">
       <Menu :size="iconSize" />
-    </button>
+    </button> -->
     <button type="button" class="hover:cursor-pointer" @click="$emit('location')">
       <LocationEdit :size="iconSize" />
     </button>
@@ -70,7 +70,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   emoji: [event: MouseEvent]
   bot: []
-  menu: []
+  // menu: []
   location: []
   calendar: []
   'files-selected': [files: File[]]

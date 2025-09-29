@@ -21,82 +21,12 @@
         </div>
       </div>
       <!-- 聊天消息区域 -->
-      <div class="w-full flex-1 px-2 pt-8 pb-4 sm:px-4">
-        <div v-if="currentConversationId" class="w-full space-y-4">
-          <!-- 加载状态 -->
-          <div v-if="isLoadingMessages" class="flex justify-center py-8">
-            <div class="flex flex-col items-center space-y-3">
-              <div class="relative">
-                <div class="h-12 w-12 animate-spin rounded-full border-2 border-blue-200 border-t-blue-500"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <svg class="h-6 w-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div class="text-sm text-gray-500">加载消息中...</div>
-            </div>
-          </div>
-
-          <!-- 消息列表 -->
-          <template v-else>
-            <div v-for="(message, index) in processedMessages" :key="index">
-              <!-- 用户消息 -->
-              <div v-if="message.role === 'user'" class="flex flex-col items-end space-y-2">
-                <div class="flex items-end space-x-2">
-                  <span class="block text-xs text-gray-500">{{ formatTime(message.createdAt) }}</span>
-                  <div class="flex h-8 w-8 items-center justify-center rounded-full">
-                    <Avatar
-                      class="h-full w-full"
-                      :username="userStore.user?.username"
-                      :src="userStore.user?.avatarUrl"
-                      alt="User Avatar"
-                    />
-                  </div>
-                </div>
-                <div class="flex">
-                  <div class="rounded-lg px-4 py-3 shadow-sm dark:bg-[#202327]/70">
-                    <p class="whitespace-pre-wrap">{{ message.content }}</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- AI 消息 -->
-              <div v-else-if="message.role === 'assistant'" class="flex flex-col items-start space-y-2">
-                <div class="flex items-end space-x-2">
-                  <div class="flex h-8 w-8 items-center justify-center rounded-full">
-                    <img class="h-full w-full" src="/warp.svg" />
-                  </div>
-                  <span class="block text-xs text-gray-500">{{ formatTime(message.createdAt) }}</span>
-                </div>
-                <div class="flex-1">
-                  <div
-                    class="markdown-body rounded-lg bg-white px-4 py-3 shadow-sm dark:bg-gray-800/30"
-                    v-html="message.htmlContent"
-                  ></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 空消息状态 -->
-            <div
-              v-if="currentMessages.length === 0"
-              class="flex h-full w-full flex-col items-center justify-center space-y-4"
-            >
-              <img class="h-24 w-24" src="/warp.svg" />
-              <p class="text-gray-500">这个对话还没有消息，开始聊天吧！</p>
-            </div>
-          </template>
-        </div>
-
-        <!-- 未选择对话状态 -->
-        <div v-else class="flex h-full w-full flex-col items-center justify-center space-y-4">
-          <img class="h-24 w-24" src="/warp.svg" />
-          <p class="text-gray-500">选择一个对话开始聊天，或创建一个新的对话。</p>
-        </div>
-      </div>
+      <ChatPanel
+        :currentConversationId="currentConversationId"
+        :isLoadingMessages="isLoadingMessages"
+        :messages="processedMessages"
+        :isHtmlContent="true"
+      />
 
       <!-- 输入区域 -->
       <MessageInput
@@ -108,6 +38,7 @@
       />
     </div>
   </div>
+
   <aside
     class="dark:border-borderDark border-borderWhite fixed top-0 right-0 z-2 ml-7 h-[100dvh] w-[15rem] flex-col border-1 bg-white md:sticky md:flex lg:w-[15rem] dark:bg-black"
     :class="{
@@ -116,6 +47,7 @@
       'translate-x-full': !isShowList && windowStore.isLaptop,
     }"
   >
+    <!-- 背景 -->
     <Scrollbar ref="scrollbarRef" maxHeight="100%">
       <div class="sticky top-0 flex items-center justify-between bg-white pr-2 pl-4 dark:bg-black">
         <button @click="createNewConversation" class="group relative flex items-center space-x-4 py-4">
@@ -145,7 +77,7 @@
             <button @click="toggleConversation(index)" class="h-14 min-w-0 flex-1 cursor-pointer pl-4 text-start">
               <p class="truncate">{{ value.title }}</p>
             </button>
-            <div class="relative h-14 flex-shrink-0">
+            <div class="h-14 flex-shrink-0">
               <button @click="(e) => handleMenu(e, index)" class="ml-2 h-full pr-4">
                 <MoreHorizontal :size="20" />
               </button>
@@ -269,20 +201,18 @@ import { useRouter, useRoute } from 'vue-router'
 import {
   createNewChatStream,
   continueConversationStream,
-  getConversations,
-  getConversationHistory,
-  renameConversation,
-  deleteConversation,
-  type Conversation,
-  type ChatMessage,
+  getAiConversations,
+  getAiConversationHistory,
+  renameAiConversation,
+  deleteAiConversation,
 } from '@/api'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import Scrollbar from '@/components/common/Scrollbar.vue'
-import Avatar from '@/components/post/Avatar.vue'
+import ChatPanel from '@/components/ui/ChatPanel.vue'
 import MessageInput from '@/components/ui/MessageInput.vue'
 import { useMessage } from '@/composables/useMessage'
 import { useUserStore, useWindowStore } from '@/stores'
-import { formatTime } from '@/utils'
+import type { AiConversation, AiChatMessage } from '@/types'
 
 hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('css', css)
@@ -291,7 +221,7 @@ hljs.registerLanguage('bash', bash)
 hljs.registerLanguage('typescript', typescript)
 hljs.registerLanguage('json', json)
 
-interface ProcessedMessage extends ChatMessage {
+interface ProcessedMessage extends AiChatMessage {
   htmlContent?: string
 }
 
@@ -316,9 +246,9 @@ const message = useMessage()
 const router = useRouter()
 const route = useRoute()
 
-const conversationList = ref<Conversation[]>([])
+const conversationList = ref<AiConversation[]>([])
 const currentConversationId = ref<string | null>(null)
-const currentMessages = ref<ChatMessage[]>([])
+const currentMessages = ref<AiChatMessage[]>([])
 const isLoadingMessages = ref<boolean>(false)
 const isStreaming = ref<boolean>(false)
 const streamingMessage = ref<string>('')
@@ -333,7 +263,7 @@ const processedMessages = computed((): ProcessedMessage[] => {
       // 使用 DOMPurify 清理 HTML，防止 XSS 攻击
       const safeHtml = DOMPurify.sanitize(rawHtml)
       // 返回一个新对象，包含渲染用的 HTML
-      return { ...message, htmlContent: safeHtml } as ProcessedMessage
+      return { ...message, content: safeHtml } as ProcessedMessage
     }
     // 其他类型的消息原样返回
     return message as ProcessedMessage
@@ -360,7 +290,7 @@ const toggleList = () => {
 
 // 自动滚动相关
 const isNearBottom = ref<boolean>(true)
-const scrollThreshold = 100
+const scrollThreshold = 80
 let scrollTimer: number | null = null
 
 // 检查是否接近底部
@@ -398,7 +328,7 @@ const throttledScrollToBottom = () => {
       })
     }
     scrollTimer = null
-  }, 100)
+  }, 500)
 }
 
 // 发送消息
@@ -409,7 +339,7 @@ const sendMessage = async () => {
   const userMessage = inputMessage.value.trim()
 
   // 先添加用户消息到界面
-  const userMsg: ChatMessage = {
+  const userMsg: AiChatMessage = {
     role: 'user',
     content: userMessage,
     createdAt: new Date().toISOString(),
@@ -426,7 +356,7 @@ const sendMessage = async () => {
   streamingMessage.value = ''
 
   // 添加一个临时的AI消息用于显示流式内容
-  const aiMsg: ChatMessage = {
+  const aiMsg: AiChatMessage = {
     role: 'assistant',
     content: '',
     createdAt: new Date().toISOString(),
@@ -477,7 +407,7 @@ const sendMessage = async () => {
             // 更新URL，但不触发reload
             window.history.replaceState({}, '', `/bot/${data.conversationId}`)
             // 创建新的对话对象并添加到列表
-            const newConversation: Conversation = {
+            const newConversation: AiConversation = {
               _id: data.conversationId,
               userId: userStore.user?._id || '',
               title: userMessage.substring(0, 20),
@@ -521,7 +451,7 @@ const sendMessage = async () => {
 const loadConversationHistory = async (conversationId: string) => {
   try {
     isLoadingMessages.value = true
-    const response = await getConversationHistory(conversationId)
+    const response = await getAiConversationHistory(conversationId)
     currentMessages.value = response.userMessages || []
 
     // 加载完历史消息后，滚动到底部
@@ -615,7 +545,7 @@ const handleRenameConversation = async () => {
 
   try {
     isProcessing.value = true
-    await renameConversation(conversation._id, newTitle)
+    await renameAiConversation(conversation._id, newTitle)
 
     // 更新本地状态
     conversationList.value[selectedConversationIndex.value].title = newTitle
@@ -638,7 +568,7 @@ const handleDeleteConversation = async () => {
 
   try {
     isProcessing.value = true
-    await deleteConversation(conversation._id)
+    await deleteAiConversation(conversation._id)
 
     // 更新本地状态
     conversationList.value.splice(selectedConversationIndex.value, 1)
@@ -664,7 +594,7 @@ onClickOutside(settingsRef, () => {
 
 onMounted(async () => {
   try {
-    const conversations = await getConversations()
+    const conversations = await getAiConversations()
     conversationList.value = conversations.conversationList
 
     const conversationId = route.params.id as string
@@ -684,33 +614,35 @@ onMounted(async () => {
   checkIfNearBottom()
 })
 
-// 监听路由参数变化
-watch(
-  () => route.params.id,
-  async (newId) => {
-    if (newId && typeof newId === 'string') {
-      const conversation = conversationList.value.find((conv) => conv._id === newId)
-      if (conversation) {
-        currentConversationId.value = newId
-        await loadConversationHistory(newId)
-      } else {
-        router.replace({ name: 'Bot' })
-      }
-    } else {
-      currentConversationId.value = null
-      currentMessages.value = []
-    }
-  }
-)
+let unwatchId: (() => void) | null = null
 onActivated(() => {
   if (scrollbarRef.value?.scrollContainer) {
     scrollbarRef.value.scrollContainer.addEventListener('scroll', handleScroll)
   }
+  // 监听路由参数变化
+  unwatchId = watch(
+    () => route.params.id,
+    async (newId) => {
+      if (newId && typeof newId === 'string') {
+        const conversation = conversationList.value.find((conv) => conv._id === newId)
+        if (conversation) {
+          currentConversationId.value = newId
+          await loadConversationHistory(newId)
+        } else {
+          // router.replace({ name: 'Bot' })
+        }
+      } else {
+        currentConversationId.value = null
+        currentMessages.value = []
+      }
+    }
+  )
 })
 onDeactivated(() => {
   if (scrollbarRef.value?.scrollContainer) {
     scrollbarRef.value.scrollContainer.removeEventListener('scroll', handleScroll)
   }
+  unwatchId && unwatchId()
 })
 
 onBeforeUnmount(() => {
@@ -740,70 +672,5 @@ onBeforeUnmount(() => {
 .menu-fade-leave-from {
   opacity: 1;
   transform: scale(1) translateY(0);
-}
-
-/* 1. 基础容器样式 */
-.markdown-body {
-  line-height: 1.7;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-/* 2. 代码块样式 */
-.markdown-body :deep(pre) {
-  background-color: #f6f8fa;
-  padding: 16px;
-  border-radius: 6px;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.markdown-body :deep(pre code) {
-  background-color: transparent;
-  padding: 0;
-}
-
-/* 3. 行内代码样式 */
-.markdown-body :deep(code) {
-  background-color: rgba(175, 184, 193, 0.2);
-  border-radius: 6px;
-  font-size: 95%;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-/* 4. 表格样式 */
-.markdown-body :deep(table) {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-  border-collapse: collapse;
-  margin-bottom: 16px;
-}
-
-.markdown-body :deep(th),
-.markdown-body :deep(td) {
-  border: 1px solid #dfe2e5;
-  padding: 6px 13px;
-}
-
-.dark .markdown-body :deep(pre) {
-  background-color: #161b22;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-.dark .markdown-body :deep(code) {
-  background-color: rgba(110, 118, 129, 0.4);
-}
-
-.dark .markdown-body :deep(pre code) {
-  background-color: transparent;
-}
-
-.dark .markdown-body :deep(th),
-.dark .markdown-body :deep(td) {
-  border-color: #444c56;
 }
 </style>

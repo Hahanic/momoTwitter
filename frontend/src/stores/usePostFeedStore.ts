@@ -183,7 +183,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
   }
 
   // 切换tab
-  function switchFeedType(type: FeedType) {
+  async function switchFeedType(type: FeedType) {
     try {
       if (type === 'following' && !usersStore.isAuthenticated) {
         throw new Error('请先登录')
@@ -192,7 +192,7 @@ const usePostFeedStore = defineStore('postFeed', () => {
       activeFeedType.value = type
       // 如果目标流还没加载过，自动加载
       if (feedMap[type].items.value.length === 0) {
-        loadInitialPosts()
+        await loadInitialPosts()
       }
     } catch (error: any) {
       throw error.message ? new Error(` ${error.message}`) : new Error('切换帖子流失败')

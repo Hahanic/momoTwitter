@@ -131,7 +131,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 
 import Scrollbar from '../common/Scrollbar.vue'
-import Avatar from '../post/Avatar.vue'
+import Avatar from '../ui/Avatar.vue'
 
 import { useUserStore } from '@/stores'
 

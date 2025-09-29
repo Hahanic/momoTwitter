@@ -9,6 +9,7 @@ import { connectDB } from './db/index.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
 import authRoutes from './routes/authRoutes.js'
 import botRoutes from './routes/botRoutes.js'
+import chatRoutes from './routes/chatRoutes.js'
 import postRoutes from './routes/postRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 import userRoutes from './routes/userRoutes.js'
@@ -48,6 +49,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/posts', postRoutes)
 app.use('/api/upload', uploadRoutes)
+app.use('/api/chat', chatRoutes)
 app.use('/api/bot', botRoutes)
 
 // 错误处理中间件

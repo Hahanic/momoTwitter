@@ -65,11 +65,11 @@ const conversationSchema = new mongoose.Schema(
     participants: [participantSchema],
 
     /* --------- 群聊信息 (isGroup: true 时有效) --------- */
-    groupName: {
+    displayName: {
       type: String,
       trim: true,
     },
-    groupAvatar: {
+    displayAvatar: {
       type: String,
     },
     groupAnnouncement: {

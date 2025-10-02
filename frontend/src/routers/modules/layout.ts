@@ -17,6 +17,11 @@ const layoutRoutes: Array<RouteRecordRaw> = [
         component: () => import('@/views/layout/home/postDetail/index.vue'),
       },
       {
+        path: '/notifications',
+        name: 'Notifications',
+        component: () => import('@/views/layout/notifications/index.vue'),
+      },
+      {
         path: '/profile/:username',
         name: 'Profile',
         component: () => import('@/views/layout/profile/index.vue'),

@@ -10,19 +10,38 @@
     class="sticky top-0 h-[100dvh] transition-all"
   >
     <div class="flex h-full w-full flex-col">
-      <Scrollbar class="flex-1" :visibility="'auto'" :maxHeight="'100dvh'">
-        <div class="sticky top-0 z-10 flex w-full items-center p-3 px-2 dark:bg-black">
-          <p class="pl-2 text-xl">消息</p>
+      <Scrollbar class="flex-1" :visibility="'hidden'" :maxHeight="'100dvh'">
+        <div class="sticky top-0 z-10 flex w-full items-center px-2 py-3 dark:bg-black">
+          <RouterLink v-if="isMobile" to="/" class="mr-3"><ArrowLeft :size="24" /> </RouterLink>
+          <p class="pl-2 text-[1.1rem]">对话列表</p>
         </div>
         <ul v-if="!isLoadingConversations && conversationList.length">
-          <li
-            v-for="conversation in conversationList"
-            :key="conversation._id"
-            class="w-full transition-all hover:bg-[#f7f9f9] dark:hover:bg-[#16181c]"
-          >
-            <RouterLink :to="`/messages/${conversation._id}`" class="flex w-full items-center justify-between p-3">
-              <p>{{ conversation.displayName }}</p>
-            </RouterLink>
+          <li v-for="conversation in conversationList" :key="conversation._id" class="w-full">
+            <button
+              @click="router.push(`/messages/${conversation._id}`)"
+              class="conversation-wrapper flex w-full items-center justify-between p-3 transition-all hover:bg-[#f7f9f9] dark:hover:bg-[#16181c]"
+              :class="{
+                'active-conversation bg-[#f7f9f9] dark:bg-[#16181c]': conversation._id === currentConversationId,
+              }"
+            >
+              <div class="flex w-full items-center">
+                <Avatar
+                  class="h-12 w-12 flex-shrink-0"
+                  :src="conversation.displayAvatar"
+                  :username="conversation.username || conversation.displayName"
+                  :event="!conversation.isGroup"
+                />
+                <div class="flex flex-1 flex-col pl-3 text-left">
+                  <div class="flex items-start space-x-2 md:flex-col lg:flex-row">
+                    <p class="wrap-anywhere">{{ conversation.displayName }}</p>
+                    <span class="text-[0.9rem] text-gray-500">{{ formatDate(conversation.lastMessageAt) }}</span>
+                  </div>
+                  <p class="mt-1 line-clamp-1 text-sm">
+                    {{ conversation.lastMessageSnippet || '暂无消息' }}
+                  </p>
+                </div>
+              </div>
+            </button>
           </li>
         </ul>
         <div v-else-if="isLoadingConversations" class="flex h-full w-full justify-center p-3">
@@ -56,7 +75,7 @@
       </div>
     </div>
 
-    <div class="flex min-h-screen flex-col" v-else-if="currentMessages.length || isLoadingMessages">
+    <div class="flex min-h-screen flex-col" v-else>
       <nav class="sticky top-0 z-10 w-full">
         <div
           class="border-borderWhite dark:border-borderDark flex h-full w-full items-center justify-center border-b-1"
@@ -78,8 +97,11 @@
       </nav>
       <ChatPanel
         :currentConversationId="currentConversationId"
-        :isLoadingMessages="isLoadingMessages"
         :messages="currentMessages"
+        :isLoadingMessages="isLoadingMessages"
+        :isLoadingMoreMessages="isLoadingMoreMessages"
+        :hasMoreMessages="hasMore"
+        @loadMore="loadMore"
       />
       <!-- 输入区域 -->
       <MessageInput
@@ -100,10 +122,12 @@ import { computed, onActivated, onDeactivated, onMounted, ref, watch } from 'vue
 import { useRoute, useRouter } from 'vue-router'
 
 import Scrollbar from '@/components/common/Scrollbar.vue'
+import Avatar from '@/components/ui/Avatar.vue'
 import ChatPanel from '@/components/ui/ChatPanel.vue'
 import MessageInput from '@/components/ui/MessageInput.vue'
 import { useChatStore } from '@/stores'
 import useWindowStore from '@/stores/useWindowStore'
+import { formatDate } from '@/utils'
 
 const route = useRoute()
 const router = useRouter()
@@ -118,6 +142,8 @@ const {
   isLoadingConversations,
   isLoadingMessages,
   isSendingMessage,
+  isLoadingMoreMessages,
+  hasMoreMap,
 } = storeToRefs(chatStore)
 
 const inputMessage = ref('')
@@ -130,6 +156,22 @@ const sendMessage = async (message: string) => {
   if (!message.trim() || !currentConversationId.value) return
   await chatStore.handleSendMessage({ content: message.trim() })
   inputMessage.value = ''
+  window.scrollTo({
+    top: document.documentElement.scrollHeight,
+    behavior: 'auto',
+  })
+}
+
+const hasMore = computed(() => {
+  if (!currentConversationId.value) return false
+  const v = hasMoreMap.value.get(currentConversationId.value)
+  return v !== false // 未定义视为还有更多
+})
+
+const loadMore = () => {
+  if (currentConversationId.value) {
+    chatStore.loadMoreMessages(currentConversationId.value)
+  }
 }
 
 // 获取对话列表 如果带有 id 则获取消息
@@ -146,10 +188,14 @@ onMounted(async () => {
   } catch (error) {
     console.error('获取对话列表失败:', error)
   }
+  window.scrollTo({
+    top: document.documentElement.scrollHeight,
+    behavior: 'auto',
+  })
 })
 
 let unwatchId: (() => void) | null = null
-onActivated(() => {
+onActivated(async () => {
   // 监听 route 变化
   unwatchId = watch(
     () => route.params.id,
@@ -157,7 +203,10 @@ onActivated(() => {
       if (newVal) {
         currentConversationId.value = newVal as string | null
         await chatStore.selectConversation(currentConversationId.value)
-        console.log(currentMessages.value)
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'auto',
+        })
       }
     }
   )
@@ -169,10 +218,10 @@ onDeactivated(() => {
 </script>
 
 <style scoped>
-.router-link-active {
+.conversation-wrapper {
   position: relative;
 }
-.router-link-active::after {
+.conversation-wrapper::after {
   content: '';
   position: absolute;
   top: 0;
@@ -180,5 +229,11 @@ onDeactivated(() => {
   height: 100%;
   width: 2px;
   background-color: #1d9bf0;
+  border-radius: 9999px;
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+.active-conversation.conversation-wrapper::after {
+  transform: scaleY(1);
 }
 </style>

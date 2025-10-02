@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 
 import Conversation from '../db/model/Conversation.js'
 import Message from '../db/model/Message.js'
+import User from '../db/model/User.js'
 import { parseCursor, sendResponse } from '../utils/index.js'
 
 /**
@@ -118,10 +119,17 @@ export const getMyConversations = async (req, res) => {
           isMuted: '$currentUserParticipant.isMuted',
 
           // --- 专为UI设计的显示字段 ---
+          username: {
+            $cond: {
+              if: '$isGroup',
+              then: null,
+              else: '$peerUser.username',
+            },
+          },
           displayName: {
             $cond: {
               if: '$isGroup',
-              then: '$groupName',
+              then: '$displayName',
               // 私聊时，优先使用你给对方的备注，否则用对方的真实用户名
               else: { $ifNull: ['$currentUserParticipant.peerNickname', '$peerUser.displayName'] },
             },
@@ -129,7 +137,7 @@ export const getMyConversations = async (req, res) => {
           displayAvatar: {
             $cond: {
               if: '$isGroup',
-              then: '$groupAvatar',
+              then: '$displayAvatar',
               else: '$peerUser.avatarUrl',
             },
           },
@@ -155,37 +163,6 @@ export const getMyConversations = async (req, res) => {
     sendResponse(res, 500, '服务器错误', { error: error.message })
   }
 }
-
-// 获取对话列表
-// {
-//   "message": "成功",
-//   "conversations": [
-//     {
-//       "_id": "68d9e997623eb6628de89383",
-//       "isGroup": true,
-//       "lastMessageSnippet": "333333333333：",
-//       "lastMessageAt": "2025-09-29T02:45:35.586Z",
-//       "unreadCount": 3,
-//       "isSticky": false,
-//       "isMuted": false,
-//       "displayName": "LimbusCompany",
-//       "displayAvatar": "/Avatar",
-//       "peerId": null
-//     },
-//     {
-//       "_id": "68d967cf6c849aa0704c668b",
-//       "isGroup": false,
-//       "lastMessageSnippet": "晚上好",
-//       "lastMessageAt": "2025-09-28T17:06:34.918Z",
-//       "unreadCount": 3,
-//       "isSticky": false,
-//       "isMuted": false,
-//       "displayName": "JASttenet",
-//       "displayAvatar": "h89.jpg",
-//       "peerId": "68a82cabbb483c9c253242d8"
-//     }
-//   ]
-// }
 
 /**
  * @desc    创建新会话（私聊或群聊）
@@ -213,8 +190,8 @@ export const createConversation = async (req, res) => {
 
       const newGroup = await Conversation.create({
         isGroup: true,
-        groupName,
-        groupAvatar,
+        displayName: groupName,
+        displayAvatar: groupAvatar,
         participants: participantObjects,
       })
 
@@ -234,115 +211,33 @@ export const createConversation = async (req, res) => {
         'participants.2': { $exists: false }, // 确保是两个人
       }).lean()
 
+      const peerUser = await User.findById(recipientId).select('displayName username avatarUrl').lean()
+      if (!peerUser) {
+        return sendResponse(res, 404, '用户未找到。')
+      }
+
       if (conv) {
+        conv.username = peerUser.username || ''
+        conv.displayName = peerUser.displayName || ''
+        conv.displayAvatar = peerUser.avatarUrl || ''
         return sendResponse(res, 200, '该对话已存在。', { conversation: conv })
-        // {
-        //   "message": "该对话已存在。",
-        //   "conversation": {
-        //     "_id": "68d967cf6c849aa0704c668b",
-        //     "isGroup": false,
-        //     "participants": [
-        //       {
-        //         "userId": "68a82cabbb483c9c253242d8",
-        //         "role": "member",
-        //         "isMuted": false,
-        //         "isSticky": true,
-        //         "joinAt": "2025-09-28T16:52:31.247Z",
-        //         "lastReadAt": "2025-09-28T16:52:31.247Z"
-        //       },
-        //       {
-        //         "userId": "68b5aa61eec0de072188822d",
-        //         "role": "member",
-        //         "isMuted": false,
-        //         "isSticky": false,
-        //         "joinAt": "2025-09-28T16:52:31.247Z",
-        //         "lastReadAt": "2025-09-28T16:52:31.247Z"
-        //       }
-        //     ],
-        //     "lastMessageSnippet": "晚上好",
-        //     "lastMessageAt": "2025-09-28T17:06:34.918Z",
-        //     "createdAt": "2025-09-28T16:52:31.251Z",
-        //     "updatedAt": "2025-09-28T17:06:34.922Z",
-        //     "__v": 0
-        //   }
-        // }
       }
 
       // 创建新私聊
-      const newPrivateChat = await Conversation.create({
+      const newPrivateChatDoc = await Conversation.create({
         isGroup: false,
         participants: participantIds.map((id) => ({ userId: id })),
       })
+      const newPrivateChat = await Conversation.findById(newPrivateChatDoc._id).lean()
+      newPrivateChat.username = peerUser.username || ''
+      newPrivateChat.displayName = peerUser.displayName || ''
+      newPrivateChat.displayAvatar = peerUser.avatarUrl || ''
       sendResponse(res, 201, '成功', { conversation: newPrivateChat })
-      // {
-      //   "message": "成功",
-      //   "conversation": {
-      //     "isGroup": false,
-      //     "participants": [
-      //       {
-      //         "userId": "68ad5bec5048fd0c69a358b4",
-      //         "role": "member",
-      //         "isMuted": false,
-      //         "isSticky": false,
-      //         "joinAt": "2025-09-29T02:52:34.820Z",
-      //         "lastReadAt": "2025-09-29T02:52:34.820Z"
-      //       },
-      //       {
-      //         "userId": "68b5aa61eec0de072188822d",
-      //         "role": "member",
-      //         "isMuted": false,
-      //         "isSticky": false,
-      //         "joinAt": "2025-09-29T02:52:34.820Z",
-      //         "lastReadAt": "2025-09-29T02:52:34.820Z"
-      //       }
-      //     ],
-      //     "lastMessageSnippet": "",
-      //     "_id": "68d9f4726db3a6bf5be98d5e",
-      //     "lastMessageAt": "2025-09-29T02:52:34.820Z",
-      //     "createdAt": "2025-09-29T02:52:34.823Z",
-      //     "updatedAt": "2025-09-29T02:52:34.823Z",
-      //     "__v": 0
-      //   }
-      // }
     }
   } catch (error) {
     sendResponse(res, 500, '服务器错误', { error: error.message })
   }
 }
-
-// 创建群聊
-// {
-//   "message": "成功",
-//   "conversation": {
-//     "isGroup": true,
-//     "participants": [
-//       {
-//         "userId": "68a82cabbb483c9c253242d8",
-//         "role": "member",
-//         "isMuted": false,
-//         "isSticky": false,
-//         "joinAt": "2025-09-29T02:50:21.710Z",
-//         "lastReadAt": "2025-09-29T02:50:21.710Z"
-//       },
-//       {
-//         "userId": "68b5aa61eec0de072188822d",
-//         "role": "owner",
-//         "isMuted": false,
-//         "isSticky": false,
-//         "joinAt": "2025-09-29T02:50:21.710Z",
-//         "lastReadAt": "2025-09-29T02:50:21.710Z"
-//       }
-//     ],
-//     "groupName": "LimbusCompany",
-//     "groupAvatar": "/Avatar",
-//     "lastMessageSnippet": "",
-//     "_id": "68d9f3ed788fe052ed6f4423",
-//     "lastMessageAt": "2025-09-29T02:50:21.711Z",
-//     "createdAt": "2025-09-29T02:50:21.714Z",
-//     "updatedAt": "2025-09-29T02:50:21.714Z",
-//     "__v": 0
-//   }
-// }
 
 /**
  * @desc    获取特定会话的消息（带分页）
@@ -382,59 +277,6 @@ export const getMessages = async (req, res) => {
   }
 }
 
-// 获取
-// {
-//   "message": "成功",
-//   "messages": [
-//     {
-//       "_id": "68d9f20fb22a61da9b4239e6",
-//       "conversationId": "68d9e997623eb6628de89383",
-//       "senderId": {
-//         "_id": "68b5aa61eec0de072188822d",
-//         "username": "1",
-//         "avatarUrl": "ht8.jpg"
-//       },
-//       "content": "111111111111111111111111111111：",
-//       "media": [],
-//       "createdAt": "2025-09-29T02:42:23.058Z",
-//       "updatedAt": "2025-09-29T02:42:23.058Z",
-//       "__v": 0
-//     },
-//     {
-//       "_id": "68d9f26265db77c6772d7c4a",
-//       "conversationId": "68d9e997623eb6628de89383",
-//       "senderId": {
-//         "_id": "68b5aa61eec0de072188822d",
-//         "username": "1",
-//         "avatarUrl": "https://pub-c11d6d29dc6849578fa22b903960e39f.r2.dev/1757344157106_64ac6242841f6b48.jpg"
-//       },
-//       "content": "222222222222222222222222：",
-//       "media": [],
-//       "createdAt": "2025-09-29T02:43:46.123Z",
-//       "updatedAt": "2025-09-29T02:43:46.123Z",
-//       "__v": 0
-//     }
-//   ],
-//   "nextCursor": null
-// }
-
-// 发送
-// {
-//   "message": "成功",
-//   "_id": "68d9f2cf45838ab3e437c630",
-//   "conversationId": "68d9e997623eb6628de89383",
-//   "senderId": {
-//     "_id": "68b5aa61eec0de072188822d",
-//     "username": "1",
-//     "avatarUrl": "https://pub-c11d6d29dc6849578fa22b903960e39f.r2.dev/1757344157106_64ac6242841f6b48.jpg"
-//   },
-//   "content": "333333333333：",
-//   "media": [],
-//   "createdAt": "2025-09-29T02:45:35.586Z",
-//   "updatedAt": "2025-09-29T02:45:35.586Z",
-//   "__v": 0
-// }
-
 /**
  * @desc    在特定会话中发送新消息
  * @route   POST /api/conversations/:conversationId/messages
@@ -467,7 +309,7 @@ export const sendMessage = async (req, res) => {
 
     // 填充发送者信息后返回
     const populatedMessage = await Message.findById(newMessage._id)
-      .populate('senderId', 'username avatarUrl')
+      .populate('senderId', 'username avatarUrl displayName')
       .select('-readBy')
       .lean()
     // {
@@ -477,7 +319,8 @@ export const sendMessage = async (req, res) => {
     //   "senderId": {
     //     "_id": "68b5aa61eec0de072188822d",
     //     "username": "1",
-    //     "avatarUrl": "https://pub-c11d6d29dc6849578fa22b903960e39f.r2.dev/1757344157106_64ac6242841f6b48.jpg"
+    //     "displayName": "1",
+    //     "avatarUrl": "https:/8.jpg"
     //   },
     //   "content": "1111111111：",
     //   "media": [],
@@ -489,7 +332,7 @@ export const sendMessage = async (req, res) => {
     // !!! 重要: 在这里通过 WebSocket/Socket.IO 将 populatedMessage 推送给会话中的其他在线成员
     // io.to(conversationId).emit('newMessage', populatedMessage);
 
-    sendResponse(res, 201, '成功', populatedMessage)
+    sendResponse(res, 201, '成功', { populatedMessage })
   } catch (error) {
     sendResponse(res, 500, '服务器错误', { error: error.message })
   }

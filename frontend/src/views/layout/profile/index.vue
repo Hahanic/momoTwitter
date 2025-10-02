@@ -47,6 +47,13 @@
             <img class="h-full w-full rounded-full object-cover" :src="currentUserProfile.avatarUrl || '/cat.svg'" />
           </div>
           <div class="mt-2 flex items-center gap-2">
+            <button
+              @click="openPrivateChat"
+              v-if="!isSelf"
+              class="rounded-full p-2 transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Mail :size="20" />
+            </button>
             <FollowButton v-if="!isSelf" :user="currentUserProfile" />
             <button
               v-else
@@ -137,9 +144,9 @@ export default {
 }
 </script>
 <script setup lang="ts">
-import { ArrowLeft, SearchIcon } from 'lucide-vue-next'
+import { ArrowLeft, SearchIcon, Mail } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import FollowButton from './components/FollowButton.vue'
@@ -150,7 +157,7 @@ import MainContainer from '@/components/layout/ScrollContainer.vue'
 import StickyAside from '@/components/layout/StickyAside.vue'
 import StickyHead from '@/components/layout/StickyHead.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
-import { useUserStore, useWindowStore } from '@/stores'
+import { useUserStore, useWindowStore, useChatStore } from '@/stores'
 import useUserPostStore from '@/stores/useUserPostStore'
 
 const router = useRouter()
@@ -160,6 +167,9 @@ const userPostStore = useUserPostStore()
 const windowStore = useWindowStore()
 
 const { currentUserProfile, isSelf, isLoading } = storeToRefs(userStore)
+
+const chatStore = useChatStore()
+const creatingChat = ref(false)
 
 // 三个子路由
 const tabList = computed(() => {
@@ -180,6 +190,22 @@ async function fetchProfile(username?: string) {
     await userStore.fetchUserProfile(uname)
   } catch (e: any) {
     console.error(e.message || '获取用户信息失败')
+  }
+}
+
+// 创建对话并跳转
+async function openPrivateChat() {
+  if (!currentUserProfile.value || creatingChat.value) return
+  try {
+    creatingChat.value = true
+    // 确保会话存在（获取或创建），得到会话ID
+    const convId = await chatStore.createConversation({ isGroup: false, recipientId: currentUserProfile.value._id })
+    // 跳转到 messages/:id
+    await router.push(`/messages/${convId}`)
+  } catch (e) {
+    console.error('打开私信失败', e)
+  } finally {
+    creatingChat.value = false
   }
 }
 

@@ -1,6 +1,6 @@
 <template>
   <!-- 聊天消息区域 -->
-  <div class="w-full flex-1 px-2 pt-8 pb-4 sm:px-4">
+  <div class="w-full flex-1 px-2 pb-10 sm:px-4">
     <div v-if="currentConversationId" class="w-full space-y-4">
       <!-- 加载状态 -->
       <div v-if="isLoadingMessages" class="flex justify-center py-8">
@@ -21,6 +21,13 @@
 
       <!-- 消息列表 -->
       <template v-else>
+        <!-- 顶部 sentinel：进入视口即尝试加载更多 -->
+        <div ref="topSentinel" class="h-4 w-full"></div>
+
+        <div class="flex w-full items-center justify-center text-gray-500">
+          <p v-if="hasMoreMessages && isLoadingMoreMessages">加载更多消息中...</p>
+          <p v-else>没有更多消息了</p>
+        </div>
         <MessageItem
           v-for="msg in normalizedMessages"
           :key="msg.id + msg.timestamp"
@@ -44,10 +51,11 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 import MessageItem from './MessageItem.vue'
 
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { useUserStore } from '@/stores'
 import type { ChatMessage, AiChatMessage } from '@/types'
 import { formatTime } from '@/utils'
@@ -57,14 +65,36 @@ function isAiChatMessage(msg: ChatMessage | AiChatMessage): msg is AiChatMessage
   return 'role' in msg
 }
 
+const emit = defineEmits<{
+  (e: 'loadMore'): void
+}>()
+
 const props = defineProps<{
   currentConversationId: string | null
   messages: Array<ChatMessage | AiChatMessage> | null
   isLoadingMessages: boolean
+  isLoadingMoreMessages?: boolean
+  hasMoreMessages?: boolean
   isHtmlContent?: boolean
 }>()
 
 const userStore = useUserStore()
+
+const scrollContainerRef = ref<HTMLElement | null>(null)
+const isLoadingMoreRef = computed(() => !!props.isLoadingMoreMessages)
+const hasMoreRef = computed(() => !!props.hasMoreMessages)
+
+// 使用无限滚动组合式函数
+const { targetEl: topSentinel } = useInfiniteScroll({
+  loadMore: async () => {
+    emit('loadMore')
+  },
+  isLoading: isLoadingMoreRef,
+  hasMore: hasMoreRef,
+  scrollContainerRef,
+  rootMargin: '0px 0px 0px 0px',
+  debounceMs: 300,
+})
 
 const normalizedMessages = computed(() => {
   if (!props.messages) return []
@@ -100,4 +130,30 @@ const normalizedMessages = computed(() => {
     }
   })
 })
+
+// 高度锚点恢复
+let beforeScrollHeight = 0
+let beforeScrollTop = 0
+
+watch(
+  () => props.isLoadingMoreMessages,
+  async (loading, oldVal) => {
+    if (loading) {
+      // 开始加载：记录当前整体高度与滚动位置
+      beforeScrollHeight = document.documentElement.scrollHeight
+      beforeScrollTop = window.scrollY
+    } else if (oldVal && !loading) {
+      // 结束加载：等待 DOM 更新
+      await nextTick()
+      const after = document.documentElement.scrollHeight
+      const delta = after - beforeScrollHeight
+      if (delta > 0) {
+        window.scrollTo({
+          top: beforeScrollTop + delta,
+          behavior: 'auto',
+        })
+      }
+    }
+  }
+)
 </script>

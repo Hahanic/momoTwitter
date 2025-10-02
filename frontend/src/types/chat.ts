@@ -8,6 +8,7 @@ export interface Conversation {
   isMuted: boolean
   displayName: string
   displayAvatar: string
+  username: string
   peerId: string
 }
 
@@ -41,4 +42,27 @@ export interface CreateGroupChatPayload {
 export interface SendMessagePayload {
   content?: string
   media?: Array<{ type: string; url: string }>
+}
+
+export interface CreateConversationResponse {
+  message: string
+  conversation: {
+    _id: string
+    isGroup: boolean
+    participants: Array<{
+      userId: string
+      role: 'admin' | 'member' | 'owner'
+      isMuted: boolean
+      isSticky: boolean
+      joinAt: string
+      lastReadAt: string
+    }>
+    lastMessageSnippet: string
+    lastMessageAt: string
+    createdAt: number
+    updatedAt: string
+    displayName: string
+    displayAvatar: string
+    username: string
+  }
 }

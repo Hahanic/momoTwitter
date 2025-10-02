@@ -22,6 +22,7 @@ interface Props {
   alt?: string
   username?: string
   containerClass?: string
+  event?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,13 +30,12 @@ const props = withDefaults(defineProps<Props>(), {
   alt: 'Avatar',
   containerClass: '',
   imageClass: '',
+  event: true,
 })
 // 头像点击
 const handleAvatarClick = () => {
+  if (props.event === false) return
   if (!props.username) {
-    return
-  }
-  if (props.username === 'warp_ai') {
     return
   }
   router.push({

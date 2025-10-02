@@ -15,7 +15,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['like', 'reply', 'mention', 'follow', 'quote'],
+      enum: ['like', 'reply', 'mention', 'follow', 'quote', 'retweet'],
       required: true,
     },
     targetPostId: {
@@ -25,6 +25,16 @@ const notificationSchema = new mongoose.Schema(
     isRead: {
       type: Boolean,
       default: false,
+    },
+    readAt: {
+      type: Date,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    data: {
+      type: Object,
     },
   },
   { timestamps: { createdAt: true, updatedAt: false } }

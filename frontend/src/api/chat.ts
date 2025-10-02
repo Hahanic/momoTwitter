@@ -6,6 +6,7 @@ import {
   type CreateGroupChatPayload,
   type CreatePrivateChatPayload,
   type SendMessagePayload,
+  type CreateConversationResponse,
 } from '@/types'
 
 // 获取会话列表
@@ -14,7 +15,9 @@ export const getMyConversations = async (): Promise<{ message: string; conversat
 }
 
 // 创建新会话
-export const createConversation = async (data: CreateGroupChatPayload | CreatePrivateChatPayload) => {
+export const createConversationAPI = async (
+  data: CreateGroupChatPayload | CreatePrivateChatPayload
+): Promise<CreateConversationResponse> => {
   return await axiosInstance.post('/chat', data)
 }
 
@@ -27,7 +30,10 @@ export const getMessages = async (
 }
 
 // 发送消息
-export const sendMessage = async (id: string, data: SendMessagePayload) => {
+export const sendMessage = async (
+  id: string,
+  data: SendMessagePayload
+): Promise<{ message: string; populatedMessage: ChatMessage }> => {
   return await axiosInstance.post(`/chat/${id}/messages`, data)
 }
 

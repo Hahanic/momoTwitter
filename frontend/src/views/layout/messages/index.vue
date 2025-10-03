@@ -24,7 +24,12 @@
                 'active-conversation bg-[#f7f9f9] dark:bg-[#16181c]': conversation._id === currentConversationId,
               }"
             >
-              <div class="flex w-full items-center">
+              <div class="relative flex w-full items-center">
+                <!-- 对应用户的在线状态: 仅私聊且对方在线才显示 -->
+                <div
+                  v-if="!conversation.isGroup && conversation.peerId && onlineUserIdsSet.has(conversation.peerId)"
+                  class="absolute bottom-0 left-10 z-10 h-2 w-2 rounded-full bg-blue-500"
+                ></div>
                 <Avatar
                   class="h-12 w-12 flex-shrink-0"
                   :src="conversation.displayAvatar"
@@ -144,7 +149,10 @@ const {
   isSendingMessage,
   isLoadingMoreMessages,
   hasMoreMap,
+  onlineUserIds,
 } = storeToRefs(chatStore)
+
+const onlineUserIdsSet = computed(() => onlineUserIds.value)
 
 const inputMessage = ref('')
 

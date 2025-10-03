@@ -9,6 +9,7 @@ import { nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import MessageProvider from './components/common/MessageProvider.vue'
+import { initSocket } from './socket'
 import { useWindowStore, useUserStore, useThemeStore, usePostFeedStore } from './stores'
 
 const windowStore = useWindowStore()
@@ -19,17 +20,10 @@ const route = useRoute()
 // 初始化主题store
 useThemeStore()
 
-// Token刷新检查函数
-const checkTokenValidity = () => {
-  if (userStore.isAuthenticated) {
-    userStore.ensureValidToken()
-  }
-}
-
 // 页面可见性变化处理函数
 const handleVisibilityChange = () => {
   if (document.visibilityState === 'visible') {
-    checkTokenValidity()
+    userStore.ensureValidToken()
   }
 }
 
@@ -81,10 +75,15 @@ onMounted(async () => {
 
   // 添加页面可见性监听
   document.addEventListener('visibilitychange', handleVisibilityChange)
-  // 如果用户已登录（从持久化存储中恢复），检查token
-  checkTokenValidity()
+
   // 检查当前用户信息
-  await userStore.checkCurrentUser()
+  // 如果用户已登录（从持久化存储中恢复），检查token
+  Promise.all([userStore.checkCurrentUser(), userStore.ensureValidToken()])
+
+  // 初始化Socket连接
+  if (userStore.isAuthenticated) {
+    initSocket(userStore.getAccessToken() as string)
+  }
 })
 
 onUnmounted(() => {

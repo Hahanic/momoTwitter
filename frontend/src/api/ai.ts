@@ -57,6 +57,7 @@ const chatStream = async (
       throw new Error('Token 不存在')
     }
 
+    // 新建或继续对话都会请求到后端不同的接口，但后端处理的函数相同
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}${url}`, {
       method: 'POST',
       headers: {
@@ -70,6 +71,7 @@ const chatStream = async (
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
     }
 
+    // 处理响应流
     const reader = response.body?.getReader()
     const decoder = new TextDecoder()
 

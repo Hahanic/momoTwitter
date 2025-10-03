@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
 import { getMyConversations, getMessages, markAsRead, sendMessage, createConversationAPI } from '@/api'
+import { getSocket } from '@/socket'
 import type {
   Conversation,
   ChatMessage,
@@ -25,6 +26,8 @@ const useChatStore = defineStore('chat', () => {
   const isLoadingConversations = ref(false)
   const isLoadingMessages = ref(false)
   const isLoadingMoreMessages = ref(false)
+  // 在线用户集合（仅保存与我有会话关系的其他用户ID）
+  const onlineUserIds = ref<Set<string>>(new Set())
 
   // 将会话 Map 转换为按最新消息排序的数组，供 UI 使用
   const conversationList = computed(() => {
@@ -73,13 +76,21 @@ const useChatStore = defineStore('chat', () => {
       return
     }
     currentConversationId.value = id
-    // 如果消息未被缓存，则去获取
+
     if (!messagesMap.value.has(id)) await fetchMessages(id)
-
     if (!hasMoreMap.value.has(id)) hasMoreMap.value.set(id, true)
-
-    // (可选) 标记已读
-    // handleMarkAsRead(id)
+    // 标记已读 (socket 优先)
+    const convHolder = conversationsMap.value.get(id)
+    if (convHolder && convHolder.conversation.unreadCount > 0) {
+      const socket = getSocket()
+      if (socket && socket.connected) {
+        socket.emit('markRead', { conversationId: id })
+        convHolder.conversation.unreadCount = 0
+        conversationsMap.value.set(id, convHolder)
+      } else {
+        handleMarkAsRead(id)
+      }
+    }
   }
 
   // 3. 获取单个会话的消息
@@ -123,12 +134,18 @@ const useChatStore = defineStore('chat', () => {
     const convId = currentConversationId.value
     if (!convId) return
 
+    // 优先 socket
+    const socket = getSocket()
+
+    if (socket && socket.connected) {
+      socket.emit('sendMessage', { conversationId: convId, ...payload })
+      return
+    }
     if (isSendingMessage.value) return
     isSendingMessage.value = true
 
     try {
       const res = await sendMessage(convId, payload)
-      console.log(res)
       const newMessage = res.populatedMessage
 
       // 更新消息列表
@@ -164,6 +181,50 @@ const useChatStore = defineStore('chat', () => {
       return
     }
     await fetchMessages(id, cursor)
+  }
+
+  // 6. 接收新消息（Socket 调用）
+  function appendIncomingMessage(convId: string, msg: ChatMessage) {
+    const list = messagesMap.value.get(convId) || []
+    // 去重
+    if (!list.find((m) => m._id === msg._id)) {
+      messagesMap.value.set(convId, [...list, msg])
+    }
+    const holder = conversationsMap.value.get(convId)
+    if (holder) {
+      holder.conversation.lastMessageSnippet = msg.content || (msg.media?.length ? '[媒体]' : '')
+      holder.conversation.lastMessageAt = msg.createdAt
+      // 如果当前未在此会话界面，则增加未读
+      if (currentConversationId.value !== convId) {
+        holder.conversation.unreadCount = (holder.conversation.unreadCount || 0) + 1
+      }
+      conversationsMap.value.set(convId, holder)
+    }
+  }
+
+  // 7. 接收新会话（Socket 调用）
+  function addNewConversation(conv: Conversation) {
+    if (!conversationsMap.value.has(conv._id)) {
+      conversationsMap.value.set(conv._id, { cursor: '', conversation: conv })
+    }
+  }
+
+  // 单独暴露的未读自增（某些场景可直接调用）
+  function incrementUnread(convId: string) {
+    const holder = conversationsMap.value.get(convId)
+    if (holder) {
+      holder.conversation.unreadCount = (holder.conversation.unreadCount || 0) + 1
+      conversationsMap.value.set(convId, holder)
+    }
+  }
+
+  // 7. 更新会话元信息（Socket 调用）
+  function updateConversationMeta(convId: string, meta: Partial<Conversation>) {
+    const holder = conversationsMap.value.get(convId)
+    if (holder) {
+      holder.conversation = { ...holder.conversation, ...meta }
+      conversationsMap.value.set(convId, holder)
+    }
   }
 
   // 标记已读
@@ -206,6 +267,21 @@ const useChatStore = defineStore('chat', () => {
     }
   }
 
+  // 初始化在线用户集合
+  function setInitialOnline(userIds: string[]) {
+    onlineUserIds.value = new Set(userIds)
+  }
+  // 单个用户上下线事件
+  function updatePresence(userId: string, status: 'online' | 'offline') {
+    if (status === 'online') {
+      onlineUserIds.value.add(userId)
+    } else if (status === 'offline') {
+      onlineUserIds.value.delete(userId)
+    }
+    // 触发响应式
+    onlineUserIds.value = new Set(onlineUserIds.value)
+  }
+
   return {
     handleMarkAsRead,
     // State
@@ -217,17 +293,24 @@ const useChatStore = defineStore('chat', () => {
     isLoadingConversations,
     isLoadingMessages,
     isSendingMessage,
+    onlineUserIds,
     // Getters
     conversationList,
     currentConversation,
     currentMessages,
     // Actions
     createConversation,
+    addNewConversation,
     fetchConversations,
     loadMoreMessages,
     selectConversation,
     fetchMessages,
     handleSendMessage,
+    appendIncomingMessage,
+    updateConversationMeta,
+    setInitialOnline,
+    updatePresence,
+    incrementUnread,
   }
 })
 

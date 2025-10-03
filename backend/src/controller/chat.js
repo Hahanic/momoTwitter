@@ -13,7 +13,7 @@ import { parseCursor, sendResponse } from '../utils/index.js'
 export const getMyConversations = async (req, res) => {
   const userId = String(req.user.id)
   try {
-    // 使用聚合管道一次性计算出未读数，性能极高
+    // 使用聚合管道一次性计算出未读数
     const conversations = await Conversation.aggregate([
       // 1. 找到当前用户参与的所有会话
       { $match: { 'participants.userId': new mongoose.Types.ObjectId(userId) } },
@@ -172,6 +172,7 @@ export const getMyConversations = async (req, res) => {
 export const createConversation = async (req, res) => {
   const { isGroup, groupName, groupAvatar, participants, recipientId } = req.body
   const currentUserId = req.user.id
+  const { io, userSockets } = req
 
   try {
     if (isGroup) {
@@ -212,6 +213,7 @@ export const createConversation = async (req, res) => {
       }).lean()
 
       const peerUser = await User.findById(recipientId).select('displayName username avatarUrl').lean()
+      const senderUser = await User.findById(currentUserId).select('displayName username avatarUrl').lean()
       if (!peerUser) {
         return sendResponse(res, 404, '用户未找到。')
       }
@@ -228,11 +230,62 @@ export const createConversation = async (req, res) => {
         isGroup: false,
         participants: participantIds.map((id) => ({ userId: id })),
       })
-      const newPrivateChat = await Conversation.findById(newPrivateChatDoc._id).lean()
-      newPrivateChat.username = peerUser.username || ''
-      newPrivateChat.displayName = peerUser.displayName || ''
-      newPrivateChat.displayAvatar = peerUser.avatarUrl || ''
-      sendResponse(res, 201, '成功', { conversation: newPrivateChat })
+      // 构造给【接收者】的会话对象
+      const conversationForRecipient = {
+        _id: newPrivateChatDoc._id,
+        isGroup: false,
+        lastMessageAt: newPrivateChatDoc.createdAt,
+        lastMessageSnippet: '你们现在可以开始聊天了',
+        unreadCount: 1,
+        isSticky: false,
+        isMuted: false,
+        username: senderUser.username,
+        displayName: senderUser.displayName,
+        displayAvatar: senderUser.avatarUrl,
+        peerId: currentUserId,
+      }
+
+      // 构造给【发送者】的会话对象
+      const conversationForSender = {
+        ...conversationForRecipient,
+        unreadCount: 0,
+        username: peerUser.username,
+        displayName: peerUser.displayName,
+        displayAvatar: peerUser.avatarUrl,
+        peerId: recipientId,
+      }
+      // --- 核心实时逻辑 ---
+      // 1. 通知接收者客户端，有一个新会话来了
+      const recipientSocketSet = userSockets.get(String(recipientId))
+      if (recipientSocketSet && recipientSocketSet.size > 0) {
+        recipientSocketSet.forEach((socketId) => {
+          io.to(socketId).emit('newConversation', { conversation: conversationForRecipient })
+        })
+
+        // 2. 让接收者的 socket 悄悄加入这个新房间，以便能收到第一条消息
+        const recipientSockets = await io.in(Array.from(recipientSocketSet)).fetchSockets()
+        recipientSockets.forEach((socket) => {
+          socket.join(String(newPrivateChatDoc._id))
+          // 顺便更新一下他本地的 convIds 缓存
+          if (!socket.data.convIds.includes(newPrivateChatDoc._id)) {
+            socket.data.convIds.push(newPrivateChatDoc._id)
+          }
+        })
+      }
+
+      // 3. 让创建者(发送者)的所有在线 socket 也加入新房间
+      const senderSocketSet = userSockets.get(String(currentUserId))
+      if (senderSocketSet && senderSocketSet.size > 0) {
+        const senderSockets = await io.in(Array.from(senderSocketSet)).fetchSockets()
+        senderSockets.forEach((socket) => {
+          socket.join(String(newPrivateChatDoc._id))
+          if (!socket.data.convIds.includes(newPrivateChatDoc._id)) {
+            socket.data.convIds.push(newPrivateChatDoc._id)
+          }
+        })
+      }
+
+      sendResponse(res, 201, '成功', { conversation: conversationForSender })
     }
   } catch (error) {
     sendResponse(res, 500, '服务器错误', { error: error.message })
@@ -312,25 +365,6 @@ export const sendMessage = async (req, res) => {
       .populate('senderId', 'username avatarUrl displayName')
       .select('-readBy')
       .lean()
-    // {
-    //   "message": "成功",
-    //   "_id": "68d9f7df8ad46820a9a5d372",
-    //   "conversationId": "68d9f7bb8ad46820a9a5d36f",
-    //   "senderId": {
-    //     "_id": "68b5aa61eec0de072188822d",
-    //     "username": "1",
-    //     "displayName": "1",
-    //     "avatarUrl": "https:/8.jpg"
-    //   },
-    //   "content": "1111111111：",
-    //   "media": [],
-    //   "createdAt": "2025-09-29T03:07:11.634Z",
-    //   "updatedAt": "2025-09-29T03:07:11.634Z",
-    //   "__v": 0
-    // }
-
-    // !!! 重要: 在这里通过 WebSocket/Socket.IO 将 populatedMessage 推送给会话中的其他在线成员
-    // io.to(conversationId).emit('newMessage', populatedMessage);
 
     sendResponse(res, 201, '成功', { populatedMessage })
   } catch (error) {

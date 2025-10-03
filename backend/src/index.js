@@ -1,9 +1,11 @@
+import http from 'http'
 import os from 'os'
 
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
+import { Server } from 'socket.io'
 
 import { connectDB } from './db/index.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
@@ -13,6 +15,7 @@ import chatRoutes from './routes/chatRoutes.js'
 import postRoutes from './routes/postRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+import { initSocket, userSockets } from './socket/index.js'
 
 dotenv.config()
 const app = express()
@@ -44,6 +47,22 @@ app.use(
   })
 )
 
+const server = http.createServer(app)
+// 初始化 Socket
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+})
+initSocket(io)
+
+app.use((req, res, next) => {
+  req.io = io
+  req.userSockets = userSockets
+  next()
+})
+
 // 路由
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
@@ -56,7 +75,7 @@ app.use('/api/bot', botRoutes)
 app.use(notFound)
 app.use(errorHandler)
 
-app.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, () => {
   connectDB()
 
   console.log('\n🚀 服务器启动成功!')

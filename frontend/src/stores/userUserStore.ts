@@ -33,10 +33,10 @@ const useUserStore = defineStore(
 
     // 自主验证并刷新AccessToken
     async function ensureValidToken(): Promise<void> {
-      if (!accessToken.value || !user.value) return
+      if (!isAuthenticated.value) return
       let needsRefresh = false
       try {
-        const payload = jwtDecode<{ exp?: number }>(accessToken.value)
+        const payload = jwtDecode<{ exp?: number }>(accessToken.value as string)
         if (!payload.exp) {
           needsRefresh = true
         } else {

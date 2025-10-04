@@ -28,13 +28,6 @@ const messageSchema = new mongoose.Schema(
         url: { type: String, required: true },
       },
     ],
-    // 记录已读此消息的用户ID列表，用于实现已读回执功能
-    readBy: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
   },
   { timestamps: true }
 )

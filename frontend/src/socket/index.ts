@@ -16,22 +16,22 @@ export function initSocket(token: string) {
     console.log('socket connected')
   })
 
-  // 初始化 presence
+  // 初始化在线用户列表
   socket.on('presence:init', (payload: { onlineUserIds: string[] }) => {
-    console.log('presence:init', payload)
     chatStore.setInitialOnline(payload.onlineUserIds)
   })
 
-  // 实时 presence 更新
+  // 实时更新在线用户列表
   socket.on('presence', ({ userId, status }: { userId: string; status: 'online' | 'offline' }) => {
     chatStore.updatePresence(userId, status)
   })
 
+  // 收到新会话
   socket.on('newConversation', ({ conversation }) => {
-    console.log('收到一个新的会话邀请:', conversation)
     chatStore.addNewConversation(conversation)
   })
 
+  // 收到新消息
   socket.on('newMessage', ({ conversationId, message }) => {
     // 如果本地不存在该会话，刷新一次列表
     if (!chatStore.conversationsMap.has(conversationId)) {
@@ -43,6 +43,7 @@ export function initSocket(token: string) {
     }
   })
 
+  // 更新会话元信息（最新消息和最新时间）
   socket.on('conversationUpdated', (payload) => {
     chatStore.updateConversationMeta(payload.conversationId, payload)
   })

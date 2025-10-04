@@ -30,6 +30,13 @@
                   v-if="!conversation.isGroup && conversation.peerId && onlineUserIdsSet.has(conversation.peerId)"
                   class="absolute bottom-0 left-10 z-10 h-2 w-2 rounded-full bg-blue-500"
                 ></div>
+                <!-- 消息未读数 -->
+                <span
+                  v-if="conversation.unreadCount > 0"
+                  class="absolute right-0 bottom-[50%] z-10 translate-y-[50%] rounded-full bg-blue-500/80 px-2 py-1 text-xs text-white"
+                >
+                  {{ conversation.unreadCount >= 100 ? '99+' : conversation.unreadCount }}
+                </span>
                 <Avatar
                   class="h-12 w-12 flex-shrink-0"
                   :src="conversation.displayAvatar"
@@ -215,6 +222,8 @@ onActivated(async () => {
           top: document.documentElement.scrollHeight,
           behavior: 'auto',
         })
+      } else {
+        currentConversationId.value = null
       }
     }
   )

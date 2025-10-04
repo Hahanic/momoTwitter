@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { getMyConversations, getMessages, markAsRead, sendMessage, createConversationAPI } from '@/api'
+import { getMyConversations, getMessages, createConversationAPI } from '@/api'
 import { getSocket } from '@/socket'
+import { useUserStore } from '@/stores'
 import type {
   Conversation,
   ChatMessage,
@@ -12,11 +13,11 @@ import type {
 } from '@/types'
 
 const useChatStore = defineStore('chat', () => {
-  // 使用 Map 存储会话列表
+  // 会话列表
   const conversationsMap = ref<Map<string, { cursor: string; conversation: Conversation }>>(new Map())
-  // 使用 Map 缓存每个会话的消息列表
+  // 每个会话的消息列表
   const messagesMap = ref<Map<string, ChatMessage[]>>(new Map())
-  // 使用 Map 缓存每个会话是否还有更多历史
+  // 每个会话是否还有更多历史
   const hasMoreMap = ref<Map<string, boolean>>(new Map())
   // 当前激活的会话ID
   const currentConversationId = ref<string | null>(null)
@@ -28,16 +29,16 @@ const useChatStore = defineStore('chat', () => {
   const isLoadingMoreMessages = ref(false)
   // 在线用户集合（仅保存与我有会话关系的其他用户ID）
   const onlineUserIds = ref<Set<string>>(new Set())
+  // 是否已加载过该会话的历史记录（至少一次分页请求）
+  const historyLoadedMap = ref<Map<string, boolean>>(new Map())
 
   // 将会话 Map 转换为按最新消息排序的数组，供 UI 使用
   const conversationList = computed(() => {
     const list = Array.from(conversationsMap.value.values()).map((item) => item.conversation)
-    list.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
     list.sort((a, b) => {
-      // 置顶排序
       if (a.isSticky && !b.isSticky) return -1
-      if (!b.isSticky && a.isSticky) return 1
-      return 0
+      if (!a.isSticky && b.isSticky) return 1
+      return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     })
     return list
   })
@@ -60,7 +61,11 @@ const useChatStore = defineStore('chat', () => {
     try {
       const res = await getMyConversations()
       const newMap = new Map<string, { cursor: string; conversation: Conversation }>()
-      res.conversations.forEach((conv) => newMap.set(conv._id, { cursor: '', conversation: conv }))
+      res.conversations.forEach((conv) => {
+        newMap.set(conv._id, { cursor: '', conversation: conv })
+        // 初始标记：尚未加载过历史
+        historyLoadedMap.value.set(conv._id, false)
+      })
       conversationsMap.value = newMap
     } catch (error) {
       console.error('获取会话列表失败:', error)
@@ -77,18 +82,24 @@ const useChatStore = defineStore('chat', () => {
     }
     currentConversationId.value = id
 
-    if (!messagesMap.value.has(id)) await fetchMessages(id)
+    // 第一次进入或未曾拉取历史时必须拉取历史
+    const historyLoaded = historyLoadedMap.value.get(id)
+    if (!historyLoaded) {
+      await fetchMessages(id)
+    } else if (!messagesMap.value.has(id)) {
+      // 异常兜底：如果没有本地消息缓存也拉取一次
+      await fetchMessages(id)
+    }
     if (!hasMoreMap.value.has(id)) hasMoreMap.value.set(id, true)
-    // 标记已读 (socket 优先)
+
     const convHolder = conversationsMap.value.get(id)
-    if (convHolder && convHolder.conversation.unreadCount > 0) {
+    if (convHolder) {
+      // 标记已读：进入会话时总是发一次 socket 标记，确保后端 lastReadAt 及时更新
       const socket = getSocket()
       if (socket && socket.connected) {
         socket.emit('markRead', { conversationId: id })
         convHolder.conversation.unreadCount = 0
         conversationsMap.value.set(id, convHolder)
-      } else {
-        handleMarkAsRead(id)
       }
     }
   }
@@ -118,6 +129,8 @@ const useChatStore = defineStore('chat', () => {
         conversationsMap.value.set(id, holder)
       }
       hasMoreMap.value.set(id, !!res.nextCursor)
+      // 标记该会话已完成至少一次历史加载
+      historyLoadedMap.value.set(id, true)
     } catch (error) {
       console.error(`获取ID为 ${id} 的消息失败:`, error)
     } finally {
@@ -129,40 +142,16 @@ const useChatStore = defineStore('chat', () => {
     }
   }
 
-  // 4. 发送消息（带乐观更新）
+  // 4. 发送消息 通过 socket 发送
   async function handleSendMessage(payload: SendMessagePayload) {
     const convId = currentConversationId.value
     if (!convId) return
 
-    // 优先 socket
     const socket = getSocket()
-
     if (socket && socket.connected) {
       socket.emit('sendMessage', { conversationId: convId, ...payload })
-      return
-    }
-    if (isSendingMessage.value) return
-    isSendingMessage.value = true
-
-    try {
-      const res = await sendMessage(convId, payload)
-      const newMessage = res.populatedMessage
-
-      // 更新消息列表
-      const existing = messagesMap.value.get(convId) || []
-      messagesMap.value.set(convId, [...existing, newMessage])
-
-      // 更新会话列表的摘要
-      const conv = conversationsMap.value.get(convId)
-      if (conv) {
-        conv.conversation.lastMessageSnippet = newMessage.content
-        conv.conversation.lastMessageAt = newMessage.createdAt
-        conversationsMap.value.set(convId, conv)
-      }
-    } catch (error) {
-      console.error(`发送消息到 ${convId} 失败:`, error)
-    } finally {
-      isSendingMessage.value = false
+    } else {
+      console.warn('Socket 未连接，消息未发送')
     }
   }
 
@@ -185,6 +174,7 @@ const useChatStore = defineStore('chat', () => {
 
   // 6. 接收新消息（Socket 调用）
   function appendIncomingMessage(convId: string, msg: ChatMessage) {
+    const myId = useUserStore().user?._id
     const list = messagesMap.value.get(convId) || []
     // 去重
     if (!list.find((m) => m._id === msg._id)) {
@@ -195,8 +185,15 @@ const useChatStore = defineStore('chat', () => {
       holder.conversation.lastMessageSnippet = msg.content || (msg.media?.length ? '[媒体]' : '')
       holder.conversation.lastMessageAt = msg.createdAt
       // 如果当前未在此会话界面，则增加未读
-      if (currentConversationId.value !== convId) {
+      const senderId = msg.senderId._id
+      if (currentConversationId.value !== convId && senderId && myId && senderId !== myId) {
         holder.conversation.unreadCount = (holder.conversation.unreadCount || 0) + 1
+      } else if (currentConversationId.value === convId && senderId && myId && senderId !== myId) {
+        // 正在查看该会话且收到对方消息，立即标记已读
+        const socket = getSocket()
+        if (socket && socket.connected) {
+          socket.emit('markRead', { conversationId: convId })
+        }
       }
       conversationsMap.value.set(convId, holder)
     }
@@ -206,15 +203,7 @@ const useChatStore = defineStore('chat', () => {
   function addNewConversation(conv: Conversation) {
     if (!conversationsMap.value.has(conv._id)) {
       conversationsMap.value.set(conv._id, { cursor: '', conversation: conv })
-    }
-  }
-
-  // 单独暴露的未读自增（某些场景可直接调用）
-  function incrementUnread(convId: string) {
-    const holder = conversationsMap.value.get(convId)
-    if (holder) {
-      holder.conversation.unreadCount = (holder.conversation.unreadCount || 0) + 1
-      conversationsMap.value.set(convId, holder)
+      historyLoadedMap.value.set(conv._id, false)
     }
   }
 
@@ -224,21 +213,6 @@ const useChatStore = defineStore('chat', () => {
     if (holder) {
       holder.conversation = { ...holder.conversation, ...meta }
       conversationsMap.value.set(convId, holder)
-    }
-  }
-
-  // 标记已读
-  async function handleMarkAsRead(id: string) {
-    const conv = conversationsMap.value.get(id)
-    // 如果本来就有未读数，才发送请求并更新状态
-    if (conv && conv.conversation.unreadCount > 0) {
-      try {
-        await markAsRead(id)
-        conv.conversation.unreadCount = 0 // 本地状态更新
-        conversationsMap.value.set(id, conv)
-      } catch (error) {
-        console.error(`标记 ${id} 已读失败:`, error)
-      }
     }
   }
 
@@ -257,9 +231,11 @@ const useChatStore = defineStore('chat', () => {
         username: res.conversation.username,
         displayName: res.conversation.displayName,
         displayAvatar: res.conversation.displayAvatar,
-        peerId: '',
+        // 仅私聊有效
+        peerId: (res.conversation as any).peerId || '',
       }
       conversationsMap.value.set(newConv._id, { cursor: '', conversation: newConv })
+      historyLoadedMap.value.set(newConv._id, false)
       selectConversation(newConv._id)
       return newConv._id
     } catch (error) {
@@ -283,7 +259,6 @@ const useChatStore = defineStore('chat', () => {
   }
 
   return {
-    handleMarkAsRead,
     // State
     hasMoreMap,
     isLoadingMoreMessages,
@@ -294,6 +269,8 @@ const useChatStore = defineStore('chat', () => {
     isLoadingMessages,
     isSendingMessage,
     onlineUserIds,
+    // 内部标记（如需调试可观察）
+    historyLoadedMap,
     // Getters
     conversationList,
     currentConversation,
@@ -310,7 +287,6 @@ const useChatStore = defineStore('chat', () => {
     updateConversationMeta,
     setInitialOnline,
     updatePresence,
-    incrementUnread,
   }
 })
 

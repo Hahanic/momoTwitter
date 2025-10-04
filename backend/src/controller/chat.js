@@ -222,6 +222,7 @@ export const createConversation = async (req, res) => {
         conv.username = peerUser.username || ''
         conv.displayName = peerUser.displayName || ''
         conv.displayAvatar = peerUser.avatarUrl || ''
+        conv.peerId = peerUser._id
         return sendResponse(res, 200, '该对话已存在。', { conversation: conv })
       }
 
@@ -266,7 +267,7 @@ export const createConversation = async (req, res) => {
         const recipientSockets = await io.in(Array.from(recipientSocketSet)).fetchSockets()
         recipientSockets.forEach((socket) => {
           socket.join(String(newPrivateChatDoc._id))
-          // 顺便更新一下他本地的 convIds 缓存
+          // 更新一下他本地的 convIds 缓存
           if (!socket.data.convIds.includes(newPrivateChatDoc._id)) {
             socket.data.convIds.push(newPrivateChatDoc._id)
           }
@@ -319,75 +320,11 @@ export const getMessages = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(limit)
       .populate('senderId', 'displayName username avatarUrl') // 填充发送者信息
-      .select('-readBy')
       .lean()
 
     const nextCursor = messages.length < limit ? null : messages[messages.length - 1].createdAt.toISOString()
 
-    sendResponse(res, 200, '成功', { messages: messages.reverse(), nextCursor }) // 通常前端需要从旧到新显示
-  } catch (error) {
-    sendResponse(res, 500, '服务器错误', { error: error.message })
-  }
-}
-
-/**
- * @desc    在特定会话中发送新消息
- * @route   POST /api/conversations/:conversationId/messages
- * @access  Private
- */
-export const sendMessage = async (req, res) => {
-  try {
-    const { conversationId } = req.params
-    const { content, media } = req.body
-    const senderId = req.user.id
-
-    if (!content && (!media || media.length === 0)) {
-      return sendResponse(res, 400, '消息内容或媒体不能为空。')
-    }
-
-    // 安全检查
-    const conv = await Conversation.findOne({ _id: conversationId, 'participants.userId': senderId })
-    if (!conv) {
-      return sendResponse(res, 403, '禁止访问：您不是此会话的成员。')
-    }
-
-    const newMessage = new Message({
-      conversationId,
-      senderId,
-      content,
-      media,
-    })
-
-    await newMessage.save()
-
-    // 填充发送者信息后返回
-    const populatedMessage = await Message.findById(newMessage._id)
-      .populate('senderId', 'username avatarUrl displayName')
-      .select('-readBy')
-      .lean()
-
-    sendResponse(res, 201, '成功', { populatedMessage })
-  } catch (error) {
-    sendResponse(res, 500, '服务器错误', { error: error.message })
-  }
-}
-
-/**
- * @desc    将特定会话标记为已读
- * @route   POST /api/conversations/:conversationId/read
- * @access  Private
- */
-export const markAsRead = async (req, res) => {
-  try {
-    const { conversationId } = req.params
-    const userId = req.user.id
-
-    await Conversation.updateOne(
-      { _id: conversationId, 'participants.userId': userId },
-      { $set: { 'participants.$.lastReadAt': new Date() } }
-    )
-
-    sendResponse(res, 200, '会话已标记为已读。')
+    sendResponse(res, 200, '成功', { messages: messages.reverse(), nextCursor })
   } catch (error) {
     sendResponse(res, 500, '服务器错误', { error: error.message })
   }

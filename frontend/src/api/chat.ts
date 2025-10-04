@@ -5,7 +5,6 @@ import {
   type ChatMessage,
   type CreateGroupChatPayload,
   type CreatePrivateChatPayload,
-  type SendMessagePayload,
   type CreateConversationResponse,
 } from '@/types'
 
@@ -27,17 +26,4 @@ export const getMessages = async (
   cursor?: string
 ): Promise<{ message: string; messages: ChatMessage[]; nextCursor: string | null }> => {
   return await axiosInstance.get(`/chat/${id}/messages`, { params: { cursor } })
-}
-
-// 发送消息
-export const sendMessage = async (
-  id: string,
-  data: SendMessagePayload
-): Promise<{ message: string; populatedMessage: ChatMessage }> => {
-  return await axiosInstance.post(`/chat/${id}/messages`, data)
-}
-
-// 标记已读
-export const markAsRead = async (id: string) => {
-  return await axiosInstance.post(`/chat/${id}/read`)
 }

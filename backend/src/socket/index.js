@@ -21,7 +21,6 @@ export function initSocket(io) {
 
   io.on('connection', async (socket) => {
     const userId = socket.data.userId
-    console.log(`User connected: ${userId}, Socket ID: ${socket.id}`)
 
     // 记录 socket
     if (!userSockets.has(userId)) userSockets.set(userId, new Set())
@@ -85,10 +84,6 @@ export function initSocket(io) {
       socket.leave(conversationId)
     })
 
-    socket.on('typing', ({ conversationId }) => {
-      socket.to(conversationId).emit('typing', { conversationId, userId })
-    })
-
     socket.on('sendMessage', async ({ conversationId, content, media }) => {
       if (!content && (!media || media.length === 0)) return
       // 校验成员
@@ -108,11 +103,15 @@ export function initSocket(io) {
       // 更新会话摘要
       conv.lastMessageAt = msg.createdAt
       conv.lastMessageSnippet = content?.slice(0, 200) || (media?.length ? '[媒体]' : '')
+      // 更新 lastReadAt
+      const me = (conv.participants || []).find((p) => String(p.userId) === String(userId))
+      if (me) {
+        me.lastReadAt = msg.createdAt
+      }
       await conv.save()
 
       const populatedMessage = await Message.findById(msg._id)
         .populate('senderId', 'username avatarUrl displayName')
-        .select('-readBy')
         .lean()
 
       // 发给本会话所有用户
@@ -121,7 +120,7 @@ export function initSocket(io) {
         message: populatedMessage,
       })
 
-      // 可选：给未读计数使用的通知（单独事件）
+      // 更新会话列表的显示信息
       io.to(String(conversationId)).emit('conversationUpdated', {
         conversationId,
         lastMessageAt: conv.lastMessageAt,
@@ -129,13 +128,13 @@ export function initSocket(io) {
       })
     })
 
+    // 消息已读
     socket.on('markRead', async ({ conversationId }) => {
       const now = new Date()
       await Conversation.updateOne(
         { _id: conversationId, 'participants.userId': userId },
         { $set: { 'participants.$.lastReadAt': now } }
       )
-      socket.to(conversationId).emit('readReceipt', { conversationId, userId, readAt: now })
     })
 
     // 在线状态

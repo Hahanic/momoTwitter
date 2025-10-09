@@ -206,7 +206,7 @@ export const createConversation = async (req, res) => {
       const participantIds = [currentUserId, new mongoose.Types.ObjectId(recipientId)].sort()
 
       // 查找是否已存在该私聊
-      let conv = await Conversation.findOne({
+      const conv = await Conversation.findOne({
         isGroup: false,
         'participants.userId': { $all: participantIds },
         'participants.2': { $exists: false }, // 确保是两个人

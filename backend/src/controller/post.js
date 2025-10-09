@@ -484,7 +484,7 @@ export const getUserCategoryPosts = async (req, res) => {
 // 翻译帖子
 export const translatePost = async (req, res) => {
   const { postId } = req.params
-  let ToLanguage = req.body?.targetLanguage || 'zh-CN'
+  const ToLanguage = req.body?.targetLanguage || 'zh-CN'
 
   try {
     const post = await Post.findById(postId)

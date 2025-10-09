@@ -41,7 +41,7 @@ export default [
       // 在这里添加你的其他自定义规则
       // 例如：
       // 'no-console': 'warn',
-      // 'prefer-const': 'error',
+      'prefer-const': 'error',
     },
   },
 

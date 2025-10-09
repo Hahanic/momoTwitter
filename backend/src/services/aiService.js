@@ -48,7 +48,7 @@ export const translateText = async (text, targetLanguage) => {
       throw new Error('翻译API返回数据格式不正确')
     }
   } catch (error) {
-    console.error('调用七牛云翻译API失败:', error.response ? error.response.data : error.message)
+    // console.error('调用七牛云翻译API失败:', error.response ? error.response.data : error.message)
     throw new Error('翻译服务暂时不可用')
   }
 }
@@ -78,7 +78,7 @@ export const chatWithAI = async (messages) => {
 
     return response.data
   } catch (error) {
-    console.error('调用七牛云AI聊天API失败:', error.response ? error.response.data : error.message)
+    // console.error('调用七牛云AI聊天API失败:', error.response ? error.response.data : error.message)
     throw new Error('AI聊天服务暂时不可用')
   }
 }

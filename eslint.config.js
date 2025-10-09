@@ -89,6 +89,6 @@ export default [
 
   // 忽略文件
   {
-    ignores: ['node_modules/**', 'dist/**', 'build/**'],
+    ignores: ['node_modules/**', 'frontend/dist/**', 'build/**', 'frontend/stats.html'],
   },
 ]

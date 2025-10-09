@@ -41,7 +41,8 @@ export const uploadToR2 = async (fileBuffer, originalname, mimetype) => {
     const publicUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${filename}`
     return publicUrl
   } catch (error) {
-    console.error('❌ R2 上传失败:', error)
+    // console.error('❌ R2 上传失败:', error)
+    deleteFromR2(filename) // 删除已上传的文件
     throw new Error('文件上传到云存储失败。')
   }
 }
@@ -55,7 +56,7 @@ export const deleteFromR2 = async (filename) => {
   try {
     await s3.send(command)
   } catch (error) {
-    console.error('❌ R2 删除失败:', error)
+    // console.error('❌ R2 删除失败:', error)
     throw new Error('文件从云存储删除失败。')
   }
 }

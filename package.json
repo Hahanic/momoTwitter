@@ -17,7 +17,7 @@
     "commit": "cz",
     "dev": "concurrently \"npm:dev --workspace=frontend\" \"npm:dev --workspace=backend\"",
     "build": "npm run build --workspace=frontend",
-    "format": "prettier --write .",
+    "format": "prettier --write . --cache",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check": "npm run format && npm run lint"

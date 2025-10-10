@@ -635,7 +635,8 @@ onActivated(() => {
         currentConversationId.value = null
         currentMessages.value = []
       }
-    }
+    },
+    { immediate: true }
   )
 })
 onDeactivated(() => {

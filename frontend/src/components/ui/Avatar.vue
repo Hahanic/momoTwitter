@@ -35,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
 // 头像点击
 const handleAvatarClick = () => {
   if (props.event === false) return
-  if (!props.username) {
+  if (!props.username || props.username === 'warp_ai') {
     return
   }
   router.push({

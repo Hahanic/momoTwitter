@@ -225,7 +225,8 @@ onActivated(async () => {
       } else {
         currentConversationId.value = null
       }
-    }
+    },
+    { immediate: true }
   )
 })
 

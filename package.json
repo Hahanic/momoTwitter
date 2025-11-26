@@ -31,8 +31,8 @@
     "type": "git",
     "url": "git+https://github.com/Hahanic/momoTwitter.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Hahanic",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Hahanic/momoTwitter/issues"
   },
